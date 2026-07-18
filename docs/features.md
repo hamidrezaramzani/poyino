@@ -1,39 +1,61 @@
 # Features
 
-**Version:** 1.0  
-**Status:** Draft  
-**Last Updated:** 2026-07-09
+**Version:** 1.0 (MVP)
 
----
-
-# Product Features
-
-This document provides a high-level overview of all features available in Poyino MVP (Version 1.0).
-
-Detailed functional specifications are documented separately under `/docs/specs`.
+This document lists all features included in the first public version of Poyino.
 
 ---
 
 # Authentication
 
-Manage secure access to the platform.
+Manage organization authentication and account security.
 
 ## Features
 
 - Organization Registration
 - Login
-- Password Recovery
+- Forgot Password
+- Reset Password
 
 ---
 
-# Organization
+# Dashboard
 
-Manage organization information and branding.
+Provide a quick overview of the recruitment process.
 
 ## Features
 
-- Organization Settings
-- Organization Branding
+- Recruitment Statistics
+- Recent Job Posts
+- Recent Applications
+- Quick Navigation
+
+---
+
+# Organization Settings
+
+Manage organization information and branding.
+
+## General
+
+- Organization Information
+- Contact Information
+- Timezone
+- Language
+
+## Branding
+
+- Organization Logo
+- Brand Colors
+
+## Notifications
+
+- Email Notifications
+- In-App Notifications
+
+## Security
+
+- Change Password
 
 ---
 
@@ -46,118 +68,110 @@ Create and manage job openings.
 - Create Job
 - Edit Job
 - Delete Job
-- Publish Job
 - Archive Job
-- Job Templates
+- Publish Job
+- Draft Job
+- Job Expiration Date
 - Public Job Link
-- Job Expiration
+- Job Templates
 
 ---
 
-# Public Application
+# Public Job Page
 
-Provide a seamless application experience for candidates.
+Allow candidates to submit applications.
 
 ## Features
 
-- Public Job Page
-- Resume Upload
-- Supporting Files
-- Portfolio Links
+- Public Job Description
+- Resume Upload (PDF)
+- Resume Parsing
 - Candidate Information Review
-- Application Confirmation
+- Supporting Files
+- Submit Application
+- Submission Result
 
 ---
 
-# AI Engine
+# AI Features
 
-Automate resume analysis and candidate evaluation.
+Use Artificial Intelligence to improve recruitment.
 
 ## Features
 
 - Resume Parsing
-- Candidate Information Extraction
+- Resume Summary
 - Skills Extraction
 - Experience Extraction
 - Education Extraction
-- AI Candidate Summary
-- Strength Analysis
-- Weakness Analysis
-- Match Score
-- Candidate Ranking
 - Job Description Generation
+- Interview Question Generation
 
 ---
 
-# Applicant Tracking System (ATS)
+# Candidate Management
 
-Manage applicants throughout the hiring process.
+Manage all submitted candidates.
 
 ## Features
 
 - Candidate List
 - Candidate Details
-- Candidate Timeline
 - Candidate Status
-- Notes
-- Tags
-- Bookmark
-- Shortlist
-- Hire
-- Reject
-- Archive
+- Candidate Notes
+- Bookmark Candidate
+- Contact Information
 
----
-
-# Search & Filtering
-
-Quickly find the right candidates.
-
-## Features
-
-- Global Search
-- Skill Filter
-- Experience Filter
-- Education Filter
-- Location Filter
-- Salary Filter
-- AI Score Filter
-
----
-
-# Hiring Pipeline
-
-Track every applicant through the hiring process.
-
-## Stages
+### Candidate Statuses
 
 - Applied
-- Reviewing
-- Technical Review
-- HR Interview
-- Technical Interview
-- Final Interview
-- Offer
+- Interview Pending
+- Interview Approved
 - Hired
 - Rejected
 
 ---
 
-# Interview Management
+# Search & Filters
 
-Record interview outcomes.
+Search and filter jobs and candidates.
 
-## Features
+## Candidate Filters
 
-- Interview Notes
-- Interview Score
-- Interview Result
+- Skills
+- Experience
+- Location
+- Expected Salary
+- AI Score
+- Date Range
+
+## Job Filters
+
+- Status
+- Date Range
 
 ---
 
-# Communication
+# Interview Management
 
-Communicate with applicants.
+Manage recruitment interviews.
+
+## Features
+
+- Interview Calendar
+- Interview List
+- Create Interview
+- Edit Interview
+- Delete Interview
+- Assign Candidate
+- Interview Notes
+- Interview Questions
+
+---
+
+# Communications
+
+Communicate with candidates.
 
 ## Features
 
@@ -166,67 +180,30 @@ Communicate with applicants.
 
 ---
 
-# Dashboard
-
-Provide recruitment insights.
-
-## Features
-
-- Recruitment Overview
-- Active Jobs
-- Candidate Statistics
-- Hiring Statistics
-- Pipeline Overview
-
----
-
 # Reports
 
-Export recruitment data.
+Generate recruitment reports.
 
 ## Features
 
+- Export Jobs
+- Export Candidates
 - Excel Export
-- PDF Export
 
 ---
 
-# Talent Pool
+# Out of Scope (Version 1)
 
-Build a reusable candidate database.
+The following features are intentionally excluded from the MVP.
 
-## Features
-
-- Candidate Repository
-- Search
-- Favorite Candidates
-
----
-
-# Security
-
-Protect organizational data.
-
-## Features
-
-- Permission System
-- Audit Log
-
----
-
-# Out of Scope
-
-The following features are intentionally excluded from Version 1.0.
-
-- Subscription & Billing
+- Subscription Plans
+- Online Payments
 - Team Members
-- Multi-role Permissions
-- Notifications
-- Calendar Integration
-- AI Resume Chat
-- AI Interview Assistant
+- Roles & Permissions
+- Invitations
 - Public Job Marketplace
 - Career Pages
-- Recruitment CRM
 - Mobile Application
 - Public API
+- AI Chat
+- AI Candidate Comparison
