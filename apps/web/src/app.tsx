@@ -1,51 +1,122 @@
-import { appMetadata, brandColors } from "@poyino/config";
-import { createJobSchema } from "@poyino/contracts";
+import { appMetadata } from "@poyino/config";
 import { Button, Card } from "@poyino/ui";
-import { createSlug, formatWorkspaceName } from "@poyino/utils";
-
-const sampleJob = createJobSchema.parse({
-  title: "Senior Backend Engineer",
-  location: "Tehran",
-  employmentType: "full-time",
-  description:
-    "Build the API foundation for the AI-powered recruitment platform.",
-});
-
-const organizationName = formatWorkspaceName("Poyino Labs");
+import poyinoLogo from "../../../docs/brand/logo/logo.png";
+import { useI18n } from "./shared/i18n/i18n-provider";
 
 export function App() {
+  const { direction, locale, messages, toggleLocale } = useI18n();
+
   return (
-    <main className="page-shell">
-      <div className="hero">
-        <span className="hero-badge">Foundation Ready</span>
-        <h1>{appMetadata.name}</h1>
-        <p>{appMetadata.tagline}</p>
-        <p>
-          Workspace slug: <strong>{createSlug(organizationName)}</strong>
-        </p>
-        <Button>Start Building</Button>
-      </div>
+    <main className="page-shell" dir={direction}>
+      <section className="hero-section">
+        <header className="topbar">
+          <div className="brand-lockup">
+            <img
+              alt={locale === "fa" ? "لوگوی پوینو" : "Poyino logo"}
+              className="brand-logo"
+              src={poyinoLogo}
+            />
+            <div>
+              <strong className="brand-name">
+                {locale === "fa" ? "پوینو" : appMetadata.name}
+              </strong>
+              <p className="brand-tagline">{appMetadata.tagline}</p>
+            </div>
+          </div>
 
-      <div className="grid">
-        <Card title="Architecture Baseline">
-          <p>Monorepo structure, shared contracts, and starter apps are ready.</p>
-        </Card>
+          <button className="locale-toggle" onClick={toggleLocale} type="button">
+            {messages.switchLanguageLabel}
+          </button>
+        </header>
 
-        <Card title="Validated Sample Job">
-          <p>{sampleJob.title}</p>
-          <p>
-            {sampleJob.location} / {sampleJob.employmentType}
-          </p>
-        </Card>
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <span className="hero-badge">{messages.heroBadge}</span>
+            <h1>{messages.heroTitle}</h1>
+            <p className="hero-description">{messages.heroDescription}</p>
 
-        <Card title="Brand Token Preview">
-          <div
-            className="color-swatch"
-            style={{ backgroundColor: brandColors.primary }}
-          />
-          <p>{brandColors.primary}</p>
-        </Card>
-      </div>
+            <div className="hero-actions">
+              <Button>{messages.primaryCta}</Button>
+              <a className="secondary-action" href="#highlights">
+                {messages.secondaryCta}
+              </a>
+            </div>
+
+            <div className="social-proof">
+              <span>{messages.socialProofLabel}</span>
+              <strong>{messages.socialProofValue}</strong>
+            </div>
+          </div>
+
+          <aside className="hero-panel">
+            <div className="panel-header">
+              <span className="panel-label">{messages.languageLabel}</span>
+              <span className="panel-status">AI</span>
+            </div>
+
+            <div className="panel-stack">
+              {messages.metrics.map((metric) => (
+                <div className="metric-row" key={metric.label}>
+                  <strong>{metric.value}</strong>
+                  <span>{metric.label}</span>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section className="content-section" id="highlights">
+        <div className="section-heading">
+          <h2>{messages.highlightsTitle}</h2>
+          <p>{messages.highlightsDescription}</p>
+        </div>
+
+        <div className="card-grid">
+          {messages.highlights.map((highlight) => (
+            <Card key={highlight.title} title={highlight.title}>
+              <p>{highlight.description}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="content-section workflow-section">
+        <div className="section-heading">
+          <h2>{messages.workflowTitle}</h2>
+          <p>{messages.workflowDescription}</p>
+        </div>
+
+        <div className="workflow-list">
+          {messages.workflowSteps.map((step) => (
+            <article className="workflow-item" key={step.title}>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="content-section trust-section">
+        <div className="section-heading">
+          <h2>{messages.trustTitle}</h2>
+          <p>{messages.trustDescription}</p>
+        </div>
+
+        <ul className="trust-list">
+          {messages.trustItems.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="final-cta">
+        <div>
+          <h2>{messages.finalCtaTitle}</h2>
+          <p>{messages.finalCtaDescription}</p>
+        </div>
+        <Button>{messages.finalCtaButton}</Button>
+      </section>
     </main>
   );
 }
