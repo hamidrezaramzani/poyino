@@ -1,0 +1,27 @@
+{
+  "name": "@poyino/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm exec -- tsc -p tsconfig.json && npm exec -- vite build",
+    "dev": "npm exec -- vite",
+    "lint": "echo \"No lint step for @poyino/web yet\"",
+    "typecheck": "npm exec -- tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@poyino/config": "0.1.0",
+    "@poyino/contracts": "0.1.0",
+    "@poyino/ui": "0.1.0",
+    "@poyino/utils": "0.1.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
+  }
+}

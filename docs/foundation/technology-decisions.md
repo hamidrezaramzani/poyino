@@ -1,92 +1,98 @@
-# Technology Stack (Final)
+# Technology Decisions
 
-## Monorepo
+## Status
 
-* Turborepo
-* npm Workspaces
+This document now separates the implemented foundation from planned technology layers.
 
-## Frontend
+---
 
-* React
-* Vite
-* TypeScript
-* React Router
-* Tailwind CSS
-* shadcn/ui
-* Radix UI
-* Redux Toolkit
-* TanStack Query
-* Zod
-* Axios
-* Recharts
-* Lucide React
-* clsx
-* Jalali Moment
-* Sonner
+## Implemented in the Foundation
 
-## Backend
+### Monorepo
 
-* NestJS
-* TypeScript
-* Prisma
-* PostgreSQL
-* Zod
-* NestJS Zod
-* @nestjs/config
-* Pino
+- Turborepo
+- npm Workspaces
 
-## Shared Packages
+### Frontend Foundation
 
-* contracts (Zod Schemas)
-* ui
-* utils
-* config
-* eslint-config
-* tsconfig
+- React
+- Vite
+- TypeScript
+- Shared local packages
+- Plain CSS starter stylesheet
 
-## Storage
+### Backend Foundation
 
-* AWS S3 Compatible Storage
+- NestJS application structure
+- TypeScript
 
-## Authentication
+### Shared Packages
 
-* HttpOnly Cookie
+- `@poyino/contracts`
+- `@poyino/ui`
+- `@poyino/utils`
+- `@poyino/config`
+- `@poyino/eslint-config`
+- `@poyino/tsconfig`
 
-## API
+### Validation
 
-* REST
+- Zod in shared contracts
 
-## Email
+### Code Quality
 
-* SMTP
+- Shared TypeScript presets
+- Shared ESLint baseline
+- Prettier planned at the workspace root
 
-## Storybook
+---
 
-* Required
+## Planned for the First Product Iterations
 
-## Theme
+These technologies are still aligned with the product direction, but they are not fully wired into the starter scaffold yet.
 
-* Light Mode
-* Dark Mode
+### Frontend
 
-## Validation
+- React Router
+- Tailwind CSS
+- Redux Toolkit
+- TanStack Query
+- Axios
+- Storybook
+- Dark Mode support
+- i18n for Persian and English
 
-* Shared Zod Contracts
+### UI Layer
 
-## File Upload
+- shadcn/ui
+- Radix UI
+- Lucide React
+- clsx
+- Reusable upload/table primitives
 
-* Custom Upload Component
+### Backend
 
-## Table
+- Prisma
+- PostgreSQL
+- NestJS Zod
+- `@nestjs/config`
+- Pino
 
-* Custom Table Component
+### Platform Services
 
-## Internationalization
+- AWS S3 compatible object storage
+- SMTP email delivery
+- HttpOnly cookie authentication
+- REST API conventions
 
-* Persian
-* English
+---
 
-## Code Quality
+## Decision Principles
 
-* ESLint
-* Prettier
+Technology choices in Poyino should continue to follow these rules:
+
+- Prefer technologies that support a modular monorepo
+- Keep shared contracts as the source of truth
+- Avoid coupling UI components to business logic
+- Introduce infrastructure only when it supports a real product milestone
+- Keep the foundation simple enough for fast iteration

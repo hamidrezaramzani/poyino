@@ -2,216 +2,151 @@
 
 ## Purpose
 
-Poyino follows a modular, feature-oriented architecture designed for long-term maintainability, scalability, and AI-assisted development.
+This document describes the implemented project foundation for Poyino.
 
-The architecture prioritizes clear separation of responsibilities, reusable components, and specification-driven implementation.
+At this stage, the repository focuses on a clean monorepo baseline, shared contracts, and starter application shells rather than finished product features.
 
 ---
 
-# Architecture Principles
+# Foundation Goals
 
-The project follows these architectural principles:
+The current architecture is designed to:
 
-- Feature-Based Architecture
-- Spec-Driven Development
-- Component-Driven UI
-- Separation of Concerns
-- Reusability First
-- Single Responsibility Principle
-- Shared Contracts
-- AI-Friendly Codebase
-- Incremental Development
+- Keep frontend and backend development independent
+- Establish shared contracts early
+- Support feature-based growth
+- Keep the initial codebase small and understandable
+- Create extension points for AI, storage, database, and workflow modules
+
+---
+
+# Implemented Baseline
+
+The repository currently contains:
+
+- `apps/web`: React + Vite starter application
+- `apps/api`: NestJS-oriented backend starter
+- `packages/contracts`: shared validation contracts
+- `packages/ui`: shared UI primitives
+- `packages/utils`: shared utilities
+- `packages/config`: shared app metadata and brand tokens
+- `packages/eslint-config`: shared lint preset
+- `packages/tsconfig`: shared TypeScript presets
+
+This is the minimum foundation required to start building product features without restructuring the repository later.
 
 ---
 
 # High-Level Architecture
-
-The system is divided into independent domains.
 
 ```text
                     +----------------+
                     |   React Web    |
                     +-------+--------+
                             |
-                            |
-                    REST API
+                         Shared
+                        Contracts
                             |
                     +-------v--------+
-                    |    NestJS API  |
+                    |   NestJS API   |
                     +-------+--------+
                             |
           +-----------------+-----------------+
           |                 |                 |
-     PostgreSQL        File Storage      AI Providers
+      Database         File Storage      AI Providers
+        Later             Later              Later
 ```
 
-Each layer is responsible for a single concern.
+The outer integrations are planned, but the current foundation already reserves a clear place for them.
 
 ---
 
-# Feature-Based Architecture
+# Monorepo Strategy
 
-Both frontend and backend are organized by feature rather than technical layer.
+Poyino uses a workspace-based monorepo so that applications can share code without duplication.
 
-Example:
+The monorepo is intentionally split into:
 
-```text
-authentication/
-jobs/
-candidates/
-dashboard/
-settings/
-```
+- `apps/` for deployable products
+- `packages/` for reusable internal libraries
+- `docs/` for product and engineering specifications
 
-Each feature owns its:
-
-- UI
-- Business Logic
-- Validation
-- Services
-- Specifications
-
-This minimizes coupling between unrelated modules.
+This allows contracts, design tokens, and utilities to evolve in one place.
 
 ---
 
-# Specification-Driven Development
+# Frontend Architecture
 
-Every feature begins with a specification.
+The frontend foundation is intentionally lightweight.
 
-Development order:
+Current baseline:
 
-Specification
+- Vite for development/build tooling
+- React as the UI runtime
+- A single app shell that consumes shared packages
+- A styling entry point in `src/styles.css`
 
-↓
+Target evolution:
 
-Sketch
-
-↓
-
-Storybook Components
-
-↓
-
-Implementation
-
-↓
-
-Review
-
-No implementation should begin without an approved specification.
+- Feature folders inside `src/features/`
+- Shared route structure
+- Query/state layers
+- Design system integration
+- Storybook-backed UI package
 
 ---
 
-# Component-Driven Development
+# Backend Architecture
 
-Reusable UI components are developed independently.
+The backend foundation starts with a minimal application module, controller, and service.
 
-Every component must:
+Current baseline:
 
-- Be reusable
-- Be documented
-- Have Storybook stories
-- Be accessible
-- Support Dark Mode
+- NestJS application entry point
+- Module-based composition
+- Health endpoint for basic runtime verification
 
-Business logic must never exist inside UI components.
+Target evolution:
+
+- Feature modules such as `authentication`, `jobs`, and `candidates`
+- Repository and database layers
+- Provider abstractions for AI, email, and file storage
+- Validation and DTO layers around shared contracts
 
 ---
 
 # Shared Contracts
 
-Frontend and Backend communicate through shared contracts.
+Shared contracts are a core architectural rule from the beginning.
 
-Contracts define:
+The `packages/contracts` package currently demonstrates this pattern with starter Zod schemas and exported TypeScript types.
 
-- Request Models
-- Response Models
-- Validation Rules
-- Shared Types
-
-The contract is the single source of truth.
+As the platform grows, all request/response contracts should be added there before implementation spreads across apps.
 
 ---
 
-# Separation of Responsibilities
+# Architectural Rules
 
-Frontend
+The following rules apply to the foundation and future implementation:
 
-Responsible for:
-
-- User Experience
-- State Management
-- Routing
-- Forms
-- Visualization
-
-Backend
-
-Responsible for:
-
-- Business Rules
-- Authentication
-- Authorization
-- AI Integration
-- Database Access
-- File Processing
-
----
-
-# External Services
-
-External services must always be accessed through dedicated providers.
-
-Examples:
-
-- AI Provider
-- Email Provider
-- Storage Provider
-
-Business logic must never directly call third-party services.
-
----
-
-# Scalability
-
-The architecture should support future expansion without major restructuring.
-
-Examples:
-
-- Mobile applications
-- Public APIs
-- Multiple AI providers
-- Payment systems
-- Multi-workspace organizations
-- Additional recruitment modules
-
----
-
-# Architecture Rules
-
-The following rules are mandatory:
-
-- Every feature must have a specification.
-- Every UI component must have Storybook documentation.
-- Features should remain independent whenever possible.
-- Shared contracts must be used between frontend and backend.
-- Business logic must remain outside UI components.
-- Third-party services must be abstracted behind providers.
-- New features should not require modifications to unrelated modules.
+- New product features should start with documentation in `docs/specs/`
+- Shared domain models should live in `packages/contracts`
+- Reusable UI should move into `packages/ui`
+- Generic helpers should live in `packages/utils`
+- App-specific business logic should stay inside the owning app/feature
+- Third-party integrations should be wrapped behind providers or services
 
 ---
 
 # Future Evolution
 
-The MVP intentionally focuses on a simple architecture while preserving clear extension points.
+The current base is intentionally simple, but it is prepared to grow into:
 
-Future versions may introduce:
-
-- Event-driven communication
+- Full feature-based frontend modules
+- Full feature-based backend modules
+- Database and migration tooling
 - Background job processing
-- Distributed services
-- Multi-region deployment
-- Dedicated AI workers
+- Multi-provider AI integrations
+- Role-based access and organization workspaces
 
-The current architecture should not prevent these future improvements.
+The foundation should reduce future rewrites, not accelerate premature complexity.

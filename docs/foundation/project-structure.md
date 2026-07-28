@@ -17,21 +17,17 @@ The primary goal is to keep the codebase scalable, predictable, and easy to navi
 │   └── web/
 │
 ├── packages/
+│   ├── config/
 │   ├── contracts/
+│   ├── eslint-config/
+│   ├── tsconfig/
 │   ├── ui/
 │   ├── utils/
-│   ├── config/
-│   ├── eslint-config/
-│   └── tsconfig/
 │
 ├── docs/
-│
-├── docker/
-│
-├── .github/
-│
+├── .gitignore
 ├── package.json
-├── package-lock.json
+├── tsconfig.json
 ├── turbo.json
 └── README.md
 ```
@@ -42,32 +38,27 @@ The primary goal is to keep the codebase scalable, predictable, and easy to navi
 
 ## apps/web
 
-Contains the React application.
+Contains the React + Vite starter application.
 
 Responsibilities:
 
 - User Interface
-- Routing
-- State Management
-- API Communication
-- Forms
-- Charts
-- Storybook Integration
+- Shared package consumption
+- Future feature modules
+- Future routing/state layers
 
 ---
 
 ## apps/api
 
-Contains the NestJS backend.
+Contains the backend starter structured for NestJS.
 
 Responsibilities:
 
-- Authentication
-- Business Logic
-- Database Access
-- AI Integration
-- Email Services
-- File Processing
+- Application bootstrap
+- Module composition
+- Health checks
+- Future business modules
 
 ---
 
@@ -97,13 +88,10 @@ Reusable UI components.
 Examples:
 
 - Button
-- Input
-- Modal
-- Table
-- Badge
 - Card
+- Future form and data-display primitives
 
-Every component must have Storybook stories.
+Storybook support is planned for the next UI iteration.
 
 ---
 
@@ -113,10 +101,9 @@ Shared utility functions.
 
 Examples:
 
-- Date helpers
-- String helpers
-- Number helpers
-- Validation helpers
+- Formatting helpers
+- Slug helpers
+- Future shared utility functions
 
 Business logic must never be placed here.
 
@@ -128,9 +115,9 @@ Shared configuration.
 
 Examples:
 
-- Constants
-- Theme configuration
-- Common settings
+- Brand colors
+- Product metadata
+- Future runtime configuration
 
 ---
 
@@ -150,28 +137,22 @@ Shared TypeScript configurations.
 
 ```text
 src/
+├── app.tsx
+├── main.tsx
+└── styles.css
+```
 
-features/
+The current frontend is intentionally minimal.
 
-authentication/
+The target structure for future feature work is:
 
-components/
-
-pages/
-
-hooks/
-
-services/
-
-store/
-
-routes/
-
-assets/
-
-styles/
-
-types/
+```text
+src/
+├── features/
+├── routes/
+├── store/
+├── shared/
+└── styles/
 ```
 
 ---
@@ -236,18 +217,24 @@ Feature-specific types.
 
 ```text
 src/
+├── app.controller.ts
+├── app.module.ts
+├── app.service.ts
+└── main.ts
+```
 
-authentication/
+The current backend is a bootstrap shell.
 
-jobs/
+The target structure for backend feature work is:
 
-candidates/
-
-organization/
-
-settings/
-
-common/
+```text
+src/
+├── authentication/
+├── jobs/
+├── candidates/
+├── organization/
+├── settings/
+└── common/
 ```
 
 ---
@@ -310,20 +297,13 @@ Feature interfaces.
 
 ```text
 docs/
-
-foundation/
-
-specs/
-
-architecture/
-
-api/
-
-database/
-
-brand/
-
-ui-ux/
+├── foundation/
+├── brand/
+├── specs/
+├── api/
+├── database/
+├── architecture/
+└── ui-ux/
 ```
 
 ---
