@@ -15,6 +15,7 @@ import {
   RegisterErrorCode,
   ForgotPasswordErrorCode,
   ResetPasswordErrorCode,
+  SessionErrorCode,
   type ForgotPasswordInput,
   type LoginInput,
   type RegisterInput,
@@ -221,6 +222,60 @@ export class AuthenticationService {
       sessionToken: rawToken,
       expiresAt,
     };
+  }
+
+  async resolveSessionUser(sessionToken: string) {
+    const tokenHash = hashToken(sessionToken);
+    const session = await this.prisma.session.findUnique({
+      where: { tokenHash },
+      include: {
+        user: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    });
+
+    if (!session || session.expiresAt.getTime() <= Date.now()) {
+      return null;
+    }
+
+    return {
+      id: session.user.id,
+      email: session.user.email,
+      organizationId: session.user.organizationId,
+      organizationName: session.user.organization.name,
+    };
+  }
+
+  async getSessionMe(sessionToken: string) {
+    const user = await this.resolveSessionUser(sessionToken);
+
+    if (!user) {
+      throw unauthorizedSessionException();
+    }
+
+    return {
+      success: true as const,
+      user: {
+        id: user.id,
+        email: user.email,
+        organization: {
+          id: user.organizationId,
+          name: user.organizationName,
+        },
+      },
+    };
+  }
+
+  async logout(sessionToken: string) {
+    const tokenHash = hashToken(sessionToken);
+    await this.prisma.session.deleteMany({
+      where: { tokenHash },
+    });
+
+    return { success: true as const };
   }
 
   async forgotPassword(
@@ -433,6 +488,16 @@ function invalidCredentialsException() {
     error: {
       code: LoginErrorCode.INVALID_CREDENTIALS,
       message: "پست الکترونیکی یا رمز عبور اشتباه است.",
+    },
+  });
+}
+
+function unauthorizedSessionException() {
+  return new UnauthorizedException({
+    success: false,
+    error: {
+      code: SessionErrorCode.UNAUTHORIZED,
+      message: "احراز هویت لازم است. لطفاً دوباره وارد شوید.",
     },
   });
 }

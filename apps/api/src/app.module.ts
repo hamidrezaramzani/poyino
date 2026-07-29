@@ -4,6 +4,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
+import { DashboardModule } from "./dashboard/dashboard.module";
 import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
@@ -16,6 +17,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     ]),
     PrismaModule,
     AuthenticationModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

@@ -7,18 +7,16 @@ import type {
   PropsWithChildren,
 } from "react";
 import { useState } from "react";
+import { brand } from "./brand";
 
-const brand = {
-  primary: "#150578",
-  primaryHover: "#1f0a9e",
-  border: "#d7deea",
-  text: "#0f172a",
-  muted: "#64748b",
-  danger: "#b42318",
-  dangerBg: "#fef3f2",
-  surface: "#ffffff",
-  surfaceMuted: "#f8fafc",
-};
+export { Avatar } from "./avatar";
+export { Badge } from "./badge";
+export { EmptyState } from "./empty-state";
+export { Skeleton, SkeletonText, skeletonKeyframes } from "./skeleton";
+export { Spinner, spinnerKeyframes } from "./spinner";
+export { StatisticCard } from "./statistic-card";
+export { Table, TableSection, type TableColumn } from "./table";
+export { Tooltip } from "./tooltip";
 
 type ButtonProps = PropsWithChildren<
   ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -94,11 +92,11 @@ export function Card({ children, title, description }: CardProps) {
   return (
     <section
       style={{
+        boxShadow: brand.shadow,
         backgroundColor: brand.surface,
         border: `1px solid ${brand.border}`,
         borderRadius: "1rem",
         padding: "1.5rem",
-        boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
       }}
     >
       {title ? (
@@ -283,9 +281,9 @@ type AlertProps = PropsWithChildren<{
 export function Alert({ children, variant = "info", title }: AlertProps) {
   const palette =
     variant === "error"
-      ? { bg: brand.dangerBg, color: brand.danger, border: "#fecdca" }
+      ? { bg: brand.dangerBg, color: brand.danger, border: brand.dangerBorder }
       : variant === "success"
-        ? { bg: "#ecfdf3", color: "#027a48", border: "#abefc6" }
+        ? { bg: brand.successBg, color: brand.success, border: brand.successBorder }
         : { bg: brand.surfaceMuted, color: brand.text, border: brand.border };
 
   return (
@@ -380,7 +378,7 @@ function getButtonVariantStyle(variant: "primary" | "secondary" | "ghost") {
 
   return {
     backgroundColor: brand.primary,
-    color: "#ffffff",
+    color: brand.onPrimary,
     border: "1px solid transparent",
   };
 }

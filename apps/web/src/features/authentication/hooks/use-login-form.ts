@@ -3,6 +3,7 @@ import { LoginErrorCode, LoginSchema, type LoginInput } from "@poyino/contracts"
 import { useLocation, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
+import { useSession } from "../../../shared/session/session-provider";
 import {
   ApiRequestError,
   loginUser,
@@ -20,6 +21,7 @@ export function useLoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
+  const { refresh } = useSession();
   const { toasts, push } = useToast();
   const [values, setValues] = useState<LoginInput>(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -134,6 +136,7 @@ export function useLoginForm() {
 
     try {
       await loginUser(values);
+      await refresh();
       navigate("/dashboard", { replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError) {
@@ -160,7 +163,7 @@ export function useLoginForm() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, navigate, push, t, validateAll, values]);
+  }, [isSubmitting, navigate, push, refresh, t, validateAll, values]);
 
   return {
     values,

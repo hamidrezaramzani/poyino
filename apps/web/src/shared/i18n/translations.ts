@@ -124,6 +124,99 @@ export type Translation = {
     description: string;
     welcome: string;
     homeLink: string;
+    sidebarLabel: string;
+    openSidebar: string;
+    closeSidebar: string;
+    placeholder: string;
+    placeholderHint: string;
+    nav: {
+      overview: string;
+      jobs: string;
+      createJob: string;
+      jobList: string;
+      candidates: string;
+      interviews: string;
+      reports: string;
+      settings: string;
+    };
+    sidebar: {
+      organizationFallback: string;
+      collapse: string;
+      expand: string;
+    };
+    userMenu: {
+      profile: string;
+      settings: string;
+      logout: string;
+    };
+    logout: {
+      title: string;
+      description: string;
+      cancel: string;
+      confirm: string;
+      confirming: string;
+    };
+    statistics: {
+      title: string;
+      totalJobs: string;
+      totalJobsDescription: string;
+      activeJobs: string;
+      activeJobsDescription: string;
+      totalCandidates: string;
+      totalCandidatesDescription: string;
+      totalHired: string;
+      totalHiredDescription: string;
+      loadError: string;
+    };
+    jobs: {
+      title: string;
+      description: string;
+      empty: string;
+      create: string;
+      view: string;
+      edit: string;
+      columns: {
+        title: string;
+        status: string;
+        publishedAt: string;
+        candidateCount: string;
+        actions: string;
+      };
+    };
+    candidates: {
+      title: string;
+      description: string;
+      empty: string;
+      view: string;
+      viewAll: string;
+      analyzing: string;
+      columns: {
+        name: string;
+        job: string;
+        aiScore: string;
+        status: string;
+        appliedAt: string;
+        actions: string;
+      };
+    };
+    jobStatus: {
+      DRAFT: string;
+      PUBLISHED: string;
+      ARCHIVED: string;
+    };
+    candidateStatus: {
+      APPLIED: string;
+      REVIEWING: string;
+      INTERVIEW_SCHEDULED: string;
+      INTERVIEW_PASSED: string;
+      REJECTED: string;
+      HIRED: string;
+    };
+    error: {
+      title: string;
+      description: string;
+      retry: string;
+    };
   };
   verifyEmail: {
     title: string;
@@ -300,6 +393,99 @@ export const translations: Record<Locale, Translation> = {
       description: "به فضای کاری پوینو خوش آمدید.",
       welcome: "ورود شما با موفقیت انجام شد.",
       homeLink: "بازگشت به صفحه اصلی",
+      sidebarLabel: "منوی اصلی",
+      openSidebar: "باز کردن منو",
+      closeSidebar: "بستن منو",
+      placeholder: "این بخش به زودی آماده می‌شود.",
+      placeholderHint: "ماژول انتخاب‌شده هنوز در نسخه فعلی پیاده‌سازی نشده است.",
+      nav: {
+        overview: "داشبورد",
+        jobs: "فرصت‌های شغلی",
+        createJob: "ایجاد فرصت شغلی",
+        jobList: "فهرست فرصت‌ها",
+        candidates: "متقاضیان",
+        interviews: "مصاحبه‌ها",
+        reports: "گزارش‌ها",
+        settings: "تنظیمات",
+      },
+      sidebar: {
+        organizationFallback: "سازمان",
+        collapse: "جمع کردن منو",
+        expand: "باز کردن منو",
+      },
+      userMenu: {
+        profile: "پروفایل",
+        settings: "تنظیمات",
+        logout: "خروج",
+      },
+      logout: {
+        title: "خروج از حساب",
+        description: "آیا از خروج از حساب کاربری اطمینان دارید؟",
+        cancel: "انصراف",
+        confirm: "خروج",
+        confirming: "در حال خروج...",
+      },
+      statistics: {
+        title: "آمار استخدام",
+        totalJobs: "کل فرصت‌های شغلی",
+        totalJobsDescription: "همه فرصت‌های ایجادشده",
+        activeJobs: "فرصت‌های فعال",
+        activeJobsDescription: "فرصت‌های منتشرشده",
+        totalCandidates: "کل متقاضیان",
+        totalCandidatesDescription: "همه درخواست‌های ارسال‌شده",
+        totalHired: "استخدام‌شده‌ها",
+        totalHiredDescription: "متقاضیان با وضعیت استخدام",
+        loadError: "بارگذاری آمار ممکن نشد.",
+      },
+      jobs: {
+        title: "آخرین فرصت‌های شغلی",
+        description: "ده فرصت شغلی اخیر سازمان شما.",
+        empty: "هنوز فرصت شغلی ثبت نشده است.",
+        create: "ایجاد فرصت شغلی",
+        view: "مشاهده",
+        edit: "ویرایش",
+        columns: {
+          title: "عنوان",
+          status: "وضعیت",
+          publishedAt: "تاریخ انتشار",
+          candidateCount: "تعداد متقاضی",
+          actions: "اقدامات",
+        },
+      },
+      candidates: {
+        title: "آخرین متقاضیان",
+        description: "ده متقاضی اخیر ارسال‌شده.",
+        empty: "هنوز هیچ متقاضی‌ای درخواست نداده است.",
+        view: "مشاهده متقاضی",
+        viewAll: "مشاهده همه",
+        analyzing: "در حال تحلیل...",
+        columns: {
+          name: "متقاضی",
+          job: "فرصت شغلی",
+          aiScore: "امتیاز هوش مصنوعی",
+          status: "وضعیت",
+          appliedAt: "تاریخ درخواست",
+          actions: "اقدامات",
+        },
+      },
+      jobStatus: {
+        DRAFT: "پیش‌نویس",
+        PUBLISHED: "منتشر شده",
+        ARCHIVED: "بایگانی",
+      },
+      candidateStatus: {
+        APPLIED: "ارسال شده",
+        REVIEWING: "در حال بررسی",
+        INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شده",
+        INTERVIEW_PASSED: "قبول در مصاحبه",
+        REJECTED: "رد شده",
+        HIRED: "استخدام شده",
+      },
+      error: {
+        title: "خطا در بارگذاری داشبورد",
+        description: "دریافت اطلاعات داشبورد با مشکل مواجه شد.",
+        retry: "تلاش مجدد",
+      },
     },
     verifyEmail: {
       title: "تأیید ایمیل",
@@ -475,6 +661,99 @@ export const translations: Record<Locale, Translation> = {
       description: "Welcome to your Poyino workspace.",
       welcome: "You have signed in successfully.",
       homeLink: "Back to home",
+      sidebarLabel: "Main navigation",
+      openSidebar: "Open menu",
+      closeSidebar: "Close menu",
+      placeholder: "This module is coming soon.",
+      placeholderHint: "The selected module is not implemented in this release yet.",
+      nav: {
+        overview: "Dashboard",
+        jobs: "Jobs",
+        createJob: "Create job",
+        jobList: "Job list",
+        candidates: "Candidates",
+        interviews: "Interviews",
+        reports: "Reports",
+        settings: "Settings",
+      },
+      sidebar: {
+        organizationFallback: "Organization",
+        collapse: "Collapse sidebar",
+        expand: "Expand sidebar",
+      },
+      userMenu: {
+        profile: "Profile",
+        settings: "Settings",
+        logout: "Log out",
+      },
+      logout: {
+        title: "Log out",
+        description: "Are you sure you want to log out of your account?",
+        cancel: "Cancel",
+        confirm: "Log out",
+        confirming: "Logging out...",
+      },
+      statistics: {
+        title: "Hiring statistics",
+        totalJobs: "Total jobs",
+        totalJobsDescription: "All created job postings",
+        activeJobs: "Active jobs",
+        activeJobsDescription: "Currently published jobs",
+        totalCandidates: "Total candidates",
+        totalCandidatesDescription: "All submitted applications",
+        totalHired: "Total hired",
+        totalHiredDescription: "Candidates with hired status",
+        loadError: "Unable to load statistics.",
+      },
+      jobs: {
+        title: "Recent job posts",
+        description: "The latest 10 jobs in your organization.",
+        empty: "No job postings yet.",
+        create: "Create job",
+        view: "View",
+        edit: "Edit",
+        columns: {
+          title: "Job title",
+          status: "Status",
+          publishedAt: "Published date",
+          candidateCount: "Candidates",
+          actions: "Actions",
+        },
+      },
+      candidates: {
+        title: "Recent candidates",
+        description: "The latest 10 submitted candidates.",
+        empty: "No candidates have applied yet.",
+        view: "View candidate",
+        viewAll: "View all",
+        analyzing: "Analyzing...",
+        columns: {
+          name: "Candidate",
+          job: "Applied job",
+          aiScore: "AI score",
+          status: "Status",
+          appliedAt: "Applied date",
+          actions: "Actions",
+        },
+      },
+      jobStatus: {
+        DRAFT: "Draft",
+        PUBLISHED: "Published",
+        ARCHIVED: "Archived",
+      },
+      candidateStatus: {
+        APPLIED: "Applied",
+        REVIEWING: "Reviewing",
+        INTERVIEW_SCHEDULED: "Interview scheduled",
+        INTERVIEW_PASSED: "Interview passed",
+        REJECTED: "Rejected",
+        HIRED: "Hired",
+      },
+      error: {
+        title: "Unable to load dashboard",
+        description: "Something went wrong while loading dashboard data.",
+        retry: "Retry",
+      },
     },
     verifyEmail: {
       title: "Verify email",
