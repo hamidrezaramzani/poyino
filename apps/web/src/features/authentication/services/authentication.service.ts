@@ -1,6 +1,12 @@
-import type { RegisterInput, RegisterError } from "@poyino/contracts";
+import type {
+  LoginError,
+  LoginInput,
+  RegisterError,
+  RegisterInput,
+} from "@poyino/contracts";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000/api";
 
 export class ApiRequestError extends Error {
   readonly status: number;
@@ -21,22 +27,34 @@ export class ApiRequestError extends Error {
   }
 }
 
-export async function registerOrganization(input: RegisterInput) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+type ErrorPayload =
+  | (RegisterError & {
+      error: RegisterError["error"] & {
+        details?: Record<string, string[] | undefined>;
+      };
+    })
+  | (LoginError & {
+      error: LoginError["error"] & {
+        details?: Record<string, string[] | undefined>;
+      };
+    });
+
+async function postAuth<TSuccess extends { success: true }>(
+  path: string,
+  body: unknown,
+): Promise<TSuccess> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(input),
+    credentials: "include",
+    body: JSON.stringify(body),
   });
 
   const payload = (await response.json().catch(() => null)) as
-    | { success: true }
-    | (RegisterError & {
-        error: RegisterError["error"] & {
-          details?: Record<string, string[] | undefined>;
-        };
-      })
+    | TSuccess
+    | ErrorPayload
     | null;
 
   if (!response.ok || !payload || payload.success !== true) {
@@ -52,4 +70,12 @@ export async function registerOrganization(input: RegisterInput) {
   }
 
   return payload;
+}
+
+export async function registerOrganization(input: RegisterInput) {
+  return postAuth<{ success: true }>("/auth/register", input);
+}
+
+export async function loginUser(input: LoginInput) {
+  return postAuth<{ success: true }>("/auth/login", input);
 }

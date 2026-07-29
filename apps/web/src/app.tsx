@@ -1,14 +1,17 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthLayout } from "./features/authentication/layouts/auth-layout";
+import { ForgotPasswordPage } from "./features/authentication/pages/forgot-password-page";
 import { LoginPage } from "./features/authentication/pages/login-page";
 import { RegisterPage } from "./features/authentication/pages/register-page";
 import { VerifyEmailPage } from "./features/authentication/pages/verify-email-page";
+import { DashboardPage } from "./pages/dashboard-page";
 import { HomePage } from "./pages/home-page";
 
 export function App() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route
         path="/auth/register"
         element={
@@ -22,6 +25,14 @@ export function App() {
         element={
           <AuthLayout>
             <LoginPage />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/auth/forgot-password"
+        element={
+          <AuthLayout>
+            <ForgotPasswordPage />
           </AuthLayout>
         }
       />

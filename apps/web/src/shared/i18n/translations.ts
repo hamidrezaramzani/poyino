@@ -62,8 +62,36 @@ export type Translation = {
   login: {
     title: string;
     description: string;
-    pendingNote: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    showPassword: string;
+    hidePassword: string;
+    submit: string;
+    submitting: string;
+    forgotPasswordLink: string;
+    noAccount: string;
     registerLink: string;
+    errors: {
+      emailInvalid: string;
+      passwordTooShort: string;
+      invalidCredentials: string;
+      emailNotVerified: string;
+      tooManyRequests: string;
+      unexpected: string;
+    };
+  };
+  forgotPassword: {
+    title: string;
+    description: string;
+    pendingNote: string;
+    loginLink: string;
+  };
+  dashboard: {
+    title: string;
+    description: string;
+    welcome: string;
+    homeLink: string;
   };
   verifyEmail: {
     title: string;
@@ -173,9 +201,39 @@ export const translations: Record<Locale, Translation> = {
     login: {
       title: "ورود",
       description: "پس از تأیید ایمیل می توانید وارد حساب خود شوید.",
-      pendingNote:
-        "ورود به زودی در دسترس خواهد بود. لطفاً ابتدا ایمیل تأیید را بررسی کنید.",
+      emailLabel: "پست الکترونیکی",
+      emailPlaceholder: "example@company.com",
+      passwordLabel: "رمز عبور",
+      showPassword: "نمایش",
+      hidePassword: "مخفی",
+      submit: "ورود",
+      submitting: "در حال ورود...",
+      forgotPasswordLink: "رمز عبور را فراموش کرده اید؟",
+      noAccount: "حساب کاربری ندارید؟",
       registerLink: "ثبت نام سازمان",
+      errors: {
+        emailInvalid: "پست الکترونیکی معتبر نیست.",
+        passwordTooShort: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
+        invalidCredentials: "پست الکترونیکی یا رمز عبور اشتباه است.",
+        emailNotVerified:
+          "حساب کاربری شما هنوز فعال نشده است. لطفاً ایمیل خود را بررسی کنید.",
+        tooManyRequests:
+          "تعداد تلاش‌های ورود بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.",
+        unexpected: "خطایی رخ داده است. لطفاً دوباره تلاش کنید.",
+      },
+    },
+    forgotPassword: {
+      title: "بازیابی رمز عبور",
+      description: "بازنشانی رمز عبور به زودی در دسترس خواهد بود.",
+      pendingNote:
+        "این بخش هنوز فعال نشده است. در صورت نیاز با پشتیبانی تماس بگیرید.",
+      loginLink: "بازگشت به ورود",
+    },
+    dashboard: {
+      title: "داشبورد",
+      description: "به فضای کاری پوینو خوش آمدید.",
+      welcome: "ورود شما با موفقیت انجام شد.",
+      homeLink: "بازگشت به صفحه اصلی",
     },
     verifyEmail: {
       title: "تأیید ایمیل",
@@ -284,9 +342,39 @@ export const translations: Record<Locale, Translation> = {
     login: {
       title: "Log in",
       description: "You can sign in after verifying your email.",
-      pendingNote:
-        "Login is coming soon. Please check your verification email first.",
+      emailLabel: "Email",
+      emailPlaceholder: "example@company.com",
+      passwordLabel: "Password",
+      showPassword: "Show",
+      hidePassword: "Hide",
+      submit: "Log in",
+      submitting: "Signing in...",
+      forgotPasswordLink: "Forgot password?",
+      noAccount: "Don't have an account?",
       registerLink: "Register organization",
+      errors: {
+        emailInvalid: "Please enter a valid email address.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        invalidCredentials: "Invalid email or password.",
+        emailNotVerified:
+          "Your account is not activated yet. Please check your email.",
+        tooManyRequests:
+          "Too many login attempts. Please try again in a few minutes.",
+        unexpected: "Something went wrong. Please try again.",
+      },
+    },
+    forgotPassword: {
+      title: "Forgot password",
+      description: "Password reset will be available soon.",
+      pendingNote:
+        "This feature is not enabled yet. Please contact support if you need help.",
+      loginLink: "Back to login",
+    },
+    dashboard: {
+      title: "Dashboard",
+      description: "Welcome to your Poyino workspace.",
+      welcome: "You have signed in successfully.",
+      homeLink: "Back to home",
     },
     verifyEmail: {
       title: "Verify email",

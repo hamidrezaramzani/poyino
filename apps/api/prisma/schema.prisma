@@ -23,18 +23,34 @@ model Organization {
 }
 
 model User {
-  id              String                  @id @default(uuid()) @db.Uuid
-  email           String                  @unique @db.VarChar(255)
-  passwordHash    String                  @map("password_hash")
-  role            UserRole                @default(ADMINISTRATOR)
-  isEmailVerified Boolean                 @default(false) @map("is_email_verified")
-  organizationId  String                  @map("organization_id") @db.Uuid
-  organization    Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt       DateTime                @default(now()) @map("created_at")
-  updatedAt       DateTime                @updatedAt @map("updated_at")
+  id                 String                   @id @default(uuid()) @db.Uuid
+  email              String                   @unique @db.VarChar(255)
+  passwordHash       String                   @map("password_hash")
+  role               UserRole                 @default(ADMINISTRATOR)
+  isEmailVerified    Boolean                  @default(false) @map("is_email_verified")
+  lastLoginAt        DateTime?                @map("last_login_at")
+  organizationId     String                   @map("organization_id") @db.Uuid
+  organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
   verificationTokens EmailVerificationToken[]
+  sessions           Session[]
 
   @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  userAgent String?  @map("user_agent") @db.VarChar(512)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("sessions")
 }
 
 model EmailVerificationToken {
