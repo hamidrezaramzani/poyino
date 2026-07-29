@@ -671,14 +671,22 @@ a {
 .dashboard-nav-group-trigger:focus-visible {
   background: var(--dash-hover);
   color: var(--ui-text);
-  outline: 2px solid var(--dash-focus);
-  outline-offset: 1px;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-nav-link:focus-visible,
+.dashboard-nav-group-trigger:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--dash-focus);
 }
 
 .dashboard-nav-link.is-active,
 .dashboard-nav-group-trigger.is-active {
   background: var(--dash-active);
   color: var(--ui-primary);
+  position: relative;
+  z-index: 1;
 }
 
 .dashboard-nav-children {
@@ -726,8 +734,10 @@ a {
 .dashboard-sidebar-user-trigger:hover,
 .dashboard-sidebar-user-trigger:focus-visible {
   background: var(--dash-hover);
-  outline: 2px solid var(--dash-focus);
-  outline-offset: 1px;
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--dash-focus);
+  position: relative;
+  z-index: 1;
 }
 
 .dashboard-sidebar.is-collapsed .dashboard-sidebar-user-trigger {
@@ -844,6 +854,12 @@ a {
 .dashboard-user-dropdown button:focus-visible {
   background: var(--dash-hover);
   outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-user-dropdown button:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--dash-focus);
 }
 
 .dashboard-content {
