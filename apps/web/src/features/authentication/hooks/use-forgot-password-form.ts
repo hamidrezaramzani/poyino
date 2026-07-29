@@ -1,71 +1,31 @@
-import { useCallback, useEffect, useState } from "react";
-import { LoginErrorCode, LoginSchema, type LoginInput } from "@poyino/contracts";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useCallback, useState } from "react";
+import {
+  ForgotPasswordErrorCode,
+  ForgotPasswordSchema,
+  type ForgotPasswordInput,
+} from "@poyino/contracts";
+import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
 import {
   ApiRequestError,
-  loginUser,
+  requestPasswordReset,
 } from "../services/authentication.service";
 
-type FieldName = keyof LoginInput;
+type FieldName = keyof ForgotPasswordInput;
 type FieldErrors = Partial<Record<FieldName, string>>;
 
-const emptyValues: LoginInput = {
+const emptyValues: ForgotPasswordInput = {
   email: "",
-  password: "",
 };
 
-export function useLoginForm() {
+export function useForgotPasswordForm() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { t } = useI18n();
   const { toasts, push } = useToast();
-  const [values, setValues] = useState<LoginInput>(emptyValues);
+  const [values, setValues] = useState<ForgotPasswordInput>(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const registrationSuccess = Boolean(
-    (location.state as { registrationSuccess?: boolean } | null)
-      ?.registrationSuccess,
-  );
-  const forgotPasswordSuccess = Boolean(
-    (location.state as { forgotPasswordSuccess?: boolean } | null)
-      ?.forgotPasswordSuccess,
-  );
-  const resetPasswordSuccess = Boolean(
-    (location.state as { resetPasswordSuccess?: boolean } | null)
-      ?.resetPasswordSuccess,
-  );
-
-  useEffect(() => {
-    if (registrationSuccess) {
-      push(t.register.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
-      return;
-    }
-
-    if (forgotPasswordSuccess) {
-      push(t.forgotPassword.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
-      return;
-    }
-
-    if (resetPasswordSuccess) {
-      push(t.resetPassword.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
-    }
-  }, [
-    forgotPasswordSuccess,
-    location.pathname,
-    navigate,
-    push,
-    registrationSuccess,
-    resetPasswordSuccess,
-    t.forgotPassword.successToast,
-    t.register.successToast,
-    t.resetPassword.successToast,
-  ]);
 
   const setFieldValue = useCallback((field: FieldName, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -75,7 +35,7 @@ export function useLoginForm() {
     (field: FieldName, nextValue?: string) => {
       const candidateValues =
         nextValue === undefined ? values : { ...values, [field]: nextValue };
-      const result = LoginSchema.safeParse(candidateValues);
+      const result = ForgotPasswordSchema.safeParse(candidateValues);
       if (result.success) {
         setErrors((current) => {
           const next = { ...current };
@@ -100,7 +60,7 @@ export function useLoginForm() {
   );
 
   const validateAll = useCallback(() => {
-    const result = LoginSchema.safeParse(values);
+    const result = ForgotPasswordSchema.safeParse(values);
     if (result.success) {
       setErrors({});
       return true;
@@ -133,16 +93,15 @@ export function useLoginForm() {
     setIsSubmitting(true);
 
     try {
-      await loginUser(values);
-      navigate("/dashboard", { replace: true });
+      await requestPasswordReset(values);
+      navigate("/auth/login", {
+        replace: true,
+        state: { forgotPasswordSuccess: true },
+      });
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        if (error.code === LoginErrorCode.INVALID_CREDENTIALS) {
-          push(t.login.errors.invalidCredentials, "error");
-        } else if (error.code === LoginErrorCode.EMAIL_NOT_VERIFIED) {
-          push(t.login.errors.emailNotVerified, "error");
-        } else if (error.code === LoginErrorCode.TOO_MANY_REQUESTS) {
-          push(t.login.errors.tooManyRequests, "error");
+        if (error.code === ForgotPasswordErrorCode.TOO_MANY_REQUESTS) {
+          push(t.forgotPassword.errors.tooManyRequests, "error");
         } else if (error.details) {
           const nextErrors: FieldErrors = {};
           for (const [field, codes] of Object.entries(error.details)) {
@@ -152,10 +111,10 @@ export function useLoginForm() {
           }
           setErrors((current) => ({ ...current, ...nextErrors }));
         } else {
-          push(error.message || t.login.errors.unexpected, "error");
+          push(error.message || t.forgotPassword.errors.unexpected, "error");
         }
       } else {
-        push(t.login.errors.unexpected, "error");
+        push(t.forgotPassword.errors.unexpected, "error");
       }
     } finally {
       setIsSubmitting(false);
@@ -174,7 +133,7 @@ export function useLoginForm() {
 }
 
 function isFieldName(value: string): value is FieldName {
-  return value === "email" || value === "password";
+  return value === "email";
 }
 
 function mapValidationCode(
@@ -184,11 +143,8 @@ function mapValidationCode(
   switch (code) {
     case "EMAIL_REQUIRED":
     case "EMAIL_INVALID":
-      return t.login.errors.emailInvalid;
-    case "PASSWORD_REQUIRED":
-    case "PASSWORD_TOO_SHORT":
-      return t.login.errors.passwordTooShort;
+      return t.forgotPassword.errors.emailInvalid;
     default:
-      return t.login.errors.unexpected;
+      return t.forgotPassword.errors.unexpected;
   }
 }

@@ -1,81 +1,94 @@
 import { useCallback, useEffect, useState } from "react";
-import { LoginErrorCode, LoginSchema, type LoginInput } from "@poyino/contracts";
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  ResetPasswordErrorCode,
+  ResetPasswordSchema,
+  type ResetPasswordInput,
+} from "@poyino/contracts";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
 import {
   ApiRequestError,
-  loginUser,
+  resetPassword,
+  validateResetToken,
 } from "../services/authentication.service";
 
-type FieldName = keyof LoginInput;
+type FieldName = "password" | "confirmPassword";
 type FieldErrors = Partial<Record<FieldName, string>>;
+type TokenStatus = "checking" | "valid" | "invalid" | "expired" | "missing";
 
-const emptyValues: LoginInput = {
-  email: "",
+const emptyValues = {
   password: "",
+  confirmPassword: "",
 };
 
-export function useLoginForm() {
+export function useResetPasswordForm() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token")?.trim() ?? "";
   const { t } = useI18n();
   const { toasts, push } = useToast();
-  const [values, setValues] = useState<LoginInput>(emptyValues);
+  const [values, setValues] = useState(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const registrationSuccess = Boolean(
-    (location.state as { registrationSuccess?: boolean } | null)
-      ?.registrationSuccess,
-  );
-  const forgotPasswordSuccess = Boolean(
-    (location.state as { forgotPasswordSuccess?: boolean } | null)
-      ?.forgotPasswordSuccess,
-  );
-  const resetPasswordSuccess = Boolean(
-    (location.state as { resetPasswordSuccess?: boolean } | null)
-      ?.resetPasswordSuccess,
+  const [tokenStatus, setTokenStatus] = useState<TokenStatus>(
+    token ? "checking" : "missing",
   );
 
   useEffect(() => {
-    if (registrationSuccess) {
-      push(t.register.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
+    if (!token) {
+      setTokenStatus("missing");
       return;
     }
 
-    if (forgotPasswordSuccess) {
-      push(t.forgotPassword.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
-      return;
-    }
+    let cancelled = false;
 
-    if (resetPasswordSuccess) {
-      push(t.resetPassword.successToast, "success");
-      navigate(location.pathname, { replace: true, state: null });
-    }
-  }, [
-    forgotPasswordSuccess,
-    location.pathname,
-    navigate,
-    push,
-    registrationSuccess,
-    resetPasswordSuccess,
-    t.forgotPassword.successToast,
-    t.register.successToast,
-    t.resetPassword.successToast,
-  ]);
+    void (async () => {
+      try {
+        await validateResetToken(token);
+        if (!cancelled) {
+          setTokenStatus("valid");
+        }
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        if (
+          error instanceof ApiRequestError &&
+          error.code === ResetPasswordErrorCode.EXPIRED_TOKEN
+        ) {
+          setTokenStatus("expired");
+          return;
+        }
+
+        setTokenStatus("invalid");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
 
   const setFieldValue = useCallback((field: FieldName, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
   }, []);
 
+  const buildPayload = useCallback(
+    (nextValues = values): ResetPasswordInput => ({
+      token,
+      password: nextValues.password,
+      confirmPassword: nextValues.confirmPassword,
+    }),
+    [token, values],
+  );
+
   const validateField = useCallback(
     (field: FieldName, nextValue?: string) => {
       const candidateValues =
         nextValue === undefined ? values : { ...values, [field]: nextValue };
-      const result = LoginSchema.safeParse(candidateValues);
+      const result = ResetPasswordSchema.safeParse(buildPayload(candidateValues));
       if (result.success) {
         setErrors((current) => {
           const next = { ...current };
@@ -96,11 +109,11 @@ export function useLoginForm() {
         return next;
       });
     },
-    [t, values],
+    [buildPayload, t, values],
   );
 
   const validateAll = useCallback(() => {
-    const result = LoginSchema.safeParse(values);
+    const result = ResetPasswordSchema.safeParse(buildPayload());
     if (result.success) {
       setErrors({});
       return true;
@@ -119,10 +132,10 @@ export function useLoginForm() {
     }
     setErrors(nextErrors);
     return false;
-  }, [t, values]);
+  }, [buildPayload, t]);
 
   const submit = useCallback(async () => {
-    if (isSubmitting) {
+    if (isSubmitting || tokenStatus !== "valid") {
       return;
     }
 
@@ -133,16 +146,19 @@ export function useLoginForm() {
     setIsSubmitting(true);
 
     try {
-      await loginUser(values);
-      navigate("/dashboard", { replace: true });
+      await resetPassword(buildPayload());
+      navigate("/auth/login", {
+        replace: true,
+        state: { resetPasswordSuccess: true },
+      });
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        if (error.code === LoginErrorCode.INVALID_CREDENTIALS) {
-          push(t.login.errors.invalidCredentials, "error");
-        } else if (error.code === LoginErrorCode.EMAIL_NOT_VERIFIED) {
-          push(t.login.errors.emailNotVerified, "error");
-        } else if (error.code === LoginErrorCode.TOO_MANY_REQUESTS) {
-          push(t.login.errors.tooManyRequests, "error");
+        if (error.code === ResetPasswordErrorCode.INVALID_TOKEN) {
+          setTokenStatus("invalid");
+        } else if (error.code === ResetPasswordErrorCode.EXPIRED_TOKEN) {
+          setTokenStatus("expired");
+        } else if (error.code === ResetPasswordErrorCode.TOO_MANY_REQUESTS) {
+          push(t.resetPassword.errors.tooManyRequests, "error");
         } else if (error.details) {
           const nextErrors: FieldErrors = {};
           for (const [field, codes] of Object.entries(error.details)) {
@@ -152,20 +168,29 @@ export function useLoginForm() {
           }
           setErrors((current) => ({ ...current, ...nextErrors }));
         } else {
-          push(error.message || t.login.errors.unexpected, "error");
+          push(error.message || t.resetPassword.errors.unexpected, "error");
         }
       } else {
-        push(t.login.errors.unexpected, "error");
+        push(t.resetPassword.errors.unexpected, "error");
       }
     } finally {
       setIsSubmitting(false);
     }
-  }, [isSubmitting, navigate, push, t, validateAll, values]);
+  }, [
+    buildPayload,
+    isSubmitting,
+    navigate,
+    push,
+    t,
+    tokenStatus,
+    validateAll,
+  ]);
 
   return {
     values,
     errors,
     isSubmitting,
+    tokenStatus,
     toasts,
     setFieldValue,
     validateField,
@@ -174,7 +199,7 @@ export function useLoginForm() {
 }
 
 function isFieldName(value: string): value is FieldName {
-  return value === "email" || value === "password";
+  return value === "password" || value === "confirmPassword";
 }
 
 function mapValidationCode(
@@ -182,13 +207,13 @@ function mapValidationCode(
   t: ReturnType<typeof useI18n>["t"],
 ): string {
   switch (code) {
-    case "EMAIL_REQUIRED":
-    case "EMAIL_INVALID":
-      return t.login.errors.emailInvalid;
     case "PASSWORD_REQUIRED":
     case "PASSWORD_TOO_SHORT":
-      return t.login.errors.passwordTooShort;
+      return t.resetPassword.errors.passwordTooShort;
+    case "CONFIRM_PASSWORD_REQUIRED":
+    case "PASSWORDS_DO_NOT_MATCH":
+      return t.resetPassword.errors.passwordsDoNotMatch;
     default:
-      return t.login.errors.unexpected;
+      return t.resetPassword.errors.unexpected;
   }
 }

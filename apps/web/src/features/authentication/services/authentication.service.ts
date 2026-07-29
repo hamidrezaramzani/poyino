@@ -1,8 +1,12 @@
 import type {
+  ForgotPasswordError,
+  ForgotPasswordInput,
   LoginError,
   LoginInput,
   RegisterError,
   RegisterInput,
+  ResetPasswordError,
+  ResetPasswordInput,
 } from "@poyino/contracts";
 
 const API_BASE_URL =
@@ -37,21 +41,21 @@ type ErrorPayload =
       error: LoginError["error"] & {
         details?: Record<string, string[] | undefined>;
       };
+    })
+  | (ForgotPasswordError & {
+      error: ForgotPasswordError["error"] & {
+        details?: Record<string, string[] | undefined>;
+      };
+    })
+  | (ResetPasswordError & {
+      error: ResetPasswordError["error"] & {
+        details?: Record<string, string[] | undefined>;
+      };
     });
 
-async function postAuth<TSuccess extends { success: true }>(
-  path: string,
-  body: unknown,
+async function parseAuthResponse<TSuccess extends { success: true }>(
+  response: Response,
 ): Promise<TSuccess> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(body),
-  });
-
   const payload = (await response.json().catch(() => null)) as
     | TSuccess
     | ErrorPayload
@@ -72,10 +76,46 @@ async function postAuth<TSuccess extends { success: true }>(
   return payload;
 }
 
+async function postAuth<TSuccess extends { success: true }>(
+  path: string,
+  body: unknown,
+): Promise<TSuccess> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+
+  return parseAuthResponse(response);
+}
+
 export async function registerOrganization(input: RegisterInput) {
   return postAuth<{ success: true }>("/auth/register", input);
 }
 
 export async function loginUser(input: LoginInput) {
   return postAuth<{ success: true }>("/auth/login", input);
+}
+
+export async function requestPasswordReset(input: ForgotPasswordInput) {
+  return postAuth<{ success: true }>("/auth/forgot-password", input);
+}
+
+export async function validateResetToken(token: string) {
+  const response = await fetch(
+    `${API_BASE_URL}/auth/reset-password?token=${encodeURIComponent(token)}`,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+  );
+
+  return parseAuthResponse<{ success: true }>(response);
+}
+
+export async function resetPassword(input: ResetPasswordInput) {
+  return postAuth<{ success: true }>("/auth/reset-password", input);
 }

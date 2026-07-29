@@ -1,19 +1,25 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Inject,
   Post,
+  Query,
   Req,
   Res,
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import {
+  ForgotPasswordSchema,
   LoginSchema,
   RegisterSchema,
+  ResetPasswordSchema,
+  type ForgotPasswordInput,
   type LoginInput,
   type RegisterInput,
+  type ResetPasswordInput,
 } from "@poyino/contracts";
 import type { Request, Response } from "express";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
@@ -62,6 +68,38 @@ export class AuthenticationController {
     });
 
     return { success: true as const };
+  }
+
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  forgotPassword(
+    @Body(new ZodValidationPipe(ForgotPasswordSchema))
+    body: ForgotPasswordInput,
+    @Req() request: Request,
+  ) {
+    return this.authenticationService.forgotPassword(body, {
+      ip: resolveClientIp(request),
+    });
+  }
+
+  @Get("reset-password")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  validateResetToken(@Query("token") token?: string) {
+    return this.authenticationService.validateResetToken(token ?? "");
+  }
+
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  resetPassword(
+    @Body(new ZodValidationPipe(ResetPasswordSchema)) body: ResetPasswordInput,
+    @Req() request: Request,
+  ) {
+    return this.authenticationService.resetPassword(body, {
+      ip: resolveClientIp(request),
+    });
   }
 }
 

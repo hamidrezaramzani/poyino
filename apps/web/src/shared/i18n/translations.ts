@@ -84,8 +84,40 @@ export type Translation = {
   forgotPassword: {
     title: string;
     description: string;
-    pendingNote: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    submit: string;
+    submitting: string;
     loginLink: string;
+    successToast: string;
+    errors: {
+      emailInvalid: string;
+      tooManyRequests: string;
+      unexpected: string;
+    };
+  };
+  resetPassword: {
+    title: string;
+    description: string;
+    passwordLabel: string;
+    confirmPasswordLabel: string;
+    showPassword: string;
+    hidePassword: string;
+    submit: string;
+    submitting: string;
+    validatingToken: string;
+    loginLink: string;
+    forgotPasswordLink: string;
+    successToast: string;
+    errors: {
+      missingToken: string;
+      invalidToken: string;
+      expiredToken: string;
+      passwordTooShort: string;
+      passwordsDoNotMatch: string;
+      tooManyRequests: string;
+      unexpected: string;
+    };
   };
   dashboard: {
     title: string;
@@ -224,10 +256,44 @@ export const translations: Record<Locale, Translation> = {
     },
     forgotPassword: {
       title: "بازیابی رمز عبور",
-      description: "بازنشانی رمز عبور به زودی در دسترس خواهد بود.",
-      pendingNote:
-        "این بخش هنوز فعال نشده است. در صورت نیاز با پشتیبانی تماس بگیرید.",
+      description: "ایمیل حساب خود را وارد کنید تا لینک بازیابی برای شما ارسال شود.",
+      emailLabel: "پست الکترونیکی",
+      emailPlaceholder: "example@company.com",
+      submit: "ارسال لینک بازیابی",
+      submitting: "در حال ارسال...",
       loginLink: "بازگشت به ورود",
+      successToast:
+        "در صورت وجود حساب کاربری، لینک بازیابی رمز عبور برای شما ارسال شد.",
+      errors: {
+        emailInvalid: "پست الکترونیکی معتبر نیست.",
+        tooManyRequests:
+          "تعداد درخواست‌های بازیابی رمز عبور بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.",
+        unexpected: "خطایی رخ داده است. لطفاً دوباره تلاش کنید.",
+      },
+    },
+    resetPassword: {
+      title: "بازنشانی رمز عبور",
+      description: "رمز عبور جدید خود را وارد کنید.",
+      passwordLabel: "رمز عبور جدید",
+      confirmPasswordLabel: "تکرار رمز عبور",
+      showPassword: "نمایش",
+      hidePassword: "مخفی",
+      submit: "بازنشانی رمز عبور",
+      submitting: "در حال بازنشانی...",
+      validatingToken: "در حال بررسی لینک بازیابی...",
+      loginLink: "بازگشت به ورود",
+      forgotPasswordLink: "درخواست لینک جدید",
+      successToast: "رمز عبور با موفقیت تغییر کرد. اکنون می توانید وارد شوید.",
+      errors: {
+        missingToken: "لینک بازیابی معتبر نیست.",
+        invalidToken: "لینک بازیابی معتبر نیست.",
+        expiredToken: "اعتبار لینک بازیابی به پایان رسیده است.",
+        passwordTooShort: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
+        passwordsDoNotMatch: "رمز عبور و تکرار رمز عبور یکسان نیست.",
+        tooManyRequests:
+          "تعداد تلاش‌های بازنشانی رمز عبور بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.",
+        unexpected: "خطایی رخ داده است. لطفاً دوباره تلاش کنید.",
+      },
     },
     dashboard: {
       title: "داشبورد",
@@ -365,10 +431,44 @@ export const translations: Record<Locale, Translation> = {
     },
     forgotPassword: {
       title: "Forgot password",
-      description: "Password reset will be available soon.",
-      pendingNote:
-        "This feature is not enabled yet. Please contact support if you need help.",
+      description: "Enter your account email and we will send a reset link.",
+      emailLabel: "Email",
+      emailPlaceholder: "example@company.com",
+      submit: "Send reset link",
+      submitting: "Sending...",
       loginLink: "Back to login",
+      successToast:
+        "If an account exists, a password reset link has been sent to you.",
+      errors: {
+        emailInvalid: "Please enter a valid email address.",
+        tooManyRequests:
+          "Too many password reset requests. Please try again in a few minutes.",
+        unexpected: "Something went wrong. Please try again.",
+      },
+    },
+    resetPassword: {
+      title: "Reset password",
+      description: "Enter your new password below.",
+      passwordLabel: "New password",
+      confirmPasswordLabel: "Confirm password",
+      showPassword: "Show",
+      hidePassword: "Hide",
+      submit: "Reset password",
+      submitting: "Resetting...",
+      validatingToken: "Validating your reset link...",
+      loginLink: "Back to login",
+      forgotPasswordLink: "Request a new link",
+      successToast: "Your password was updated. You can sign in now.",
+      errors: {
+        missingToken: "This reset link is invalid.",
+        invalidToken: "This reset link is invalid.",
+        expiredToken: "This reset link has expired.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        passwordsDoNotMatch: "Password and confirmation do not match.",
+        tooManyRequests:
+          "Too many password reset attempts. Please try again in a few minutes.",
+        unexpected: "Something went wrong. Please try again.",
+      },
     },
     dashboard: {
       title: "Dashboard",

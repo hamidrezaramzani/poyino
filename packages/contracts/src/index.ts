@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export * from "./authentication/register.schema";
 export * from "./authentication/login.schema";
+export * from "./authentication/forgot-password.schema";
+export * from "./authentication/reset-password.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),
