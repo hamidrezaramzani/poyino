@@ -8,6 +8,11 @@ import { VerifyEmailPage } from "./features/authentication/pages/verify-email-pa
 import { DashboardLayout } from "./features/dashboard/layouts/dashboard-layout";
 import { DashboardOverviewPage } from "./features/dashboard/pages/dashboard-overview-page";
 import { ModulePlaceholderPage } from "./features/dashboard/pages/module-placeholder-page";
+import { BrandingSettingsPage } from "./features/settings/pages/branding-settings-page";
+import { GeneralSettingsPage } from "./features/settings/pages/general-settings-page";
+import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
+import { ProfileSettingsPage } from "./features/settings/pages/profile-settings-page";
+import { SettingsLayoutPage } from "./features/settings/pages/settings-layout-page";
 import { HomePage } from "./pages/home-page";
 import { useI18n } from "./shared/i18n/i18n-provider";
 import { ProtectedRoute } from "./shared/session/protected-route";
@@ -52,16 +57,6 @@ function ReportsPlaceholder() {
   return <ModulePlaceholderPage title={t.dashboard.nav.reports} />;
 }
 
-function SettingsPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.settings} />;
-}
-
-function ProfilePlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.userMenu.profile} />;
-}
-
 export function App() {
   return (
     <Routes>
@@ -77,8 +72,14 @@ export function App() {
         <Route path="/candidates/:candidateId" element={<CandidatesPlaceholder />} />
         <Route path="/interviews" element={<InterviewsPlaceholder />} />
         <Route path="/reports" element={<ReportsPlaceholder />} />
-        <Route path="/settings" element={<SettingsPlaceholder />} />
-        <Route path="/profile" element={<ProfilePlaceholder />} />
+        <Route path="/settings" element={<SettingsLayoutPage />}>
+          <Route index element={<Navigate to="general" replace />} />
+          <Route path="general" element={<GeneralSettingsPage />} />
+          <Route path="profile" element={<ProfileSettingsPage />} />
+          <Route path="branding" element={<BrandingSettingsPage />} />
+          <Route path="notifications" element={<NotificationSettingsPage />} />
+        </Route>
+        <Route path="/profile" element={<Navigate to="/settings/profile" replace />} />
       </Route>
       <Route
         path="/auth/register"

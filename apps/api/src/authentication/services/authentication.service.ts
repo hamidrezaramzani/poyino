@@ -110,6 +110,7 @@ export class AuthenticationService {
             id: organizationId,
             name: organizationName,
             slug,
+            email,
           },
         });
 

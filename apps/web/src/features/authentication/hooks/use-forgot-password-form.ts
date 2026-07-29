@@ -22,7 +22,7 @@ const emptyValues: ForgotPasswordInput = {
 export function useForgotPasswordForm() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { toasts, push } = useToast();
+  const { push } = useToast();
   const [values, setValues] = useState<ForgotPasswordInput>(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +125,6 @@ export function useForgotPasswordForm() {
     values,
     errors,
     isSubmitting,
-    toasts,
     setFieldValue,
     validateField,
     submit,

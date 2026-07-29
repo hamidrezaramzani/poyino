@@ -8,6 +8,7 @@ import type {
 } from "react";
 import { useState } from "react";
 import { brand } from "./brand";
+import { baseFieldStyle } from "./form-controls";
 
 export { Avatar } from "./avatar";
 export { Badge } from "./badge";
@@ -17,6 +18,15 @@ export { Spinner, spinnerKeyframes } from "./spinner";
 export { StatisticCard } from "./statistic-card";
 export { Table, TableSection, type TableColumn } from "./table";
 export { Tooltip } from "./tooltip";
+export {
+  ColorPicker,
+  Divider,
+  ImagePreview,
+  ImageUpload,
+  Select,
+  Switch,
+  Textarea,
+} from "./form-controls";
 
 type ButtonProps = PropsWithChildren<
   ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -343,20 +353,6 @@ export function ToastViewport({ toasts }: ToastViewportProps) {
       ))}
     </div>
   );
-}
-
-function baseFieldStyle(hasError: boolean, disabled: boolean): CSSProperties {
-  return {
-    width: "100%",
-    boxSizing: "border-box",
-    padding: "0.75rem 0.9rem",
-    borderRadius: "0.75rem",
-    border: `1px solid ${hasError ? brand.danger : brand.border}`,
-    backgroundColor: disabled ? brand.surfaceMuted : brand.surface,
-    color: brand.text,
-    fontSize: "0.95rem",
-    outline: "none",
-  };
 }
 
 function getButtonVariantStyle(variant: "primary" | "secondary" | "ghost") {

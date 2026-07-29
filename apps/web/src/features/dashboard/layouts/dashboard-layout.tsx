@@ -1,4 +1,5 @@
 import { useState, type PropsWithChildren } from "react";
+import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useSession } from "../../../shared/session/session-provider";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
@@ -6,10 +7,12 @@ import { DashboardSidebar } from "../components/dashboard-sidebar";
 export function DashboardLayout({ children }: PropsWithChildren) {
   const { t, direction, toggleLocale } = useI18n();
   const { user } = useSession();
+  const { logoUrl, darkLogoUrl } = useOrganizationBranding();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const organizationName =
     user?.organization.name ?? t.dashboard.sidebar.organizationFallback;
+  const brandLogoUrl = darkLogoUrl ?? logoUrl;
 
   return (
     <div className="dashboard-shell" dir={direction}>
@@ -38,9 +41,18 @@ export function DashboardLayout({ children }: PropsWithChildren) {
             >
               ☰
             </button>
-            <div>
-              <p className="dashboard-org-name">{organizationName}</p>
-              <p className="dashboard-page-label">{t.dashboard.nav.overview}</p>
+            <div className="dashboard-header-brand">
+              {brandLogoUrl ? (
+                <img
+                  src={brandLogoUrl}
+                  alt=""
+                  className="dashboard-header-logo"
+                />
+              ) : null}
+              <div>
+                <p className="dashboard-org-name">{organizationName}</p>
+                <p className="dashboard-page-label">{t.dashboard.nav.overview}</p>
+              </div>
             </div>
           </div>
 

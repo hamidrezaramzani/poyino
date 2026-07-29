@@ -22,7 +22,7 @@ export function useLoginForm() {
   const location = useLocation();
   const { t } = useI18n();
   const { refresh } = useSession();
-  const { toasts, push } = useToast();
+  const { push } = useToast();
   const [values, setValues] = useState<LoginInput>(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -169,7 +169,6 @@ export function useLoginForm() {
     values,
     errors,
     isSubmitting,
-    toasts,
     setFieldValue,
     validateField,
     submit,

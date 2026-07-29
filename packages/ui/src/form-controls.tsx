@@ -1,0 +1,405 @@
+import type { CSSProperties, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import { brand } from "./brand";
+
+export function baseFieldStyle(
+  hasError: boolean,
+  disabled: boolean,
+): CSSProperties {
+  return {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "0.75rem 0.9rem",
+    borderRadius: "0.75rem",
+    border: `1px solid ${hasError ? brand.danger : brand.border}`,
+    backgroundColor: disabled ? brand.surfaceMuted : brand.surface,
+    color: brand.text,
+    fontSize: "0.95rem",
+    fontFamily: "inherit",
+    outline: "none",
+  };
+}
+
+type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  error?: string;
+};
+
+export function Textarea({ error, style, disabled, rows = 4, ...props }: TextareaProps) {
+  return (
+    <textarea
+      disabled={disabled}
+      rows={rows}
+      aria-invalid={Boolean(error)}
+      style={{
+        ...baseFieldStyle(Boolean(error), Boolean(disabled)),
+        resize: "vertical",
+        minHeight: "6rem",
+        fontFamily: "inherit",
+        ...style,
+      }}
+      {...props}
+    />
+  );
+}
+
+type SelectOption = {
+  value: string;
+  label: string;
+};
+
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
+  error?: string;
+  options: SelectOption[];
+  placeholder?: string;
+};
+
+export function Select({
+  error,
+  style,
+  disabled,
+  options,
+  placeholder,
+  ...props
+}: SelectProps) {
+  return (
+    <select
+      disabled={disabled}
+      aria-invalid={Boolean(error)}
+      style={{
+        ...baseFieldStyle(Boolean(error), Boolean(disabled)),
+        ...style,
+      }}
+      {...props}
+    >
+      {placeholder ? (
+        <option value="" disabled={props.required}>
+          {placeholder}
+        </option>
+      ) : null}
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+type SwitchProps = {
+  id?: string;
+  checked: boolean;
+  disabled?: boolean;
+  onChange: (checked: boolean) => void;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
+};
+
+export function Switch({
+  id,
+  checked,
+  disabled,
+  onChange,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+}: SwitchProps) {
+  return (
+    <button
+      id={id}
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledBy}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      style={{
+        position: "relative",
+        width: "2.75rem",
+        height: "1.55rem",
+        borderRadius: "999px",
+        border: "none",
+        padding: 0,
+        backgroundColor: checked ? brand.primary : brand.border,
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.7 : 1,
+        flexShrink: 0,
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "0.2rem",
+          insetInlineStart: checked ? "1.35rem" : "0.2rem",
+          width: "1.15rem",
+          height: "1.15rem",
+          borderRadius: "999px",
+          backgroundColor: brand.surface,
+          transition: "inset-inline-start 120ms ease",
+          boxShadow: "0 1px 2px rgba(15, 23, 42, 0.2)",
+        }}
+      />
+    </button>
+  );
+}
+
+export function Divider({ label }: { label?: string }) {
+  if (!label) {
+    return (
+      <hr
+        style={{
+          border: "none",
+          borderTop: `1px solid ${brand.border}`,
+          margin: "1.25rem 0",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+        margin: "1.25rem 0",
+        color: brand.muted,
+        fontSize: "0.85rem",
+        fontWeight: 600,
+      }}
+    >
+      <span style={{ flex: 1, height: 1, backgroundColor: brand.border }} />
+      <span>{label}</span>
+      <span style={{ flex: 1, height: 1, backgroundColor: brand.border }} />
+    </div>
+  );
+}
+
+type ColorPickerProps = {
+  id?: string;
+  value: string;
+  disabled?: boolean;
+  error?: string;
+  onChange: (value: string) => void;
+};
+
+export function ColorPicker({
+  id,
+  value,
+  disabled,
+  error,
+  onChange,
+}: ColorPickerProps) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.75rem",
+      }}
+    >
+      <input
+        id={id}
+        type="color"
+        value={value}
+        disabled={disabled}
+        aria-invalid={Boolean(error)}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: "3rem",
+          height: "3rem",
+          padding: 0,
+          border: `1px solid ${error ? brand.danger : brand.border}`,
+          borderRadius: "0.75rem",
+          background: "transparent",
+          cursor: disabled ? "not-allowed" : "pointer",
+        }}
+      />
+      <input
+        type="text"
+        value={value}
+        disabled={disabled}
+        aria-invalid={Boolean(error)}
+        onChange={(event) => onChange(event.target.value)}
+        style={baseFieldStyle(Boolean(error), Boolean(disabled))}
+      />
+    </div>
+  );
+}
+
+type ImagePreviewProps = {
+  src?: string | null;
+  alt: string;
+  size?: number;
+  emptyLabel?: string;
+};
+
+export function ImagePreview({
+  src,
+  alt,
+  size = 96,
+  emptyLabel = "No image",
+}: ImagePreviewProps) {
+  if (!src) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "0.9rem",
+          border: `1px dashed ${brand.border}`,
+          backgroundColor: brand.surfaceMuted,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: brand.muted,
+          fontSize: "0.8rem",
+          textAlign: "center",
+          padding: "0.5rem",
+        }}
+      >
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{
+        width: size,
+        height: size,
+        objectFit: "contain",
+        borderRadius: "0.9rem",
+        border: `1px solid ${brand.border}`,
+        backgroundColor: brand.surfaceMuted,
+      }}
+    />
+  );
+}
+
+type ImageUploadProps = {
+  id?: string;
+  label: string;
+  accept?: string;
+  disabled?: boolean;
+  uploading?: boolean;
+  previewUrl?: string | null;
+  error?: string;
+  emptyLabel?: string;
+  uploadLabel: string;
+  removeLabel: string;
+  onSelect: (file: File) => void;
+  onRemove?: () => void;
+};
+
+export function ImageUpload({
+  id,
+  label,
+  accept = "image/png,image/jpeg,image/svg+xml",
+  disabled,
+  uploading,
+  previewUrl,
+  error,
+  emptyLabel,
+  uploadLabel,
+  removeLabel,
+  onSelect,
+  onRemove,
+}: ImageUploadProps) {
+  return (
+    <div style={{ marginBottom: "1rem" }}>
+      <div
+        style={{
+          display: "block",
+          marginBottom: "0.4rem",
+          fontSize: "0.9rem",
+          fontWeight: 600,
+          color: brand.text,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <ImagePreview
+          src={previewUrl}
+          alt={label}
+          emptyLabel={emptyLabel}
+        />
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <label
+            htmlFor={id}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "0.65rem 0.9rem",
+              borderRadius: "0.75rem",
+              border: `1px solid ${brand.border}`,
+              backgroundColor: brand.surface,
+              color: brand.primary,
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              cursor: disabled || uploading ? "not-allowed" : "pointer",
+              opacity: disabled || uploading ? 0.7 : 1,
+            }}
+          >
+            {uploading ? "..." : uploadLabel}
+          </label>
+          <input
+            id={id}
+            type="file"
+            accept={accept}
+            disabled={disabled || uploading}
+            style={{ display: "none" }}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              if (file) {
+                onSelect(file);
+              }
+            }}
+          />
+          {previewUrl && onRemove ? (
+            <button
+              type="button"
+              disabled={disabled || uploading}
+              onClick={onRemove}
+              style={{
+                border: "none",
+                background: "transparent",
+                color: brand.danger,
+                fontWeight: 600,
+                fontSize: "0.85rem",
+                cursor: disabled || uploading ? "not-allowed" : "pointer",
+                textAlign: "start",
+                padding: 0,
+              }}
+            >
+              {removeLabel}
+            </button>
+          ) : null}
+        </div>
+      </div>
+      {error ? (
+        <p
+          role="alert"
+          style={{
+            margin: "0.4rem 0 0",
+            color: brand.danger,
+            fontSize: "0.85rem",
+          }}
+        >
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
+}

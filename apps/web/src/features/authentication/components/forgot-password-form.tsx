@@ -4,7 +4,6 @@ import {
   FormField,
   Input,
   LoadingButton,
-  ToastViewport,
 } from "@poyino/ui";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
@@ -16,18 +15,16 @@ export function ForgotPasswordForm() {
     values,
     errors,
     isSubmitting,
-    toasts,
     setFieldValue,
     validateField,
     submit,
   } = useForgotPasswordForm();
 
   return (
-    <>
-      <Card
-        title={t.forgotPassword.title}
-        description={t.forgotPassword.description}
-      >
+    <Card
+      title={t.forgotPassword.title}
+      description={t.forgotPassword.description}
+    >
         <Form
           onSubmit={(event) => {
             event.preventDefault();
@@ -75,9 +72,6 @@ export function ForgotPasswordForm() {
         >
           <Link to="/auth/login">{t.forgotPassword.loginLink}</Link>
         </p>
-      </Card>
-
-      <ToastViewport toasts={toasts} />
-    </>
+    </Card>
   );
 }

@@ -6,6 +6,7 @@ import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { SettingsModule } from "./settings/settings.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     PrismaModule,
     AuthenticationModule,
     DashboardModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

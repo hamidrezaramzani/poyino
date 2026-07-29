@@ -8,3 +8,4 @@ apps/web/.vite
 apps/web/dist
 apps/api/dist
 apps/api/.env
+apps/api/uploads

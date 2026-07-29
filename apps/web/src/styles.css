@@ -787,6 +787,38 @@ a {
   color: #0b0f14;
   font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.dashboard-brand-mark:has(.dashboard-brand-logo) {
+  background: var(--ui-surface-muted);
+  border: 1px solid var(--ui-border);
+  padding: 0.2rem;
+}
+
+.dashboard-brand-logo,
+.dashboard-header-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.dashboard-header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.dashboard-header-logo {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  background: var(--ui-surface-muted);
+  border: 1px solid var(--ui-border);
+  flex-shrink: 0;
+  padding: 0.2rem;
 }
 
 .dashboard-brand-copy {
@@ -1261,4 +1293,174 @@ a {
   .dashboard-header {
     padding: 0.85rem 1rem;
   }
+}
+
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: var(--font-fa);
+}
+
+.settings-page input,
+.settings-page textarea,
+.settings-page select,
+.settings-page button,
+.settings-page label {
+  font-family: inherit;
+}
+
+.settings-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.6rem;
+  color: var(--ui-text, #0f172a);
+}
+
+.settings-header p {
+  margin: 0;
+  color: var(--ui-muted, #64748b);
+}
+
+.settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--ui-border, #d7deea);
+  padding-bottom: 0.75rem;
+}
+
+.settings-tab,
+.settings-tab:link,
+.settings-tab:visited,
+.settings-tab:hover,
+.settings-tab:focus,
+.settings-tab:active {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.75rem;
+  color: var(--ui-muted, #64748b);
+  text-decoration: none !important;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.settings-tab:hover,
+.settings-tab:focus-visible {
+  color: var(--ui-primary, #150578);
+  background: var(--ui-icon-bg, rgba(21, 5, 120, 0.08));
+}
+
+.settings-tab.is-active {
+  color: var(--ui-primary, #150578);
+  background: var(--ui-icon-bg, rgba(21, 5, 120, 0.08));
+}
+
+.settings-section-title {
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+  color: var(--ui-text, #0f172a);
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.settings-notification-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-notification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-notification-item h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.98rem;
+  color: var(--ui-text, #0f172a);
+}
+
+.settings-notification-item p {
+  margin: 0;
+  color: var(--ui-muted, #64748b);
+  font-size: 0.88rem;
+}
+
+.settings-branding-preview {
+  border: 1px solid var(--ui-border, #2a3441);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: var(--ui-surface-muted, #171e27);
+  margin-bottom: 1rem;
+}
+
+.settings-branding-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--preview-primary, #150578);
+  color: #fff;
+}
+
+.settings-branding-preview-header img {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.settings-branding-preview-card {
+  padding: 1rem;
+  background: var(--ui-surface, #121820);
+}
+
+.settings-branding-preview-card strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--ui-text, #e8eef4);
+}
+
+.settings-branding-preview-card p {
+  margin: 0 0 0.9rem;
+  color: var(--ui-muted, #93a0b0);
+}
+
+.settings-branding-preview-button {
+  border: none;
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.95rem;
+  background: var(--preview-secondary, #3943B7);
+  color: #fff;
+  font-weight: 600;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .settings-notification-item {
+    align-items: flex-start;
+  }
+
+  .settings-actions {
+    justify-content: stretch;
+  }
+
+  .settings-actions > * {
+    flex: 1;
+  }
+}
+
+.poyino-toaster,
+.poyino-toaster [data-sonner-toast],
+.poyino-toast {
+  font-family: var(--font-fa) !important;
 }

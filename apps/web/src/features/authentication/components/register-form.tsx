@@ -5,7 +5,6 @@ import {
   Input,
   LoadingButton,
   PasswordInput,
-  ToastViewport,
 } from "@poyino/ui";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
@@ -17,15 +16,13 @@ export function RegisterForm() {
     values,
     errors,
     isSubmitting,
-    toasts,
     setFieldValue,
     validateField,
     submit,
   } = useRegisterForm();
 
   return (
-    <>
-      <Card title={t.register.title} description={t.register.description}>
+    <Card title={t.register.title} description={t.register.description}>
         <Form
           onSubmit={(event) => {
             event.preventDefault();
@@ -148,9 +145,6 @@ export function RegisterForm() {
           {t.register.haveAccount}{" "}
           <Link to="/auth/login">{t.register.loginLink}</Link>
         </p>
-      </Card>
-
-      <ToastViewport toasts={toasts} />
-    </>
+    </Card>
   );
 }

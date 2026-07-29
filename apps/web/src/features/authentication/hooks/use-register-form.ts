@@ -21,7 +21,7 @@ const emptyValues: RegisterInput = {
 export function useRegisterForm() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { toasts, push } = useToast();
+  const { push } = useToast();
   const [values, setValues] = useState<RegisterInput>(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,7 +127,6 @@ export function useRegisterForm() {
     values,
     errors,
     isSubmitting,
-    toasts,
     setFieldValue,
     validateField,
     submit,

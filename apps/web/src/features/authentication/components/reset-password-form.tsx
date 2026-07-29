@@ -4,7 +4,6 @@ import {
   FormField,
   LoadingButton,
   PasswordInput,
-  ToastViewport,
 } from "@poyino/ui";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
@@ -17,7 +16,6 @@ export function ResetPasswordForm() {
     errors,
     isSubmitting,
     tokenStatus,
-    toasts,
     setFieldValue,
     validateField,
     submit,
@@ -62,11 +60,10 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <>
-      <Card
-        title={t.resetPassword.title}
-        description={t.resetPassword.description}
-      >
+    <Card
+      title={t.resetPassword.title}
+      description={t.resetPassword.description}
+    >
         <Form
           onSubmit={(event) => {
             event.preventDefault();
@@ -141,9 +138,6 @@ export function ResetPasswordForm() {
         >
           <Link to="/auth/login">{t.resetPassword.loginLink}</Link>
         </p>
-      </Card>
-
-      <ToastViewport toasts={toasts} />
-    </>
+    </Card>
   );
 }

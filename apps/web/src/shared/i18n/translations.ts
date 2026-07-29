@@ -230,6 +230,147 @@ export type Translation = {
       retry: string;
     };
   };
+  settings: {
+    title: string;
+    description: string;
+    tabsLabel: string;
+    tabs: {
+      general: string;
+      profile: string;
+      branding: string;
+      notifications: string;
+    };
+    save: string;
+    saving: string;
+    reset: string;
+    retry: string;
+    unsaved: {
+      title: string;
+      description: string;
+      stay: string;
+      leave: string;
+    };
+    languages: {
+      persian: string;
+      english: string;
+    };
+    countries: {
+      iran: string;
+      uae: string;
+      turkey: string;
+      germany: string;
+      uk: string;
+      usa: string;
+      canada: string;
+      other: string;
+    };
+    errors: {
+      unexpected: string;
+      loadFailed: string;
+      organizationNameRequired: string;
+      organizationNameTooShort: string;
+      organizationNameTooLong: string;
+      displayNameTooLong: string;
+      descriptionTooLong: string;
+      emailInvalid: string;
+      emailExists: string;
+      phoneTooLong: string;
+      websiteInvalid: string;
+      timezoneRequired: string;
+      languageRequired: string;
+      addressTooLong: string;
+      fileInvalidType: string;
+      fileTooLarge: string;
+      primaryColorInvalid: string;
+      secondaryColorInvalid: string;
+    };
+    general: {
+      title: string;
+      description: string;
+      organizationSection: string;
+      contactSection: string;
+      locationSection: string;
+      organizationName: string;
+      displayName: string;
+      descriptionLabel: string;
+      email: string;
+      phone: string;
+      website: string;
+      country: string;
+      countryPlaceholder: string;
+      city: string;
+      timezone: string;
+      language: string;
+      successToast: string;
+    };
+    profile: {
+      title: string;
+      description: string;
+      identitySection: string;
+      contactSection: string;
+      logo: string;
+      logoEmpty: string;
+      uploadLogo: string;
+      removeLogo: string;
+      organizationName: string;
+      email: string;
+      phone: string;
+      website: string;
+      address: string;
+      successToast: string;
+    };
+    branding: {
+      title: string;
+      description: string;
+      logoSection: string;
+      colorsSection: string;
+      previewSection: string;
+      primaryLogo: string;
+      darkLogo: string;
+      logoEmpty: string;
+      uploadLogo: string;
+      removeLogo: string;
+      primaryColor: string;
+      secondaryColor: string;
+      previewHeader: string;
+      previewJobTitle: string;
+      previewJobDescription: string;
+      previewCta: string;
+      successToast: string;
+    };
+    notifications: {
+      title: string;
+      description: string;
+      newCandidateTitle: string;
+      newCandidateDescription: string;
+      candidateStatusTitle: string;
+      candidateStatusDescription: string;
+      interviewReminderTitle: string;
+      interviewReminderDescription: string;
+      jobExpirationTitle: string;
+      jobExpirationDescription: string;
+      jobPublishedTitle: string;
+      jobPublishedDescription: string;
+      successToast: string;
+    };
+    changePassword: {
+      title: string;
+      description: string;
+      currentPassword: string;
+      newPassword: string;
+      confirmPassword: string;
+      submit: string;
+      successToast: string;
+      errors: {
+        currentRequired: string;
+        currentIncorrect: string;
+        passwordTooShort: string;
+        passwordsDoNotMatch: string;
+        samePassword: string;
+        tooManyRequests: string;
+      };
+    };
+  };
   verifyEmail: {
     title: string;
     description: string;
@@ -511,6 +652,153 @@ export const translations: Record<Locale, Translation> = {
         retry: "تلاش مجدد",
       },
     },
+    settings: {
+      title: "تنظیمات",
+      description: "اطلاعات سازمان، برندینگ و اعلان‌ها را مدیریت کنید.",
+      tabsLabel: "بخش‌های تنظیمات",
+      tabs: {
+        general: "عمومی",
+        profile: "پروفایل",
+        branding: "برندینگ",
+        notifications: "اعلان‌ها",
+      },
+      save: "ذخیره تغییرات",
+      saving: "در حال ذخیره...",
+      reset: "بازنشانی",
+      retry: "تلاش مجدد",
+      unsaved: {
+        title: "تغییرات ذخیره‌نشده",
+        description: "تغییرات شما ذخیره نشده است. آیا می‌خواهید صفحه را ترک کنید؟",
+        stay: "ماندن در صفحه",
+        leave: "ترک صفحه",
+      },
+      languages: {
+        persian: "فارسی",
+        english: "انگلیسی",
+      },
+      countries: {
+        iran: "ایران",
+        uae: "امارات متحده عربی",
+        turkey: "ترکیه",
+        germany: "آلمان",
+        uk: "بریتانیا",
+        usa: "ایالات متحده",
+        canada: "کانادا",
+        other: "سایر",
+      },
+      errors: {
+        unexpected: "خطایی رخ داده است. لطفاً دوباره تلاش کنید.",
+        loadFailed: "بارگذاری تنظیمات ممکن نشد.",
+        organizationNameRequired: "نام سازمان الزامی است.",
+        organizationNameTooShort: "نام سازمان باید حداقل ۳ کاراکتر باشد.",
+        organizationNameTooLong: "نام سازمان باید حداکثر ۸۰ کاراکتر باشد.",
+        displayNameTooLong: "نام نمایشی باید حداکثر ۸۰ کاراکتر باشد.",
+        descriptionTooLong: "توضیحات باید حداکثر ۳۰۰ کاراکتر باشد.",
+        emailInvalid: "لطفاً یک ایمیل معتبر وارد کنید.",
+        emailExists: "این ایمیل قبلاً ثبت شده است.",
+        phoneTooLong: "شماره تلفن باید حداکثر ۲۰ کاراکتر باشد.",
+        websiteInvalid: "لطفاً یک آدرس وبسایت معتبر وارد کنید.",
+        timezoneRequired: "انتخاب منطقه زمانی الزامی است.",
+        languageRequired: "انتخاب زبان الزامی است.",
+        addressTooLong: "آدرس باید حداکثر ۳۰۰ کاراکتر باشد.",
+        fileInvalidType: "فرمت فایل پشتیبانی نمی‌شود.",
+        fileTooLarge: "حجم فایل نباید بیشتر از ۲ مگابایت باشد.",
+        primaryColorInvalid: "رنگ اصلی نامعتبر است.",
+        secondaryColorInvalid: "رنگ ثانویه نامعتبر است.",
+      },
+      general: {
+        title: "تنظیمات عمومی",
+        description: "اطلاعات پایه و ترجیحات پیش‌فرض سازمان را مدیریت کنید.",
+        organizationSection: "اطلاعات سازمان",
+        contactSection: "اطلاعات تماس",
+        locationSection: "موقعیت و ترجیحات",
+        organizationName: "نام سازمان",
+        displayName: "نام نمایشی",
+        descriptionLabel: "توضیح کوتاه",
+        email: "ایمیل سازمان",
+        phone: "شماره تلفن",
+        website: "وبسایت",
+        country: "کشور",
+        countryPlaceholder: "انتخاب کشور",
+        city: "شهر",
+        timezone: "منطقه زمانی",
+        language: "زبان پیش‌فرض",
+        successToast: "اطلاعات با موفقیت ذخیره شد.",
+      },
+      profile: {
+        title: "پروفایل سازمان",
+        description: "اطلاعات عمومی سازمان که برای متقاضیان نمایش داده می‌شود.",
+        identitySection: "هویت سازمان",
+        contactSection: "اطلاعات تماس",
+        logo: "لوگوی سازمان",
+        logoEmpty: "بدون لوگو",
+        uploadLogo: "آپلود لوگو",
+        removeLogo: "حذف لوگو",
+        organizationName: "نام سازمان",
+        email: "ایمیل تماس",
+        phone: "شماره تلفن",
+        website: "وبسایت",
+        address: "آدرس",
+        successToast: "پروفایل سازمان با موفقیت به‌روزرسانی شد.",
+      },
+      branding: {
+        title: "برندینگ",
+        description: "هویت بصری سازمان را در صفحات عمومی شخصی‌سازی کنید.",
+        logoSection: "لوگوی سازمان",
+        colorsSection: "رنگ‌های برند",
+        previewSection: "پیش‌نمایش زنده",
+        primaryLogo: "لوگوی اصلی",
+        darkLogo: "لوگوی حالت تاریک",
+        logoEmpty: "بدون لوگو",
+        uploadLogo: "آپلود لوگو",
+        removeLogo: "حذف لوگو",
+        primaryColor: "رنگ اصلی",
+        secondaryColor: "رنگ ثانویه",
+        previewHeader: "هدر صفحه عمومی",
+        previewJobTitle: "توسعه‌دهنده فرانت‌اند",
+        previewJobDescription: "نمونه کارت فرصت شغلی با برند سازمان شما.",
+        previewCta: "ارسال درخواست",
+        successToast: "تنظیمات برندینگ با موفقیت به‌روزرسانی شد.",
+      },
+      notifications: {
+        title: "اعلان‌ها",
+        description: "رویدادهایی که باید ایمیل دریافت کنید را انتخاب کنید.",
+        newCandidateTitle: "متقاضی جدید",
+        newCandidateDescription:
+          "هنگام ارسال درخواست توسط متقاضی جدید ایمیل دریافت کنید.",
+        candidateStatusTitle: "تغییر وضعیت متقاضی",
+        candidateStatusDescription:
+          "هنگام تغییر وضعیت استخدام متقاضی ایمیل دریافت کنید.",
+        interviewReminderTitle: "یادآوری مصاحبه",
+        interviewReminderDescription:
+          "قبل از مصاحبه‌های زمان‌بندی‌شده ایمیل یادآوری دریافت کنید.",
+        jobExpirationTitle: "یادآوری انقضای فرصت شغلی",
+        jobExpirationDescription:
+          "۳ روز قبل از انقضای فرصت شغلی منتشرشده ایمیل دریافت کنید.",
+        jobPublishedTitle: "انتشار موفق فرصت شغلی",
+        jobPublishedDescription:
+          "پس از انتشار موفق یک فرصت شغلی ایمیل تأیید دریافت کنید.",
+        successToast: "تنظیمات اعلان‌ها با موفقیت به‌روزرسانی شد.",
+      },
+      changePassword: {
+        title: "تغییر رمز عبور",
+        description: "برای به‌روزرسانی رمز عبور، رمز فعلی را وارد کنید.",
+        currentPassword: "رمز عبور فعلی",
+        newPassword: "رمز عبور جدید",
+        confirmPassword: "تکرار رمز عبور جدید",
+        submit: "تغییر رمز عبور",
+        successToast: "رمز عبور با موفقیت تغییر کرد.",
+        errors: {
+          currentRequired: "رمز عبور فعلی الزامی است.",
+          currentIncorrect: "رمز عبور فعلی اشتباه است.",
+          passwordTooShort: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
+          passwordsDoNotMatch: "رمز عبور و تکرار رمز عبور یکسان نیست.",
+          samePassword: "رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد.",
+          tooManyRequests:
+            "تعداد تلاش‌ها بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.",
+        },
+      },
+    },
     verifyEmail: {
       title: "تأیید ایمیل",
       description: "لینک تأیید ایمیل دریافت شد.",
@@ -789,6 +1077,158 @@ export const translations: Record<Locale, Translation> = {
         title: "Unable to load dashboard",
         description: "Something went wrong while loading dashboard data.",
         retry: "Retry",
+      },
+    },
+    settings: {
+      title: "Settings",
+      description: "Manage organization details, branding, and notifications.",
+      tabsLabel: "Settings sections",
+      tabs: {
+        general: "General",
+        profile: "Profile",
+        branding: "Branding",
+        notifications: "Notifications",
+      },
+      save: "Save changes",
+      saving: "Saving...",
+      reset: "Reset",
+      retry: "Retry",
+      unsaved: {
+        title: "Unsaved changes",
+        description: "You have unsaved changes. Do you want to leave this page?",
+        stay: "Stay",
+        leave: "Leave",
+      },
+      languages: {
+        persian: "Persian",
+        english: "English",
+      },
+      countries: {
+        iran: "Iran",
+        uae: "United Arab Emirates",
+        turkey: "Turkey",
+        germany: "Germany",
+        uk: "United Kingdom",
+        usa: "United States",
+        canada: "Canada",
+        other: "Other",
+      },
+      errors: {
+        unexpected: "Something went wrong. Please try again.",
+        loadFailed: "Unable to load settings.",
+        organizationNameRequired: "Organization name is required.",
+        organizationNameTooShort:
+          "Organization name must be at least 3 characters.",
+        organizationNameTooLong:
+          "Organization name must be at most 80 characters.",
+        displayNameTooLong: "Display name must be at most 80 characters.",
+        descriptionTooLong: "Description must be at most 300 characters.",
+        emailInvalid: "Please enter a valid email address.",
+        emailExists: "This email is already registered.",
+        phoneTooLong: "Phone number must be at most 20 characters.",
+        websiteInvalid: "Please enter a valid website URL.",
+        timezoneRequired: "Timezone is required.",
+        languageRequired: "Language is required.",
+        addressTooLong: "Address must be at most 300 characters.",
+        fileInvalidType: "Unsupported file format.",
+        fileTooLarge: "File size must be at most 2 MB.",
+        primaryColorInvalid: "Primary color is invalid.",
+        secondaryColorInvalid: "Secondary color is invalid.",
+      },
+      general: {
+        title: "General settings",
+        description:
+          "Manage your organization's basic information and default preferences.",
+        organizationSection: "Organization information",
+        contactSection: "Contact information",
+        locationSection: "Location and preferences",
+        organizationName: "Organization name",
+        displayName: "Display name",
+        descriptionLabel: "Short description",
+        email: "Organization email",
+        phone: "Phone number",
+        website: "Website",
+        country: "Country",
+        countryPlaceholder: "Select a country",
+        city: "City",
+        timezone: "Timezone",
+        language: "Default language",
+        successToast: "Settings saved successfully.",
+      },
+      profile: {
+        title: "Organization profile",
+        description:
+          "Public-facing organization details shown to applicants.",
+        identitySection: "Organization identity",
+        contactSection: "Contact information",
+        logo: "Organization logo",
+        logoEmpty: "No logo",
+        uploadLogo: "Upload logo",
+        removeLogo: "Remove logo",
+        organizationName: "Organization name",
+        email: "Contact email",
+        phone: "Phone number",
+        website: "Website",
+        address: "Address",
+        successToast: "Organization profile updated successfully.",
+      },
+      branding: {
+        title: "Branding",
+        description:
+          "Customize your organization's visual identity across public pages.",
+        logoSection: "Organization logo",
+        colorsSection: "Brand colors",
+        previewSection: "Live preview",
+        primaryLogo: "Primary logo",
+        darkLogo: "Dark mode logo",
+        logoEmpty: "No logo",
+        uploadLogo: "Upload logo",
+        removeLogo: "Remove logo",
+        primaryColor: "Primary color",
+        secondaryColor: "Secondary color",
+        previewHeader: "Public page header",
+        previewJobTitle: "Frontend Developer",
+        previewJobDescription: "Sample job card using your organization branding.",
+        previewCta: "Apply now",
+        successToast: "Branding settings have been updated successfully.",
+      },
+      notifications: {
+        title: "Notifications",
+        description: "Choose which events should send email notifications.",
+        newCandidateTitle: "New candidate applied",
+        newCandidateDescription:
+          "Receive an email whenever a new candidate submits an application.",
+        candidateStatusTitle: "Candidate status changed",
+        candidateStatusDescription:
+          "Receive an email when a candidate's hiring status changes.",
+        interviewReminderTitle: "Upcoming interview reminder",
+        interviewReminderDescription:
+          "Receive an email before scheduled interviews.",
+        jobExpirationTitle: "Job expiration reminder",
+        jobExpirationDescription:
+          "Receive an email 3 days before a published job expires.",
+        jobPublishedTitle: "Job published successfully",
+        jobPublishedDescription:
+          "Receive confirmation after publishing a job.",
+        successToast: "Notification settings have been updated successfully.",
+      },
+      changePassword: {
+        title: "Change password",
+        description: "Enter your current password to set a new one.",
+        currentPassword: "Current password",
+        newPassword: "New password",
+        confirmPassword: "Confirm new password",
+        submit: "Change password",
+        successToast: "Password changed successfully.",
+        errors: {
+          currentRequired: "Current password is required.",
+          currentIncorrect: "Current password is incorrect.",
+          passwordTooShort: "Password must be at least 6 characters.",
+          passwordsDoNotMatch: "Password and confirmation do not match.",
+          samePassword: "New password must be different from the current password.",
+          tooManyRequests:
+            "Too many attempts. Please try again in a few minutes.",
+        },
       },
     },
     verifyEmail: {

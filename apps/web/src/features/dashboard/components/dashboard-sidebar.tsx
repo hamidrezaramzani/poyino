@@ -1,6 +1,7 @@
 import { Avatar, Skeleton, Tooltip } from "@poyino/ui";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useSession } from "../../../shared/session/session-provider";
 import { logoutUser } from "../services/auth-session.service";
@@ -30,6 +31,7 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const { t } = useI18n();
   const { user, status, clearSession } = useSession();
+  const { logoUrl, darkLogoUrl } = useOrganizationBranding();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
@@ -56,6 +58,7 @@ export function DashboardSidebar({
   const organizationName =
     user?.organization.name ?? t.dashboard.sidebar.organizationFallback;
   const email = user?.email ?? "";
+  const brandLogoUrl = darkLogoUrl ?? logoUrl;
 
   async function confirmLogout() {
     setLoggingOut(true);
@@ -92,7 +95,15 @@ export function DashboardSidebar({
             onClick={onMobileClose}
           >
             <span className="dashboard-brand-mark" aria-hidden>
-              P
+              {brandLogoUrl ? (
+                <img
+                  src={brandLogoUrl}
+                  alt=""
+                  className="dashboard-brand-logo"
+                />
+              ) : (
+                "P"
+              )}
             </span>
             {!collapsed ? (
               <span className="dashboard-brand-copy">
@@ -214,13 +225,39 @@ export function DashboardSidebar({
                 collapsed={collapsed}
                 onNavigate={onMobileClose}
               />
-              <SidebarLink
-                to="/settings"
-                label={t.dashboard.nav.settings}
-                icon={<SettingsIcon size={18} />}
-                collapsed={collapsed}
-                onNavigate={onMobileClose}
-              />
+              {collapsed ? (
+                <Tooltip content={t.dashboard.nav.settings}>
+                  <NavLink
+                    to="/settings/general"
+                    className={() =>
+                      `dashboard-nav-link${
+                        location.pathname.startsWith("/settings")
+                          ? " is-active"
+                          : ""
+                      }`
+                    }
+                    onClick={onMobileClose}
+                    title={t.dashboard.nav.settings}
+                  >
+                    <SettingsIcon size={18} />
+                  </NavLink>
+                </Tooltip>
+              ) : (
+                <NavLink
+                  to="/settings/general"
+                  className={() =>
+                    `dashboard-nav-link${
+                      location.pathname.startsWith("/settings")
+                        ? " is-active"
+                        : ""
+                    }`
+                  }
+                  onClick={onMobileClose}
+                >
+                  <SettingsIcon size={18} />
+                  <span>{t.dashboard.nav.settings}</span>
+                </NavLink>
+              )}
             </>
           )}
         </nav>
@@ -254,7 +291,7 @@ export function DashboardSidebar({
                     onClick={() => {
                       setUserMenuOpen(false);
                       onMobileClose();
-                      navigate("/profile");
+                      navigate("/settings/profile");
                     }}
                   >
                     {t.dashboard.userMenu.profile}
@@ -265,7 +302,7 @@ export function DashboardSidebar({
                     onClick={() => {
                       setUserMenuOpen(false);
                       onMobileClose();
-                      navigate("/settings");
+                      navigate("/settings/general");
                     }}
                   >
                     {t.dashboard.userMenu.settings}

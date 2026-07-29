@@ -1,21 +1,25 @@
-import { useCallback, useState } from "react";
-import type { ToastItem } from "@poyino/ui";
+import { useCallback } from "react";
+import { toast } from "sonner";
+
+type ToastVariant = "success" | "error" | "info";
 
 export function useToast() {
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-
-  const dismiss = useCallback((id: string) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id));
-  }, []);
-
   const push = useCallback(
-    (message: string, variant: ToastItem["variant"] = "info") => {
-      const id = crypto.randomUUID();
-      setToasts((current) => [...current, { id, message, variant }]);
-      window.setTimeout(() => dismiss(id), 4000);
+    (message: string, variant: ToastVariant = "info") => {
+      if (variant === "success") {
+        toast.success(message);
+        return;
+      }
+
+      if (variant === "error") {
+        toast.error(message);
+        return;
+      }
+
+      toast(message);
     },
-    [dismiss],
+    [],
   );
 
-  return { toasts, push, dismiss };
+  return { push };
 }

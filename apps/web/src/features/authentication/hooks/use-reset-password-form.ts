@@ -27,7 +27,7 @@ export function useResetPasswordForm() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token")?.trim() ?? "";
   const { t } = useI18n();
-  const { toasts, push } = useToast();
+  const { push } = useToast();
   const [values, setValues] = useState(emptyValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,7 +191,6 @@ export function useResetPasswordForm() {
     errors,
     isSubmitting,
     tokenStatus,
-    toasts,
     setFieldValue,
     validateField,
     submit,

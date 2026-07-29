@@ -27,16 +27,55 @@ enum CandidateStatus {
 }
 
 model Organization {
-  id         String      @id @default(uuid()) @db.Uuid
-  name       String      @db.VarChar(80)
-  slug       String      @unique @db.VarChar(120)
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  users      User[]
-  jobs       Job[]
-  candidates Candidate[]
+  id                      String      @id @default(uuid()) @db.Uuid
+  name                    String      @db.VarChar(80)
+  slug                    String      @unique @db.VarChar(120)
+  displayName             String?     @map("display_name") @db.VarChar(80)
+  description             String?     @db.VarChar(300)
+  email                   String      @db.VarChar(255)
+  phone                   String?     @db.VarChar(20)
+  website                 String?     @db.VarChar(255)
+  country                 String?     @db.VarChar(80)
+  city                    String?     @db.VarChar(80)
+  address                 String?     @db.VarChar(300)
+  timezone                String      @default("Asia/Tehran") @db.VarChar(64)
+  language                String      @default("fa") @db.VarChar(8)
+  primaryColor            String      @default("#150578") @map("primary_color") @db.VarChar(7)
+  secondaryColor          String      @default("#3943B7") @map("secondary_color") @db.VarChar(7)
+  logoId                  String?     @map("logo_id") @db.Uuid
+  darkLogoId              String?     @map("dark_logo_id") @db.Uuid
+  logo                    StoredFile? @relation("OrganizationLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  darkLogo                StoredFile? @relation("OrganizationDarkLogo", fields: [darkLogoId], references: [id], onDelete: SetNull)
+  newCandidateEmail       Boolean     @default(true) @map("new_candidate_email")
+  candidateStatusEmail    Boolean     @default(false) @map("candidate_status_email")
+  interviewReminderEmail  Boolean     @default(true) @map("interview_reminder_email")
+  jobExpirationEmail      Boolean     @default(true) @map("job_expiration_email")
+  jobPublishedEmail       Boolean     @default(false) @map("job_published_email")
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+  users                   User[]
+  jobs                    Job[]
+  candidates              Candidate[]
+  files                   StoredFile[] @relation("OrganizationFiles")
 
+  @@unique([email])
   @@map("organizations")
+}
+
+model StoredFile {
+  id               String         @id @default(uuid()) @db.Uuid
+  organizationId   String         @map("organization_id") @db.Uuid
+  organization     Organization   @relation("OrganizationFiles", fields: [organizationId], references: [id], onDelete: Cascade)
+  storageKey       String         @map("storage_key") @db.VarChar(255)
+  originalName     String         @map("original_name") @db.VarChar(255)
+  mimeType         String         @map("mime_type") @db.VarChar(100)
+  sizeBytes        Int            @map("size_bytes")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  logoFor          Organization[] @relation("OrganizationLogo")
+  darkLogoFor      Organization[] @relation("OrganizationDarkLogo")
+
+  @@index([organizationId])
+  @@map("stored_files")
 }
 
 model User {
