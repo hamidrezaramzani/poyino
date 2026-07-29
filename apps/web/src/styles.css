@@ -1,6 +1,6 @@
 :root {
   --font-en: "Roboto", ui-sans-serif, system-ui, sans-serif;
-  --font-fa: "Vazirmatn", "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-fa: "Yekan Bakh FaNum", "Roboto", ui-sans-serif, system-ui, sans-serif;
   --font-family: var(--font-fa);
 
   font-family: var(--font-family);

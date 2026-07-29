@@ -95,72 +95,63 @@
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Thin.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-Thin.woff2")
+    format("woff2");
   font-weight: 100;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-ExtraLight.woff2") format("woff2");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Light.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-Light.woff2")
+    format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Regular.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-Regular.woff2")
+    format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Medium.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-SemiBold.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-SemiBold.woff2")
+    format("woff2");
   font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Bold.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-Bold.woff2")
+    format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-ExtraBold.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-ExtraBold.woff2")
+    format("woff2");
   font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Vazirmatn";
-  src: url("../assets/vazir-font/Vazirmatn-Black.woff2") format("woff2");
+  font-family: "Yekan Bakh FaNum";
+  src: url("../assets/yekanbakh-font/woff2/YekanBakhFaNum-Black.woff2")
+    format("woff2");
   font-weight: 900;
   font-style: normal;
   font-display: swap;
