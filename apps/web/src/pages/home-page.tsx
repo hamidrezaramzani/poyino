@@ -1,127 +1,160 @@
 import { appMetadata } from "@poyino/config";
-import { Button, Card } from "@poyino/ui";
+import { Button } from "@poyino/ui";
 import { Link } from "react-router-dom";
-import poyinoLogo from "../../../../docs/brand/logo/logo.png";
 import { useI18n } from "../shared/i18n/i18n-provider";
 
 export function HomePage() {
   const { direction, locale, messages, toggleLocale } = useI18n();
+  const brandName = locale === "fa" ? "پوینو" : appMetadata.name;
+  const year = new Date().getFullYear();
 
   return (
-    <main className="page-shell" dir={direction}>
-      <section className="hero-section">
-        <header className="topbar">
-          <div className="brand-lockup">
-            <img
-              alt={locale === "fa" ? "لوگوی پوینو" : "Poyino logo"}
-              className="brand-logo"
-              src={poyinoLogo}
-            />
-            <div>
-              <strong className="brand-name">
-                {locale === "fa" ? "پوینو" : appMetadata.name}
-              </strong>
-              <p className="brand-tagline">{appMetadata.tagline}</p>
-            </div>
-          </div>
+    <div className="landing-shell" dir={direction}>
+      <div className="landing-glow" aria-hidden />
 
-          <button className="locale-toggle" onClick={toggleLocale} type="button">
+      <header className="landing-topbar">
+        <a className="landing-brand" href="#top">
+          <span className="landing-brand-mark" aria-hidden>
+            P
+          </span>
+          <span className="landing-brand-name">{brandName}</span>
+        </a>
+
+        <div className="landing-topbar-actions">
+          <button
+            className="landing-locale"
+            onClick={toggleLocale}
+            type="button"
+          >
             {messages.switchLanguageLabel}
           </button>
-        </header>
+          <Link className="landing-nav-link" to="/auth/login">
+            {messages.loginNav}
+          </Link>
+          <Link to="/auth/register">
+            <Button type="button">{messages.primaryCta}</Button>
+          </Link>
+        </div>
+      </header>
 
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <span className="hero-badge">{messages.heroBadge}</span>
-            <h1>{messages.heroTitle}</h1>
-            <p className="hero-description">{messages.heroDescription}</p>
+      <main id="top">
+        <section className="landing-hero">
+          <p className="landing-hero-brand">{brandName}</p>
+          <h1 className="landing-hero-title">{messages.heroTitle}</h1>
+          <p className="landing-hero-copy">{messages.heroDescription}</p>
 
-            <div className="hero-actions">
-              <Link to="/auth/register">
-                <Button>{messages.primaryCta}</Button>
-              </Link>
-              <a className="secondary-action" href="#highlights">
-                {messages.secondaryCta}
-              </a>
-            </div>
-
-            <div className="social-proof">
-              <span>{messages.socialProofLabel}</span>
-              <strong>{messages.socialProofValue}</strong>
-            </div>
+          <div className="landing-hero-actions">
+            <Link to="/auth/register">
+              <Button type="button">{messages.primaryCta}</Button>
+            </Link>
+            <a className="landing-secondary" href="#highlights">
+              {messages.secondaryCta}
+            </a>
           </div>
 
-          <aside className="hero-panel">
-            <div className="panel-header">
-              <span className="panel-label">{messages.languageLabel}</span>
-              <span className="panel-status">AI</span>
-            </div>
+          <p className="landing-hero-promise">
+            <span>{messages.socialProofLabel}</span>
+            {messages.socialProofValue}
+          </p>
+        </section>
 
-            <div className="panel-stack">
-              {messages.metrics.map((metric) => (
-                <div className="metric-row" key={metric.label}>
-                  <strong>{metric.value}</strong>
-                  <span>{metric.label}</span>
+        <section className="landing-section" id="highlights">
+          <div className="landing-section-heading">
+            <h2>{messages.highlightsTitle}</h2>
+            <p>{messages.highlightsDescription}</p>
+          </div>
+
+          <div className="landing-feature-grid">
+            {messages.highlights.map((highlight, index) => (
+              <article className="landing-feature" key={highlight.title}>
+                <span className="landing-feature-index" aria-hidden>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3>{highlight.title}</h3>
+                <p>{highlight.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section" id="workflow">
+          <div className="landing-section-heading">
+            <h2>{messages.workflowTitle}</h2>
+            <p>{messages.workflowDescription}</p>
+          </div>
+
+          <div className="landing-workflow">
+            {messages.workflowSteps.map((step, index) => (
+              <article className="landing-workflow-step" key={step.title}>
+                <span className="landing-workflow-number" aria-hidden>
+                  {index + 1}
+                </span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
                 </div>
-              ))}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-section" id="trust">
+          <div className="landing-trust">
+            <div className="landing-section-heading">
+              <h2>{messages.trustTitle}</h2>
+              <p>{messages.trustDescription}</p>
             </div>
-          </aside>
-        </div>
-      </section>
+            <ul className="landing-trust-list">
+              {messages.trustItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
 
-      <section className="content-section" id="highlights">
-        <div className="section-heading">
-          <h2>{messages.highlightsTitle}</h2>
-          <p>{messages.highlightsDescription}</p>
+        <section className="landing-cta">
+          <div className="landing-cta-copy">
+            <h2>{messages.finalCtaTitle}</h2>
+            <p>{messages.finalCtaDescription}</p>
+          </div>
+          <Link to="/auth/register">
+            <Button type="button">{messages.finalCtaButton}</Button>
+          </Link>
+        </section>
+      </main>
+
+      <footer className="landing-footer">
+        <div className="landing-footer-grid">
+          <div className="landing-footer-brand">
+            <div className="landing-brand">
+              <span className="landing-brand-mark" aria-hidden>
+                P
+              </span>
+              <span className="landing-brand-name">{brandName}</span>
+            </div>
+            <p>{messages.footer.tagline}</p>
+          </div>
+
+          <div className="landing-footer-col">
+            <h3>{messages.footer.product}</h3>
+            <a href="#highlights">{messages.footer.highlights}</a>
+            <a href="#workflow">{messages.footer.workflow}</a>
+            <a href="#trust">{messages.footer.trust}</a>
+          </div>
+
+          <div className="landing-footer-col">
+            <h3>{messages.footer.company}</h3>
+            <Link to="/auth/register">{messages.footer.register}</Link>
+            <Link to="/auth/login">{messages.footer.login}</Link>
+          </div>
         </div>
 
-        <div className="card-grid">
-          {messages.highlights.map((highlight) => (
-            <Card key={highlight.title} title={highlight.title}>
-              <p>{highlight.description}</p>
-            </Card>
-          ))}
+        <div className="landing-footer-bottom">
+          <span>
+            © {year} {brandName}. {messages.footer.rights}
+          </span>
         </div>
-      </section>
-
-      <section className="content-section workflow-section">
-        <div className="section-heading">
-          <h2>{messages.workflowTitle}</h2>
-          <p>{messages.workflowDescription}</p>
-        </div>
-
-        <div className="workflow-list">
-          {messages.workflowSteps.map((step) => (
-            <article className="workflow-item" key={step.title}>
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="content-section trust-section">
-        <div className="section-heading">
-          <h2>{messages.trustTitle}</h2>
-          <p>{messages.trustDescription}</p>
-        </div>
-
-        <ul className="trust-list">
-          {messages.trustItems.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="final-cta">
-        <div>
-          <h2>{messages.finalCtaTitle}</h2>
-          <p>{messages.finalCtaDescription}</p>
-        </div>
-        <Link to="/auth/register">
-          <Button>{messages.finalCtaButton}</Button>
-        </Link>
-      </section>
-    </main>
+      </footer>
+    </div>
   );
 }

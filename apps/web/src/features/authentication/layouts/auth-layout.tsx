@@ -3,13 +3,17 @@ import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 
 export function AuthLayout({ children }: PropsWithChildren) {
-  const { t, direction, toggleLocale } = useI18n();
+  const { t, direction, locale, toggleLocale } = useI18n();
+  const brandName = locale === "fa" ? "پوینو" : "Poyino";
 
   return (
     <div className="auth-shell" dir={direction}>
       <header className="auth-header">
         <Link to="/" className="auth-brand">
-          Poyino
+          <span className="auth-brand-mark" aria-hidden>
+            P
+          </span>
+          <span>{brandName}</span>
         </Link>
         <button type="button" className="language-toggle" onClick={toggleLocale}>
           {t.switchLanguageLabel}

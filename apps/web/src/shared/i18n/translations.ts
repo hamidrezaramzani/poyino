@@ -32,6 +32,18 @@ export type Translation = {
   finalCtaTitle: string;
   finalCtaDescription: string;
   finalCtaButton: string;
+  loginNav: string;
+  footer: {
+    product: string;
+    company: string;
+    highlights: string;
+    workflow: string;
+    trust: string;
+    register: string;
+    login: string;
+    rights: string;
+    tagline: string;
+  };
   register: {
     title: string;
     description: string;
@@ -296,6 +308,18 @@ export const translations: Record<Locale, Translation> = {
     finalCtaDescription:
       "اگر می خواهید فرایند جذب را ساده تر، سریع تر و دقیق تر کنید، پوینو می تواند نقطه شروع مناسبی برای تیم شما باشد.",
     finalCtaButton: "ثبت نام سازمان",
+    loginNav: "ورود",
+    footer: {
+      product: "محصول",
+      company: "سازمان",
+      highlights: "چرا پوینو",
+      workflow: "جریان کاری",
+      trust: "اعتماد",
+      register: "ثبت نام",
+      login: "ورود",
+      rights: "تمامی حقوق محفوظ است.",
+      tagline: "استخدام هوشمند با شفافیت، سرعت و کنترل انسانی.",
+    },
     register: {
       title: "ثبت نام سازمان",
       description: "سازمان خود را بسازید و اولین حساب مدیر را ایجاد کنید.",
@@ -564,6 +588,18 @@ export const translations: Record<Locale, Translation> = {
     finalCtaDescription:
       "If you want to make recruiting simpler, faster, and more precise, Poyino can be a strong starting point for your team.",
     finalCtaButton: "Register Organization",
+    loginNav: "Log in",
+    footer: {
+      product: "Product",
+      company: "Organization",
+      highlights: "Why Poyino",
+      workflow: "Workflow",
+      trust: "Trust",
+      register: "Register",
+      login: "Log in",
+      rights: "All rights reserved.",
+      tagline: "Intelligent hiring with clarity, speed, and human control.",
+    },
     register: {
       title: "Organization Registration",
       description: "Create your organization and its first administrator account.",
