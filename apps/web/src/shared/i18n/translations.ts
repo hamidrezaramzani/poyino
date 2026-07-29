@@ -32,6 +32,46 @@ export type Translation = {
   finalCtaTitle: string;
   finalCtaDescription: string;
   finalCtaButton: string;
+  register: {
+    title: string;
+    description: string;
+    organizationNameLabel: string;
+    organizationNamePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    confirmPasswordLabel: string;
+    showPassword: string;
+    hidePassword: string;
+    submit: string;
+    submitting: string;
+    haveAccount: string;
+    loginLink: string;
+    successToast: string;
+    errors: {
+      organizationNameRequired: string;
+      organizationNameTooShort: string;
+      organizationNameTooLong: string;
+      emailInvalid: string;
+      emailExists: string;
+      passwordTooShort: string;
+      passwordsDoNotMatch: string;
+      unexpected: string;
+    };
+  };
+  login: {
+    title: string;
+    description: string;
+    pendingNote: string;
+    registerLink: string;
+  };
+  verifyEmail: {
+    title: string;
+    description: string;
+    tokenReceived: string;
+    missingToken: string;
+    loginLink: string;
+  };
 };
 
 export const translations: Record<Locale, Translation> = {
@@ -42,7 +82,7 @@ export const translations: Record<Locale, Translation> = {
     heroTitle: "پوینو به شما کمک می کند استعداد مناسب را سریع تر و با اطمینان بیشتر پیدا کنید.",
     heroDescription:
       "پوینو یک پلتفرم استخدام مبتنی بر هوش مصنوعی است که آگهی شغلی، دریافت رزومه، تحلیل خودکار و ارزیابی اولیه متقاضیان را در یک جریان کاری ساده و منظم جمع می کند.",
-    primaryCta: "درخواست دموی محصول",
+    primaryCta: "ثبت نام سازمان",
     secondaryCta: "آشنایی با رویکرد پوینو",
     socialProofLabel: "وعده برند",
     socialProofValue: "کشف استعداد مناسب با شفافیت، سرعت و کنترل انسانی",
@@ -102,7 +142,49 @@ export const translations: Record<Locale, Translation> = {
     finalCtaTitle: "استخدام بهتر از یک تجربه بهتر شروع می شود.",
     finalCtaDescription:
       "اگر می خواهید فرایند جذب را ساده تر، سریع تر و دقیق تر کنید، پوینو می تواند نقطه شروع مناسبی برای تیم شما باشد.",
-    finalCtaButton: "شروع گفتگو با تیم پوینو",
+    finalCtaButton: "ثبت نام سازمان",
+    register: {
+      title: "ثبت نام سازمان",
+      description: "سازمان خود را بسازید و اولین حساب مدیر را ایجاد کنید.",
+      organizationNameLabel: "نام سازمان",
+      organizationNamePlaceholder: "نام سازمان",
+      emailLabel: "پست الکترونیکی",
+      emailPlaceholder: "example@company.com",
+      passwordLabel: "رمز عبور",
+      confirmPasswordLabel: "تکرار رمز عبور",
+      showPassword: "نمایش",
+      hidePassword: "مخفی",
+      submit: "ثبت نام",
+      submitting: "در حال ثبت نام...",
+      haveAccount: "قبلاً ثبت نام کرده اید؟",
+      loginLink: "ورود",
+      successToast: "ثبت نام با موفقیت انجام شد. لطفاً ایمیل خود را تأیید کنید.",
+      errors: {
+        organizationNameRequired: "نام سازمان الزامی است.",
+        organizationNameTooShort: "نام سازمان باید حداقل ۳ کاراکتر باشد.",
+        organizationNameTooLong: "نام سازمان نباید بیشتر از ۸۰ کاراکتر باشد.",
+        emailInvalid: "پست الکترونیکی معتبر نیست.",
+        emailExists: "پست الکترونیکی قبلاً ثبت شده است.",
+        passwordTooShort: "رمز عبور باید حداقل ۶ کاراکتر باشد.",
+        passwordsDoNotMatch: "رمز عبور و تکرار رمز عبور یکسان نیست.",
+        unexpected: "خطایی رخ داده است. لطفاً دوباره تلاش کنید.",
+      },
+    },
+    login: {
+      title: "ورود",
+      description: "پس از تأیید ایمیل می توانید وارد حساب خود شوید.",
+      pendingNote:
+        "ورود به زودی در دسترس خواهد بود. لطفاً ابتدا ایمیل تأیید را بررسی کنید.",
+      registerLink: "ثبت نام سازمان",
+    },
+    verifyEmail: {
+      title: "تأیید ایمیل",
+      description: "لینک تأیید ایمیل دریافت شد.",
+      tokenReceived:
+        "توکن تأیید شناسایی شد. تکمیل تأیید ایمیل به زودی فعال می شود.",
+      missingToken: "لینک تأیید نامعتبر است یا توکن ندارد.",
+      loginLink: "بازگشت به ورود",
+    },
   },
   en: {
     languageLabel: "English",
@@ -111,7 +193,7 @@ export const translations: Record<Locale, Translation> = {
     heroTitle: "Poyino helps you discover the right talent faster and with more confidence.",
     heroDescription:
       "Poyino is an AI-powered recruitment platform that brings job publishing, resume intake, automated analysis, and early candidate evaluation into one simple workflow.",
-    primaryCta: "Request a Product Demo",
+    primaryCta: "Register Organization",
     secondaryCta: "See the Poyino Approach",
     socialProofLabel: "Brand promise",
     socialProofValue: "Discover the right talent with clarity, speed, and human control",
@@ -171,6 +253,48 @@ export const translations: Record<Locale, Translation> = {
     finalCtaTitle: "Better hiring starts with a better experience.",
     finalCtaDescription:
       "If you want to make recruiting simpler, faster, and more precise, Poyino can be a strong starting point for your team.",
-    finalCtaButton: "Talk to the Poyino Team",
+    finalCtaButton: "Register Organization",
+    register: {
+      title: "Organization Registration",
+      description: "Create your organization and its first administrator account.",
+      organizationNameLabel: "Organization Name",
+      organizationNamePlaceholder: "Organization Name",
+      emailLabel: "Email",
+      emailPlaceholder: "example@company.com",
+      passwordLabel: "Password",
+      confirmPasswordLabel: "Confirm Password",
+      showPassword: "Show",
+      hidePassword: "Hide",
+      submit: "Register",
+      submitting: "Registering...",
+      haveAccount: "Already have an account?",
+      loginLink: "Log in",
+      successToast: "Registration successful. Please verify your email.",
+      errors: {
+        organizationNameRequired: "Organization name is required.",
+        organizationNameTooShort: "Organization name must be at least 3 characters.",
+        organizationNameTooLong: "Organization name must be at most 80 characters.",
+        emailInvalid: "Please enter a valid email address.",
+        emailExists: "This email is already registered.",
+        passwordTooShort: "Password must be at least 6 characters.",
+        passwordsDoNotMatch: "Password and confirmation do not match.",
+        unexpected: "Something went wrong. Please try again.",
+      },
+    },
+    login: {
+      title: "Log in",
+      description: "You can sign in after verifying your email.",
+      pendingNote:
+        "Login is coming soon. Please check your verification email first.",
+      registerLink: "Register organization",
+    },
+    verifyEmail: {
+      title: "Verify email",
+      description: "Your email verification link was opened.",
+      tokenReceived:
+        "A verification token was detected. Full verification will be enabled soon.",
+      missingToken: "This verification link is missing a token.",
+      loginLink: "Back to login",
+    },
   },
 };

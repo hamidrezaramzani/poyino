@@ -1,4 +1,8 @@
 {
   "extends": "../../packages/tsconfig/node-app.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  },
   "include": ["src"]
 }

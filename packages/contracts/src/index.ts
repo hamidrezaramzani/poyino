@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./authentication/register.schema";
+
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(2).max(120),

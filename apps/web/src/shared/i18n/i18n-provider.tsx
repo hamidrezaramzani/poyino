@@ -14,6 +14,7 @@ type I18nContextValue = {
   locale: Locale;
   direction: "rtl" | "ltr";
   messages: Translation;
+  t: Translation;
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
 };
@@ -34,18 +35,19 @@ export function I18nProvider({ children }: PropsWithChildren) {
     root.dataset.locale = locale;
   }, [locale]);
 
-  const value = useMemo<I18nContextValue>(
-    () => ({
+  const value = useMemo<I18nContextValue>(() => {
+    const messages = translations[locale];
+    return {
       locale,
       direction: getDirection(locale),
-      messages: translations[locale],
+      messages,
+      t: messages,
       setLocale,
       toggleLocale: () => {
         setLocale((currentLocale) => (currentLocale === "fa" ? "en" : "fa"));
       },
-    }),
-    [locale],
-  );
+    };
+  }, [locale]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

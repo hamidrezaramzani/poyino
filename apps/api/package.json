@@ -7,18 +7,28 @@
     "build": "npm exec -- tsc -p tsconfig.json",
     "dev": "npm exec -- tsx watch src/main.ts",
     "lint": "echo \"No lint step for @poyino/api yet\"",
-    "typecheck": "npm exec -- tsc -p tsconfig.json"
+    "typecheck": "npm exec -- tsc -p tsconfig.json",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "dependencies": {
-    "@nestjs/common": "latest",
-    "@nestjs/core": "latest",
-    "@nestjs/platform-express": "latest",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/throttler": "^6.4.0",
     "@poyino/contracts": "0.1.0",
     "@poyino/utils": "0.1.0",
-    "reflect-metadata": "latest",
-    "rxjs": "latest"
+    "@prisma/client": "^6.14.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@types/node": "latest"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.3.0",
+    "prisma": "^6.14.0"
   }
 }

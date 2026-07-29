@@ -13,7 +13,10 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "db:up": "docker-compose up -d",
+    "db:migrate": "npm run prisma:migrate --workspace=@poyino/api",
+    "db:generate": "npm run prisma:generate --workspace=@poyino/api"
   },
   "devDependencies": {
     "prettier": "latest",
