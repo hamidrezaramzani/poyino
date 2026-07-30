@@ -1,11 +1,9 @@
 import {
-  CreateJobSchema,
-  GenerateJobContentSchema,
   JobErrorCode,
-  type JobTemplateSummary,
+  UpdateJobSchema,
 } from "@poyino/contracts";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
 import {
@@ -13,35 +11,35 @@ import {
   useUnsavedChangesGuard,
 } from "../../settings/hooks/use-unsaved-changes-guard";
 import {
-  applyTemplateToFormValues,
-  emptyCreateJobValues,
+  emptyJobFormValues,
+  jobDetailsToFormValues,
   mapJobValidationCode,
   toJobPayload,
-  type CreateJobFormValues,
+  type JobFormValues,
 } from "../constants";
 import {
   ApiRequestError,
-  createJob,
-  fetchJobTemplates,
-  generateJobContent,
+  fetchJob,
+  updateJob,
 } from "../services/jobs.service";
 
-type FieldName = keyof CreateJobFormValues;
+type FieldName = keyof JobFormValues;
 type FieldErrors = Partial<Record<FieldName, string>>;
 
-export function useCreateJobForm() {
+export function useEditJobForm() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { jobId = "" } = useParams<{ jobId: string }>();
   const { push } = useToast();
-  const [values, setValues] = useState<CreateJobFormValues>(emptyCreateJobValues);
-  const [initialValues] = useState<CreateJobFormValues>(emptyCreateJobValues);
+  const [values, setValues] = useState<JobFormValues>(emptyJobFormValues);
+  const [initialValues, setInitialValues] =
+    useState<JobFormValues>(emptyJobFormValues);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [templates, setTemplates] = useState<JobTemplateSummary[]>([]);
-  const [templatesStatus, setTemplatesStatus] = useState<
-    "loading" | "success" | "error"
-  >("loading");
+  const [loadStatus, setLoadStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
+  const [notFound, setNotFound] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [didSucceed, setDidSucceed] = useState(false);
 
   const isDirty = useMemo(
@@ -52,24 +50,39 @@ export function useCreateJobForm() {
     isDirty && !isSubmitting && !didSucceed,
   );
 
-  const loadTemplates = useCallback(async () => {
-    setTemplatesStatus("loading");
-    try {
-      const response = await fetchJobTemplates();
-      setTemplates(response.templates);
-      setTemplatesStatus("success");
-    } catch {
-      setTemplates([]);
-      setTemplatesStatus("error");
+  const load = useCallback(async () => {
+    if (!jobId) {
+      setNotFound(true);
+      setLoadStatus("error");
+      return;
     }
-  }, []);
+
+    setLoadStatus("loading");
+    setNotFound(false);
+    try {
+      const response = await fetchJob(jobId);
+      const next = jobDetailsToFormValues(response.job);
+      setValues(next);
+      setInitialValues(next);
+      setErrors({});
+      setLoadStatus("success");
+    } catch (error) {
+      if (
+        error instanceof ApiRequestError &&
+        (error.status === 404 || error.code === JobErrorCode.JOB_NOT_FOUND)
+      ) {
+        setNotFound(true);
+      }
+      setLoadStatus("error");
+    }
+  }, [jobId]);
 
   useEffect(() => {
-    void loadTemplates();
-  }, [loadTemplates]);
+    void load();
+  }, [load]);
 
   const setFieldValue = useCallback(
-    <K extends FieldName>(field: K, value: CreateJobFormValues[K]) => {
+    <K extends FieldName>(field: K, value: JobFormValues[K]) => {
       setValues((current) => ({
         ...current,
         [field]: value,
@@ -79,10 +92,10 @@ export function useCreateJobForm() {
   );
 
   const validateField = useCallback(
-    <K extends FieldName>(field: K, nextValue?: CreateJobFormValues[K]) => {
+    <K extends FieldName>(field: K, nextValue?: JobFormValues[K]) => {
       const candidateValues =
         nextValue === undefined ? values : { ...values, [field]: nextValue };
-      const result = CreateJobSchema.safeParse(toJobPayload(candidateValues));
+      const result = UpdateJobSchema.safeParse(toJobPayload(candidateValues));
 
       if (result.success) {
         setErrors((current) => {
@@ -123,32 +136,8 @@ export function useCreateJobForm() {
     [t, values],
   );
 
-  const applyTemplate = useCallback(
-    (templateId: string) => {
-      if (!templateId) {
-        setFieldValue("templateId", "");
-        return;
-      }
-
-      const template = templates.find((item) => item.id === templateId);
-      if (!template) {
-        return;
-      }
-
-      setValues((current) => ({
-        ...current,
-        ...applyTemplateToFormValues(template),
-        aiPrompt: current.aiPrompt,
-        expirationDate: current.expirationDate,
-      }));
-      setErrors({});
-    },
-    [setFieldValue, templates],
-  );
-
   const validateAll = useCallback(() => {
-    const payload = toJobPayload(values);
-    const result = CreateJobSchema.safeParse(payload);
+    const result = UpdateJobSchema.safeParse(toJobPayload(values));
     if (result.success) {
       setErrors({});
       return result.data;
@@ -165,57 +154,13 @@ export function useCreateJobForm() {
     return null;
   }, [t, values]);
 
-  const generate = useCallback(async () => {
-    if (isGenerating || isSubmitting) {
-      return;
-    }
-
-    const parsed = GenerateJobContentSchema.safeParse({
-      prompt: values.aiPrompt,
-    });
-    if (!parsed.success) {
-      const code = parsed.error.issues[0]?.message ?? "PROMPT_TOO_SHORT";
-      setErrors((current) => ({
-        ...current,
-        aiPrompt: mapJobValidationCode(code, t),
-      }));
-      return;
-    }
-
-    setIsGenerating(true);
-    setErrors((current) => ({ ...current, aiPrompt: undefined }));
-    try {
-      const response = await generateJobContent(parsed.data);
-      setValues((current) => ({
-        ...current,
-        title: response.content.title,
-        description: response.content.description,
-        responsibilities: response.content.responsibilities,
-        requirements: response.content.requirements,
-        benefits: response.content.benefits,
-      }));
-    } catch (error) {
-      if (error instanceof ApiRequestError) {
-        if (error.code === JobErrorCode.TOO_MANY_REQUESTS) {
-          push(t.jobs.create.errors.tooManyRequests, "error");
-        } else if (error.details?.prompt?.[0]) {
-          setErrors((current) => ({
-            ...current,
-            aiPrompt: mapJobValidationCode(error.details!.prompt![0]!, t),
-          }));
-        } else {
-          push(error.message || t.jobs.create.errors.unexpected, "error");
-        }
-      } else {
-        push(t.jobs.create.errors.unexpected, "error");
-      }
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [isGenerating, isSubmitting, push, t, values.aiPrompt]);
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setErrors({});
+  }, [initialValues]);
 
   const submit = useCallback(async () => {
-    if (isSubmitting || isGenerating) {
+    if (isSubmitting || !jobId) {
       return;
     }
 
@@ -226,14 +171,19 @@ export function useCreateJobForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await createJob(parsed);
+      await updateJob(jobId, parsed);
       setDidSucceed(true);
-      push(t.jobs.create.successToast, "success");
-      navigate(`/jobs/${response.id}`, { replace: true });
+      push(t.jobs.edit.successToast, "success");
+      navigate(`/jobs/${jobId}`, { replace: true });
     } catch (error) {
       if (error instanceof ApiRequestError) {
         if (error.code === JobErrorCode.TOO_MANY_REQUESTS) {
           push(t.jobs.create.errors.tooManyRequests, "error");
+        } else if (
+          error.status === 404 ||
+          error.code === JobErrorCode.JOB_NOT_FOUND
+        ) {
+          push(t.jobs.details.notFound, "error");
         } else if (error.details) {
           const nextErrors: FieldErrors = {};
           for (const [field, codes] of Object.entries(error.details)) {
@@ -251,26 +201,26 @@ export function useCreateJobForm() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [isGenerating, isSubmitting, navigate, push, t, validateAll]);
+  }, [isSubmitting, jobId, navigate, push, t, validateAll]);
 
   const cancel = useCallback(() => {
-    navigate("/jobs");
-  }, [navigate]);
+    navigate(jobId ? `/jobs/${jobId}` : "/jobs");
+  }, [jobId, navigate]);
 
   return {
+    jobId,
     values,
     errors,
-    templates,
-    templatesStatus,
+    loadStatus,
+    notFound,
     isSubmitting,
-    isGenerating,
     isDirty,
     unsaved,
     setFieldValue,
     validateField,
-    applyTemplate,
-    generate,
+    reset,
     submit,
     cancel,
+    retry: load,
   };
 }

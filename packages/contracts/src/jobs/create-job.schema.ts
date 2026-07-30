@@ -219,15 +219,131 @@ export const JobTemplatesSuccessSchema = z.object({
 
 export type JobTemplatesSuccess = z.infer<typeof JobTemplatesSuccessSchema>;
 
+export const ListJobsSortBySchema = z.enum([
+  "createdAt",
+  "title",
+  "candidateCount",
+  "status",
+]);
+
+export type ListJobsSortBy = z.infer<typeof ListJobsSortBySchema>;
+
+export const ListJobsSortOrderSchema = z.enum(["asc", "desc"]);
+
+export type ListJobsSortOrder = z.infer<typeof ListJobsSortOrderSchema>;
+
+export const ListJobsQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).default(10),
+  sortBy: ListJobsSortBySchema.default("createdAt"),
+  sortOrder: ListJobsSortOrderSchema.default("desc"),
+});
+
+export type ListJobsQuery = z.infer<typeof ListJobsQuerySchema>;
+
+export const JobListItemSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  status: JobStatusSchema,
+  department: z.string().nullable(),
+  candidateCount: z.number().int().nonnegative(),
+  createdAt: z.string().datetime(),
+  publishedAt: z.string().datetime().nullable(),
+});
+
+export type JobListItem = z.infer<typeof JobListItemSchema>;
+
+export const ListJobsPaginationSchema = z.object({
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1),
+  totalItems: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+});
+
+export type ListJobsPagination = z.infer<typeof ListJobsPaginationSchema>;
+
+export const ListJobsSuccessSchema = z.object({
+  success: z.literal(true),
+  jobs: z.array(JobListItemSchema),
+  pagination: ListJobsPaginationSchema,
+  sortBy: ListJobsSortBySchema,
+  sortOrder: ListJobsSortOrderSchema,
+});
+
+export type ListJobsSuccess = z.infer<typeof ListJobsSuccessSchema>;
+
 export const JobErrorCode = {
   UNAUTHORIZED: "UNAUTHORIZED",
   VALIDATION_ERROR: "VALIDATION_ERROR",
+  JOB_NOT_FOUND: "JOB_NOT_FOUND",
   TEMPLATE_NOT_FOUND: "TEMPLATE_NOT_FOUND",
   TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
   UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
 } as const;
 
 export type JobErrorCode = (typeof JobErrorCode)[keyof typeof JobErrorCode];
+
+export const UpdateJobSchema = CreateJobSchema;
+export type UpdateJobInput = CreateJobInput;
+
+export const UpdateJobSuccessSchema = z.object({
+  success: z.literal(true),
+});
+
+export type UpdateJobSuccess = z.infer<typeof UpdateJobSuccessSchema>;
+
+export const JobDetailsCandidateSchema = z.object({
+  id: z.string().uuid(),
+  fullName: z.string(),
+  appliedAt: z.string().datetime(),
+});
+
+export type JobDetailsCandidate = z.infer<typeof JobDetailsCandidateSchema>;
+
+export const JobDetailsStatisticsSchema = z.object({
+  applications: z.number().int().nonnegative(),
+  newApplications: z.number().int().nonnegative(),
+  interviews: z.number().int().nonnegative(),
+  hired: z.number().int().nonnegative(),
+});
+
+export type JobDetailsStatistics = z.infer<typeof JobDetailsStatisticsSchema>;
+
+export const JobDetailsSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string(),
+  status: JobStatusSchema,
+  department: z.string().nullable(),
+  employmentType: EmploymentTypeSchema,
+  workplaceType: WorkplaceTypeSchema,
+  location: z.string().nullable(),
+  salaryMin: z.number().int().nullable(),
+  salaryMax: z.number().int().nullable(),
+  currency: z.string(),
+  salaryVisible: z.boolean(),
+  description: z.string(),
+  responsibilities: z.string().nullable(),
+  requirements: z.string().nullable(),
+  benefits: z.string().nullable(),
+  skills: z.array(z.string()),
+  positions: z.number().int(),
+  expirationDate: z.string().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  publishedAt: z.string().datetime().nullable(),
+  publicUrl: z.string().nullable(),
+  statistics: JobDetailsStatisticsSchema,
+  latestCandidate: JobDetailsCandidateSchema.nullable(),
+});
+
+export type JobDetails = z.infer<typeof JobDetailsSchema>;
+
+export const JobDetailsSuccessSchema = z.object({
+  success: z.literal(true),
+  job: JobDetailsSchema,
+});
+
+export type JobDetailsSuccess = z.infer<typeof JobDetailsSuccessSchema>;
 
 /** @deprecated Use CreateJobSchema */
 export const createJobSchema = CreateJobSchema;

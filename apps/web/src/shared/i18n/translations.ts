@@ -464,6 +464,80 @@ export type Translation = {
         tooManyRequests: string;
       };
     };
+    list: {
+      title: string;
+      description: string;
+      create: string;
+      empty: string;
+      loadFailed: string;
+      retry: string;
+      columns: {
+        title: string;
+        status: string;
+        candidateCount: string;
+        createdAt: string;
+        actions: string;
+      };
+      actions: {
+        details: string;
+        edit: string;
+      };
+      pagination: {
+        previous: string;
+        next: string;
+        summary: string;
+      };
+      errors: {
+        unexpected: string;
+      };
+    };
+    edit: {
+      title: string;
+      description: string;
+      save: string;
+      saving: string;
+      reset: string;
+      cancel: string;
+      retry: string;
+      loadFailed: string;
+      successToast: string;
+    };
+    details: {
+      title: string;
+      notFound: string;
+      loadFailed: string;
+      retry: string;
+      backToJobs: string;
+      emptyValue: string;
+      infoTitle: string;
+      candidatesTitle: string;
+      publicTitle: string;
+      salaryLabel: string;
+      salaryHidden: string;
+      publicUrl: string;
+      publishedAt: string;
+      totalCandidates: string;
+      latestCandidate: string;
+      noCandidates: string;
+      linkCopiedToast: string;
+      actions: {
+        edit: string;
+        viewCandidates: string;
+        viewAllCandidates: string;
+        copyLink: string;
+        linkCopied: string;
+        viewPublic: string;
+      };
+      stats: {
+        applications: string;
+        newApplications: string;
+        interviews: string;
+        hired: string;
+      };
+      errors: {
+        unexpected: string;
+      };
+    };
   };
   verifyEmail: {
     title: string;
@@ -988,6 +1062,80 @@ export const translations: Record<Locale, Translation> = {
           promptTooLong: "توضیح کوتاه باید حداکثر ۵۰۰ کاراکتر باشد.",
           tooManyRequests:
             "تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.",
+        },
+      },
+      list: {
+        title: "فرصت‌های شغلی",
+        description: "مدیریت و مشاهده همه فرصت‌های شغلی سازمان.",
+        create: "ایجاد فرصت شغلی",
+        empty: "هنوز فرصت شغلی‌ای ایجاد نشده است.",
+        loadFailed: "بارگذاری فهرست فرصت‌های شغلی با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        columns: {
+          title: "عنوان",
+          status: "وضعیت",
+          candidateCount: "متقاضیان",
+          createdAt: "تاریخ ایجاد",
+          actions: "عملیات",
+        },
+        actions: {
+          details: "جزئیات",
+          edit: "ویرایش",
+        },
+        pagination: {
+          previous: "قبلی",
+          next: "بعدی",
+          summary: "نمایش {from} تا {to} از {total}",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      edit: {
+        title: "ویرایش فرصت شغلی",
+        description: "اطلاعات فرصت شغلی را به‌روزرسانی کنید.",
+        save: "ذخیره تغییرات",
+        saving: "در حال ذخیره...",
+        reset: "بازنشانی",
+        cancel: "انصراف",
+        retry: "تلاش مجدد",
+        loadFailed: "بارگذاری فرصت شغلی با خطا مواجه شد.",
+        successToast: "فرصت شغلی با موفقیت به‌روزرسانی شد.",
+      },
+      details: {
+        title: "جزئیات فرصت شغلی",
+        notFound: "فرصت شغلی یافت نشد.",
+        loadFailed: "بارگذاری جزئیات فرصت شغلی با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        backToJobs: "بازگشت به فرصت‌های شغلی",
+        emptyValue: "—",
+        infoTitle: "اطلاعات شغل",
+        candidatesTitle: "خلاصه متقاضیان",
+        publicTitle: "اطلاعات عمومی",
+        salaryLabel: "حقوق",
+        salaryHidden: "مخفی",
+        publicUrl: "لینک عمومی",
+        publishedAt: "تاریخ انتشار",
+        totalCandidates: "تعداد کل متقاضیان",
+        latestCandidate: "آخرین متقاضی",
+        noCandidates: "هنوز متقاضی‌ای درخواست نداده است.",
+        linkCopiedToast: "لینک عمومی کپی شد.",
+        actions: {
+          edit: "ویرایش",
+          viewCandidates: "مشاهده متقاضیان",
+          viewAllCandidates: "مشاهده همه متقاضیان",
+          copyLink: "کپی لینک",
+          linkCopied: "کپی شد",
+          viewPublic: "مشاهده صفحه عمومی",
+        },
+        stats: {
+          applications: "کل درخواست‌ها",
+          newApplications: "درخواست‌های جدید",
+          interviews: "مصاحبه‌ها",
+          hired: "استخدام‌شده‌ها",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
         },
       },
     },
@@ -1515,6 +1663,80 @@ export const translations: Record<Locale, Translation> = {
           promptTooShort: "Prompt must be at least 10 characters.",
           promptTooLong: "Prompt must be at most 500 characters.",
           tooManyRequests: "Too many requests. Please try again shortly.",
+        },
+      },
+      list: {
+        title: "Jobs",
+        description: "View and manage all organization job postings.",
+        create: "Create job",
+        empty: "No jobs have been created yet.",
+        loadFailed: "Unable to load the job list.",
+        retry: "Retry",
+        columns: {
+          title: "Title",
+          status: "Status",
+          candidateCount: "Candidates",
+          createdAt: "Created",
+          actions: "Actions",
+        },
+        actions: {
+          details: "Details",
+          edit: "Edit",
+        },
+        pagination: {
+          previous: "Previous",
+          next: "Next",
+          summary: "Showing {from} to {to} of {total}",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
+        },
+      },
+      edit: {
+        title: "Edit job",
+        description: "Update the job posting details.",
+        save: "Save changes",
+        saving: "Saving...",
+        reset: "Reset",
+        cancel: "Cancel",
+        retry: "Retry",
+        loadFailed: "Unable to load this job.",
+        successToast: "Job updated successfully.",
+      },
+      details: {
+        title: "Job details",
+        notFound: "Job not found.",
+        loadFailed: "Unable to load job details.",
+        retry: "Retry",
+        backToJobs: "Back to jobs",
+        emptyValue: "—",
+        infoTitle: "Job information",
+        candidatesTitle: "Candidate summary",
+        publicTitle: "Public information",
+        salaryLabel: "Salary",
+        salaryHidden: "Hidden",
+        publicUrl: "Public URL",
+        publishedAt: "Published date",
+        totalCandidates: "Total candidates",
+        latestCandidate: "Latest candidate",
+        noCandidates: "No candidates have applied yet.",
+        linkCopiedToast: "Public link copied.",
+        actions: {
+          edit: "Edit",
+          viewCandidates: "View candidates",
+          viewAllCandidates: "View all candidates",
+          copyLink: "Copy link",
+          linkCopied: "Copied",
+          viewPublic: "View public page",
+        },
+        stats: {
+          applications: "Total applications",
+          newApplications: "New applications",
+          interviews: "Interview candidates",
+          hired: "Hired candidates",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
         },
       },
     },

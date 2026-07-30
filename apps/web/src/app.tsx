@@ -9,6 +9,9 @@ import { DashboardLayout } from "./features/dashboard/layouts/dashboard-layout";
 import { DashboardOverviewPage } from "./features/dashboard/pages/dashboard-overview-page";
 import { ModulePlaceholderPage } from "./features/dashboard/pages/module-placeholder-page";
 import { CreateJobPage } from "./features/jobs/pages/create-job-page";
+import { EditJobPage } from "./features/jobs/pages/edit-job-page";
+import { JobDetailsPage } from "./features/jobs/pages/job-details-page";
+import { JobListPage } from "./features/jobs/pages/job-list-page";
 import { BrandingSettingsPage } from "./features/settings/pages/branding-settings-page";
 import { GeneralSettingsPage } from "./features/settings/pages/general-settings-page";
 import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
@@ -28,14 +31,9 @@ function AuthenticatedShell() {
   );
 }
 
-function JobsPlaceholder() {
+function JobCandidatesPlaceholder() {
   const { t } = useI18n();
-  return (
-    <ModulePlaceholderPage
-      title={t.dashboard.nav.jobList}
-      description={t.dashboard.nav.jobs}
-    />
-  );
+  return <ModulePlaceholderPage title={t.dashboard.nav.candidates} />;
 }
 
 function CandidatesPlaceholder() {
@@ -59,11 +57,15 @@ export function App() {
       <Route path="/" element={<HomePage />} />
       <Route element={<AuthenticatedShell />}>
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
-        <Route path="/jobs" element={<JobsPlaceholder />} />
+        <Route path="/jobs" element={<JobListPage />} />
         <Route path="/jobs/create" element={<CreateJobPage />} />
         <Route path="/jobs/new" element={<Navigate to="/jobs/create" replace />} />
-        <Route path="/jobs/:jobId" element={<JobsPlaceholder />} />
-        <Route path="/jobs/:jobId/edit" element={<JobsPlaceholder />} />
+        <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
+        <Route path="/jobs/:jobId/edit" element={<EditJobPage />} />
+        <Route
+          path="/jobs/:jobId/candidates"
+          element={<JobCandidatesPlaceholder />}
+        />
         <Route path="/candidates" element={<CandidatesPlaceholder />} />
         <Route path="/candidates/:candidateId" element={<CandidatesPlaceholder />} />
         <Route path="/interviews" element={<InterviewsPlaceholder />} />

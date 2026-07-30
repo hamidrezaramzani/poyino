@@ -12,11 +12,12 @@ import { baseFieldStyle } from "./form-controls";
 
 export { Avatar } from "./avatar";
 export { Badge } from "./badge";
+export { CopyLinkButton } from "./copy-link-button";
 export { EmptyState } from "./empty-state";
 export { Skeleton, SkeletonText, skeletonKeyframes } from "./skeleton";
 export { Spinner, spinnerKeyframes } from "./spinner";
 export { StatisticCard } from "./statistic-card";
-export { Table, TableSection, type TableColumn } from "./table";
+export { Table, TableSection, Pagination, type TableColumn, type TableSortOrder } from "./table";
 export { Tooltip } from "./tooltip";
 export {
   ColorPicker,

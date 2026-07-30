@@ -1,10 +1,13 @@
 import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
 import { brand } from "./brand";
 
+export type TableSortOrder = "asc" | "desc";
+
 export type TableColumn<T> = {
   key: string;
   header: string;
   width?: string | number;
+  sortable?: boolean;
   render: (row: T) => ReactNode;
 };
 
@@ -13,6 +16,9 @@ type TableProps<T> = {
   rows: T[];
   getRowKey: (row: T) => string;
   caption?: string;
+  sortBy?: string;
+  sortOrder?: TableSortOrder;
+  onSortChange?: (sortBy: string, sortOrder: TableSortOrder) => void;
   style?: CSSProperties;
 };
 
@@ -21,6 +27,9 @@ export function Table<T>({
   rows,
   getRowKey,
   caption,
+  sortBy,
+  sortOrder = "asc",
+  onSortChange,
   style,
 }: TableProps<T>) {
   return (
@@ -43,24 +52,62 @@ export function Table<T>({
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead>
           <tr style={{ backgroundColor: brand.surfaceMuted }}>
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                scope="col"
-                style={{
-                  textAlign: "start",
-                  padding: "0.85rem 1rem",
-                  fontSize: "0.8rem",
-                  fontWeight: 700,
-                  color: brand.muted,
-                  borderBottom: `1px solid ${brand.border}`,
-                  width: column.width,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {column.header}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const isActive = sortBy === column.key;
+              const nextOrder =
+                isActive && sortOrder === "asc" ? "desc" : "asc";
+              const sortable = Boolean(column.sortable && onSortChange);
+
+              return (
+                <th
+                  key={column.key}
+                  scope="col"
+                  aria-sort={
+                    isActive
+                      ? sortOrder === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : "none"
+                  }
+                  style={{
+                    textAlign: "start",
+                    padding: "0.85rem 1rem",
+                    fontSize: "0.8rem",
+                    fontWeight: 700,
+                    color: brand.muted,
+                    borderBottom: `1px solid ${brand.border}`,
+                    width: column.width,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {sortable ? (
+                    <button
+                      type="button"
+                      onClick={() => onSortChange?.(column.key, nextOrder)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.35rem",
+                        border: "none",
+                        background: "transparent",
+                        padding: 0,
+                        color: isActive ? brand.primary : brand.muted,
+                        font: "inherit",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {column.header}
+                      <span aria-hidden style={{ fontSize: "0.7rem" }}>
+                        {isActive ? (sortOrder === "asc" ? "▲" : "▼") : "↕"}
+                      </span>
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
@@ -142,4 +189,106 @@ export function TableSection({
       {children}
     </section>
   );
+}
+
+type PaginationProps = {
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  disabled?: boolean;
+  previousLabel: string;
+  nextLabel: string;
+  summaryLabel: string;
+  onPageChange: (page: number) => void;
+};
+
+export function Pagination({
+  page,
+  totalPages,
+  totalItems,
+  pageSize,
+  disabled,
+  previousLabel,
+  nextLabel,
+  summaryLabel,
+  onPageChange,
+}: PaginationProps) {
+  if (totalItems === 0) {
+    return null;
+  }
+
+  const safeTotalPages = Math.max(totalPages, 1);
+  const from = (page - 1) * pageSize + 1;
+  const to = Math.min(page * pageSize, totalItems);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+        flexWrap: "wrap",
+        marginTop: "1rem",
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          color: brand.muted,
+          fontSize: "0.88rem",
+        }}
+      >
+        {summaryLabel
+          .replace("{from}", String(from))
+          .replace("{to}", String(to))
+          .replace("{total}", String(totalItems))}
+      </p>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button
+          type="button"
+          disabled={disabled || page <= 1}
+          onClick={() => onPageChange(page - 1)}
+          style={paginationButtonStyle(disabled || page <= 1)}
+        >
+          {previousLabel}
+        </button>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "0 0.5rem",
+            color: brand.text,
+            fontSize: "0.88rem",
+            fontWeight: 600,
+          }}
+        >
+          {page} / {safeTotalPages}
+        </span>
+        <button
+          type="button"
+          disabled={disabled || page >= safeTotalPages}
+          onClick={() => onPageChange(page + 1)}
+          style={paginationButtonStyle(disabled || page >= safeTotalPages)}
+        >
+          {nextLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function paginationButtonStyle(disabled: boolean): CSSProperties {
+  return {
+    padding: "0.55rem 0.85rem",
+    borderRadius: "0.7rem",
+    border: `1px solid ${brand.border}`,
+    backgroundColor: brand.surface,
+    color: brand.primary,
+    fontWeight: 600,
+    fontSize: "0.85rem",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.55 : 1,
+  };
 }
