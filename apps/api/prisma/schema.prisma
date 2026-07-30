@@ -17,6 +17,20 @@ enum JobStatus {
   ARCHIVED
 }
 
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  TEMPORARY
+}
+
+enum WorkplaceType {
+  ON_SITE
+  HYBRID
+  REMOTE
+}
+
 enum CandidateStatus {
   APPLIED
   REVIEWING
@@ -51,11 +65,14 @@ model Organization {
   interviewReminderEmail  Boolean     @default(true) @map("interview_reminder_email")
   jobExpirationEmail      Boolean     @default(true) @map("job_expiration_email")
   jobPublishedEmail       Boolean     @default(false) @map("job_published_email")
+  defaultCurrency         String      @default("IRR") @map("default_currency") @db.VarChar(3)
   createdAt               DateTime    @default(now()) @map("created_at")
   updatedAt               DateTime    @updatedAt @map("updated_at")
   users                   User[]
   jobs                    Job[]
   candidates              Candidate[]
+  skills                  Skill[]
+  jobTemplates            JobTemplate[]
   files                   StoredFile[] @relation("OrganizationFiles")
 
   @@unique([email])
@@ -136,19 +153,87 @@ model PasswordResetToken {
 }
 
 model Job {
-  id             String      @id @default(uuid()) @db.Uuid
-  title          String      @db.VarChar(160)
-  status         JobStatus   @default(DRAFT)
-  publishedAt    DateTime?   @map("published_at")
-  organizationId String      @map("organization_id") @db.Uuid
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  candidates     Candidate[]
-  createdAt      DateTime    @default(now()) @map("created_at")
-  updatedAt      DateTime    @updatedAt @map("updated_at")
+  id               String          @id @default(uuid()) @db.Uuid
+  title            String          @db.VarChar(100)
+  department       String?         @db.VarChar(80)
+  employmentType   EmploymentType  @map("employment_type")
+  workplaceType    WorkplaceType   @map("workplace_type")
+  location         String?         @db.VarChar(120)
+  salaryMin        Int?            @map("salary_min")
+  salaryMax        Int?            @map("salary_max")
+  currency         String          @default("IRR") @db.VarChar(3)
+  salaryVisible    Boolean         @default(true) @map("salary_visible")
+  description      String          @db.Text
+  responsibilities String?         @db.Text
+  requirements     String?         @db.Text
+  benefits         String?         @db.Text
+  positions        Int             @default(1)
+  expirationDate   DateTime?       @map("expiration_date") @db.Date
+  status           JobStatus       @default(DRAFT)
+  publishedAt      DateTime?       @map("published_at")
+  organizationId   String          @map("organization_id") @db.Uuid
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidates       Candidate[]
+  skills           JobSkill[]
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
 
   @@index([organizationId, createdAt])
   @@index([organizationId, status])
   @@map("jobs")
+}
+
+model Skill {
+  id             String       @id @default(uuid()) @db.Uuid
+  name           String       @db.VarChar(80)
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  jobs           JobSkill[]
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("skills")
+}
+
+model JobSkill {
+  jobId     String   @map("job_id") @db.Uuid
+  skillId   String   @map("skill_id") @db.Uuid
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([jobId, skillId])
+  @@index([skillId])
+  @@map("job_skills")
+}
+
+model JobTemplate {
+  id               String          @id @default(uuid()) @db.Uuid
+  name             String          @db.VarChar(120)
+  title            String          @db.VarChar(100)
+  department       String?         @db.VarChar(80)
+  employmentType   EmploymentType  @map("employment_type")
+  workplaceType    WorkplaceType   @map("workplace_type")
+  location         String?         @db.VarChar(120)
+  salaryMin        Int?            @map("salary_min")
+  salaryMax        Int?            @map("salary_max")
+  currency         String          @default("IRR") @db.VarChar(3)
+  salaryVisible    Boolean         @default(true) @map("salary_visible")
+  description      String          @db.Text
+  responsibilities String?         @db.Text
+  requirements     String?         @db.Text
+  benefits         String?         @db.Text
+  skills           String[]        @default([])
+  positions        Int             @default(1)
+  organizationId   String          @map("organization_id") @db.Uuid
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  @@index([organizationId, createdAt])
+  @@map("job_templates")
 }
 
 model Candidate {

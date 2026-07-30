@@ -12,6 +12,7 @@ export * from "./settings/branding.schema";
 export * from "./settings/notification.schema";
 export * from "./settings/change-password.schema";
 export * from "./settings/file.schema";
+export * from "./jobs/create-job.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),
@@ -19,12 +20,4 @@ export const organizationSchema = z.object({
   slug: z.string().min(2).max(120),
 });
 
-export const createJobSchema = z.object({
-  title: z.string().min(3).max(160),
-  location: z.string().min(2).max(120),
-  employmentType: z.enum(["full-time", "part-time", "contract", "internship"]),
-  description: z.string().min(20),
-});
-
 export type Organization = z.infer<typeof organizationSchema>;
-export type CreateJob = z.infer<typeof createJobSchema>;

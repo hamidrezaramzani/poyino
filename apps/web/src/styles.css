@@ -1459,6 +1459,64 @@ a {
   }
 }
 
+.create-job-page {
+  width: 100%;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.create-job-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.create-job-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+
+.create-job-hint {
+  margin: -0.35rem 0 1rem;
+  color: var(--ui-muted, #64748b);
+  font-size: 0.88rem;
+}
+
+.poyino-button--primary:hover:not(:disabled) {
+  background-color: color-mix(
+    in srgb,
+    var(--ui-primary, #150578) 86%,
+    white
+  ) !important;
+  box-shadow: 0 8px 18px rgba(21, 5, 120, 0.22);
+}
+
+.poyino-button--primary:active:not(:disabled) {
+  background-color: color-mix(
+    in srgb,
+    var(--ui-primary, #150578) 78%,
+    black
+  ) !important;
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.poyino-button--secondary:hover:not(:disabled) {
+  background-color: var(--ui-surface-muted, #f8fafc) !important;
+  border-color: var(--ui-primary, #150578) !important;
+}
+
+.poyino-button--secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .create-job-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .poyino-toaster,
 .poyino-toaster [data-sonner-toast],
 .poyino-toast {

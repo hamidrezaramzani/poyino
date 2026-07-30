@@ -5,6 +5,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
+import { JobsModule } from "./jobs/jobs.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SettingsModule } from "./settings/settings.module";
 
@@ -19,6 +20,7 @@ import { SettingsModule } from "./settings/settings.module";
     PrismaModule,
     AuthenticationModule,
     DashboardModule,
+    JobsModule,
     SettingsModule,
   ],
   controllers: [AppController],

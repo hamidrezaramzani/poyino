@@ -371,6 +371,100 @@ export type Translation = {
       };
     };
   };
+  jobs: {
+    create: {
+      title: string;
+      description: string;
+      saveDraft: string;
+      saving: string;
+      cancel: string;
+      successToast: string;
+      basicSection: string;
+      salarySection: string;
+      descriptionSection: string;
+      skillsSection: string;
+      hiringSection: string;
+      aiSection: string;
+      templateSection: string;
+      titleLabel: string;
+      departmentLabel: string;
+      departmentPlaceholder: string;
+      employmentTypeLabel: string;
+      workplaceTypeLabel: string;
+      locationLabel: string;
+      locationPlaceholder: string;
+      salaryMinLabel: string;
+      salaryMaxLabel: string;
+      currencyLabel: string;
+      salaryVisibilityLabel: string;
+      descriptionLabel: string;
+      responsibilitiesLabel: string;
+      requirementsLabel: string;
+      benefitsLabel: string;
+      skillsLabel: string;
+      skillsPlaceholder: string;
+      skillsAdd: string;
+      positionsLabel: string;
+      expirationDateLabel: string;
+      templateLabel: string;
+      templatePlaceholder: string;
+      templateEmpty: string;
+      aiPromptLabel: string;
+      aiPromptPlaceholder: string;
+      aiGenerate: string;
+      aiGenerating: string;
+      selectPlaceholder: string;
+      employmentTypes: {
+        FULL_TIME: string;
+        PART_TIME: string;
+        CONTRACT: string;
+        INTERNSHIP: string;
+        TEMPORARY: string;
+      };
+      workplaceTypes: {
+        ON_SITE: string;
+        HYBRID: string;
+        REMOTE: string;
+      };
+      salaryVisibility: {
+        visible: string;
+        hidden: string;
+      };
+      unsaved: {
+        title: string;
+        description: string;
+        stay: string;
+        leave: string;
+      };
+      errors: {
+        unexpected: string;
+        titleRequired: string;
+        titleTooShort: string;
+        titleTooLong: string;
+        departmentTooLong: string;
+        employmentTypeRequired: string;
+        workplaceTypeRequired: string;
+        locationTooLong: string;
+        salaryMinInvalid: string;
+        salaryMaxInvalid: string;
+        salaryRangeInvalid: string;
+        currencyInvalid: string;
+        salaryVisibilityRequired: string;
+        descriptionRequired: string;
+        descriptionTooShort: string;
+        skillTooLong: string;
+        skillsTooMany: string;
+        positionsInvalid: string;
+        positionsTooLow: string;
+        positionsTooHigh: string;
+        expirationDateInvalid: string;
+        expirationDateInPast: string;
+        promptTooShort: string;
+        promptTooLong: string;
+        tooManyRequests: string;
+      };
+    };
+  };
   verifyEmail: {
     title: string;
     description: string;
@@ -796,6 +890,104 @@ export const translations: Record<Locale, Translation> = {
           samePassword: "رمز عبور جدید نباید با رمز عبور فعلی یکسان باشد.",
           tooManyRequests:
             "تعداد تلاش‌ها بیش از حد مجاز است. لطفاً چند دقیقه دیگر دوباره تلاش کنید.",
+        },
+      },
+    },
+    jobs: {
+      create: {
+        title: "ایجاد فرصت شغلی",
+        description:
+          "جزئیات موقعیت شغلی را وارد کنید و به عنوان پیش‌نویس ذخیره کنید.",
+        saveDraft: "ذخیره پیش‌نویس",
+        saving: "در حال ذخیره...",
+        cancel: "انصراف",
+        successToast: "فرصت شغلی با موفقیت ایجاد شد.",
+        basicSection: "اطلاعات پایه",
+        salarySection: "اطلاعات حقوق",
+        descriptionSection: "شرح شغل",
+        skillsSection: "مهارت‌ها",
+        hiringSection: "اطلاعات استخدام",
+        aiSection: "تولید با هوش مصنوعی",
+        templateSection: "قالب شغلی",
+        titleLabel: "عنوان شغلی",
+        departmentLabel: "دپارتمان",
+        departmentPlaceholder: "مثلاً مهندسی",
+        employmentTypeLabel: "نوع همکاری",
+        workplaceTypeLabel: "نوع محل کار",
+        locationLabel: "موقعیت مکانی",
+        locationPlaceholder: "مثلاً تهران",
+        salaryMinLabel: "حداقل حقوق",
+        salaryMaxLabel: "حداکثر حقوق",
+        currencyLabel: "واحد پول",
+        salaryVisibilityLabel: "نمایش حقوق",
+        descriptionLabel: "توضیحات",
+        responsibilitiesLabel: "مسئولیت‌ها",
+        requirementsLabel: "نیازمندی‌ها",
+        benefitsLabel: "مزایا",
+        skillsLabel: "مهارت‌های مورد نیاز",
+        skillsPlaceholder: "مهارت را بنویسید و Enter بزنید",
+        skillsAdd: "افزودن",
+        positionsLabel: "تعداد موقعیت",
+        expirationDateLabel: "تاریخ انقضا",
+        templateLabel: "انتخاب قالب",
+        templatePlaceholder: "بدون قالب",
+        templateEmpty: "قالبی برای انتخاب وجود ندارد.",
+        aiPromptLabel: "توضیح کوتاه برای تولید",
+        aiPromptPlaceholder:
+          "به دنبال یک Senior React Developer با ۵ سال تجربه هستیم.",
+        aiGenerate: "تولید محتوا",
+        aiGenerating: "در حال تولید...",
+        selectPlaceholder: "انتخاب کنید",
+        employmentTypes: {
+          FULL_TIME: "تمام‌وقت",
+          PART_TIME: "پاره‌وقت",
+          CONTRACT: "قراردادی",
+          INTERNSHIP: "کارآموزی",
+          TEMPORARY: "موقت",
+        },
+        workplaceTypes: {
+          ON_SITE: "حضوری",
+          HYBRID: "ترکیبی",
+          REMOTE: "دورکاری",
+        },
+        salaryVisibility: {
+          visible: "نمایش داده شود",
+          hidden: "مخفی باشد",
+        },
+        unsaved: {
+          title: "تغییرات ذخیره‌نشده",
+          description:
+            "تغییرات شما ذخیره نشده است. آیا می‌خواهید صفحه را ترک کنید؟",
+          stay: "ماندن در صفحه",
+          leave: "ترک صفحه",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+          titleRequired: "عنوان شغلی الزامی است.",
+          titleTooShort: "عنوان شغلی باید حداقل ۳ کاراکتر باشد.",
+          titleTooLong: "عنوان شغلی باید حداکثر ۱۰۰ کاراکتر باشد.",
+          departmentTooLong: "دپارتمان باید حداکثر ۸۰ کاراکتر باشد.",
+          employmentTypeRequired: "نوع همکاری الزامی است.",
+          workplaceTypeRequired: "نوع محل کار الزامی است.",
+          locationTooLong: "موقعیت مکانی باید حداکثر ۱۲۰ کاراکتر باشد.",
+          salaryMinInvalid: "حداقل حقوق نامعتبر است.",
+          salaryMaxInvalid: "حداکثر حقوق نامعتبر است.",
+          salaryRangeInvalid: "حداکثر حقوق باید بیشتر از حداقل باشد.",
+          currencyInvalid: "واحد پول نامعتبر است.",
+          salaryVisibilityRequired: "وضعیت نمایش حقوق الزامی است.",
+          descriptionRequired: "توضیحات الزامی است.",
+          descriptionTooShort: "توضیحات باید حداقل ۵۰ کاراکتر باشد.",
+          skillTooLong: "نام مهارت باید حداکثر ۸۰ کاراکتر باشد.",
+          skillsTooMany: "حداکثر ۵۰ مهارت مجاز است.",
+          positionsInvalid: "تعداد موقعیت نامعتبر است.",
+          positionsTooLow: "تعداد موقعیت باید حداقل ۱ باشد.",
+          positionsTooHigh: "تعداد موقعیت باید حداکثر ۹۹۹ باشد.",
+          expirationDateInvalid: "تاریخ انقضا نامعتبر است.",
+          expirationDateInPast: "تاریخ انقضا نمی‌تواند قبل از امروز باشد.",
+          promptTooShort: "توضیح کوتاه باید حداقل ۱۰ کاراکتر باشد.",
+          promptTooLong: "توضیح کوتاه باید حداکثر ۵۰۰ کاراکتر باشد.",
+          tooManyRequests:
+            "تعداد درخواست‌ها بیش از حد مجاز است. لطفاً کمی بعد دوباره تلاش کنید.",
         },
       },
     },
@@ -1228,6 +1420,101 @@ export const translations: Record<Locale, Translation> = {
           samePassword: "New password must be different from the current password.",
           tooManyRequests:
             "Too many attempts. Please try again in a few minutes.",
+        },
+      },
+    },
+    jobs: {
+      create: {
+        title: "Create job",
+        description: "Fill in the role details and save it as a draft.",
+        saveDraft: "Save draft",
+        saving: "Saving...",
+        cancel: "Cancel",
+        successToast: "Job created successfully.",
+        basicSection: "Basic information",
+        salarySection: "Salary information",
+        descriptionSection: "Job description",
+        skillsSection: "Skills",
+        hiringSection: "Hiring information",
+        aiSection: "AI assisted generation",
+        templateSection: "Job template",
+        titleLabel: "Job title",
+        departmentLabel: "Department",
+        departmentPlaceholder: "e.g. Engineering",
+        employmentTypeLabel: "Employment type",
+        workplaceTypeLabel: "Workplace type",
+        locationLabel: "Location",
+        locationPlaceholder: "e.g. Tehran",
+        salaryMinLabel: "Minimum salary",
+        salaryMaxLabel: "Maximum salary",
+        currencyLabel: "Currency",
+        salaryVisibilityLabel: "Salary visibility",
+        descriptionLabel: "Description",
+        responsibilitiesLabel: "Responsibilities",
+        requirementsLabel: "Requirements",
+        benefitsLabel: "Benefits",
+        skillsLabel: "Required skills",
+        skillsPlaceholder: "Type a skill and press Enter",
+        skillsAdd: "Add",
+        positionsLabel: "Number of positions",
+        expirationDateLabel: "Expiration date",
+        templateLabel: "Choose template",
+        templatePlaceholder: "No template",
+        templateEmpty: "No templates available yet.",
+        aiPromptLabel: "Short description for generation",
+        aiPromptPlaceholder:
+          "We are looking for a Senior React Developer with 5 years of experience.",
+        aiGenerate: "Generate content",
+        aiGenerating: "Generating...",
+        selectPlaceholder: "Select an option",
+        employmentTypes: {
+          FULL_TIME: "Full time",
+          PART_TIME: "Part time",
+          CONTRACT: "Contract",
+          INTERNSHIP: "Internship",
+          TEMPORARY: "Temporary",
+        },
+        workplaceTypes: {
+          ON_SITE: "On-site",
+          HYBRID: "Hybrid",
+          REMOTE: "Remote",
+        },
+        salaryVisibility: {
+          visible: "Visible",
+          hidden: "Hidden",
+        },
+        unsaved: {
+          title: "Unsaved changes",
+          description: "You have unsaved changes. Do you want to leave this page?",
+          stay: "Stay",
+          leave: "Leave",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
+          titleRequired: "Job title is required.",
+          titleTooShort: "Job title must be at least 3 characters.",
+          titleTooLong: "Job title must be at most 100 characters.",
+          departmentTooLong: "Department must be at most 80 characters.",
+          employmentTypeRequired: "Employment type is required.",
+          workplaceTypeRequired: "Workplace type is required.",
+          locationTooLong: "Location must be at most 120 characters.",
+          salaryMinInvalid: "Minimum salary is invalid.",
+          salaryMaxInvalid: "Maximum salary is invalid.",
+          salaryRangeInvalid: "Maximum salary must be greater than minimum.",
+          currencyInvalid: "Currency is invalid.",
+          salaryVisibilityRequired: "Salary visibility is required.",
+          descriptionRequired: "Description is required.",
+          descriptionTooShort: "Description must be at least 50 characters.",
+          skillTooLong: "Skill name must be at most 80 characters.",
+          skillsTooMany: "You can add at most 50 skills.",
+          positionsInvalid: "Number of positions is invalid.",
+          positionsTooLow: "Number of positions must be at least 1.",
+          positionsTooHigh: "Number of positions must be at most 999.",
+          expirationDateInvalid: "Expiration date is invalid.",
+          expirationDateInPast: "Expiration date cannot be earlier than today.",
+          promptTooShort: "Prompt must be at least 10 characters.",
+          promptTooLong: "Prompt must be at most 500 characters.",
+          tooManyRequests: "Too many requests. Please try again shortly.",
         },
       },
     },

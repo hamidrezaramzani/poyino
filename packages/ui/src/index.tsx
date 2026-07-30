@@ -20,9 +20,12 @@ export { Table, TableSection, type TableColumn } from "./table";
 export { Tooltip } from "./tooltip";
 export {
   ColorPicker,
+  DatePicker,
   Divider,
   ImagePreview,
   ImageUpload,
+  MultiSelect,
+  RichTextEditor,
   Select,
   Switch,
   Textarea,
@@ -42,14 +45,19 @@ export function Button({
   fullWidth = false,
   disabled,
   style,
+  className,
   ...props
 }: ButtonProps) {
   const variantStyle = getButtonVariantStyle(variant);
+  const classes = ["poyino-button", `poyino-button--${variant}`, className]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <button
       type={type}
       disabled={disabled}
+      className={classes}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -65,6 +73,8 @@ export function Button({
         fontSize: "0.95rem",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.7 : 1,
+        transition:
+          "background-color 120ms ease, border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease",
         ...style,
       }}
       {...props}

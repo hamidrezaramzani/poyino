@@ -8,6 +8,7 @@ import { VerifyEmailPage } from "./features/authentication/pages/verify-email-pa
 import { DashboardLayout } from "./features/dashboard/layouts/dashboard-layout";
 import { DashboardOverviewPage } from "./features/dashboard/pages/dashboard-overview-page";
 import { ModulePlaceholderPage } from "./features/dashboard/pages/module-placeholder-page";
+import { CreateJobPage } from "./features/jobs/pages/create-job-page";
 import { BrandingSettingsPage } from "./features/settings/pages/branding-settings-page";
 import { GeneralSettingsPage } from "./features/settings/pages/general-settings-page";
 import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
@@ -37,11 +38,6 @@ function JobsPlaceholder() {
   );
 }
 
-function CreateJobPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.createJob} />;
-}
-
 function CandidatesPlaceholder() {
   const { t } = useI18n();
   return <ModulePlaceholderPage title={t.dashboard.nav.candidates} />;
@@ -64,7 +60,7 @@ export function App() {
       <Route element={<AuthenticatedShell />}>
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
         <Route path="/jobs" element={<JobsPlaceholder />} />
-        <Route path="/jobs/create" element={<CreateJobPlaceholder />} />
+        <Route path="/jobs/create" element={<CreateJobPage />} />
         <Route path="/jobs/new" element={<Navigate to="/jobs/create" replace />} />
         <Route path="/jobs/:jobId" element={<JobsPlaceholder />} />
         <Route path="/jobs/:jobId/edit" element={<JobsPlaceholder />} />

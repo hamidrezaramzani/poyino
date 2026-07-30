@@ -1,4 +1,11 @@
-import type { CSSProperties, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type {
+  CSSProperties,
+  InputHTMLAttributes,
+  KeyboardEvent,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { brand } from "./brand";
 
 export function baseFieldStyle(
@@ -170,6 +177,292 @@ export function Divider({ label }: { label?: string }) {
       <span style={{ flex: 1, height: 1, backgroundColor: brand.border }} />
       <span>{label}</span>
       <span style={{ flex: 1, height: 1, backgroundColor: brand.border }} />
+    </div>
+  );
+}
+
+type DatePickerProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "onChange" | "value"
+> & {
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+};
+
+export function DatePicker({
+  value,
+  error,
+  disabled,
+  style,
+  onChange,
+  ...props
+}: DatePickerProps) {
+  return (
+    <input
+      type="date"
+      value={value}
+      disabled={disabled}
+      aria-invalid={Boolean(error)}
+      onChange={(event) => onChange(event.target.value)}
+      style={{
+        ...baseFieldStyle(Boolean(error), Boolean(disabled)),
+        ...style,
+      }}
+      {...props}
+    />
+  );
+}
+
+type MultiSelectProps = {
+  id?: string;
+  values: string[];
+  disabled?: boolean;
+  error?: string;
+  placeholder?: string;
+  suggestions?: string[];
+  addLabel?: string;
+  onChange: (values: string[]) => void;
+  onBlur?: () => void;
+};
+
+export function MultiSelect({
+  id,
+  values,
+  disabled,
+  error,
+  placeholder,
+  suggestions = [],
+  addLabel = "Add",
+  onChange,
+  onBlur,
+}: MultiSelectProps) {
+  const [draft, setDraft] = useState("");
+  const listId = useId();
+
+  const commit = (raw: string) => {
+    const next = raw.trim().replace(/\s+/g, " ");
+    if (!next || disabled) {
+      return;
+    }
+    const exists = values.some(
+      (value) => value.toLocaleLowerCase("en") === next.toLocaleLowerCase("en"),
+    );
+    if (!exists) {
+      onChange([...values, next]);
+    }
+    setDraft("");
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" || event.key === ",") {
+      event.preventDefault();
+      commit(draft);
+    }
+    if (event.key === "Backspace" && draft.length === 0 && values.length > 0) {
+      onChange(values.slice(0, -1));
+    }
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          ...baseFieldStyle(Boolean(error), Boolean(disabled)),
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.5rem",
+          alignItems: "center",
+          minHeight: "2.85rem",
+          padding: "0.45rem 0.6rem",
+        }}
+      >
+        {values.map((value) => (
+          <span
+            key={value}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.35rem",
+              padding: "0.2rem 0.55rem",
+              borderRadius: "999px",
+              backgroundColor: brand.iconBg,
+              color: brand.primary,
+              fontSize: "0.85rem",
+              fontWeight: 600,
+            }}
+          >
+            {value}
+            <button
+              type="button"
+              disabled={disabled}
+              aria-label={`Remove ${value}`}
+              onClick={() => onChange(values.filter((item) => item !== value))}
+              style={{
+                border: "none",
+                background: "transparent",
+                color: brand.primary,
+                cursor: disabled ? "not-allowed" : "pointer",
+                padding: 0,
+                lineHeight: 1,
+                fontSize: "1rem",
+              }}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          id={id}
+          list={suggestions.length > 0 ? listId : undefined}
+          value={draft}
+          disabled={disabled}
+          placeholder={values.length === 0 ? placeholder : undefined}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={onKeyDown}
+          onBlur={() => {
+            commit(draft);
+            onBlur?.();
+          }}
+          style={{
+            flex: 1,
+            minWidth: "8rem",
+            border: "none",
+            outline: "none",
+            background: "transparent",
+            color: brand.text,
+            fontSize: "0.95rem",
+            fontFamily: "inherit",
+            padding: "0.35rem 0.25rem",
+          }}
+        />
+        <button
+          type="button"
+          disabled={disabled || draft.trim().length === 0}
+          onClick={() => commit(draft)}
+          style={{
+            border: "none",
+            background: "transparent",
+            color: brand.primary,
+            fontWeight: 600,
+            fontSize: "0.85rem",
+            cursor: disabled ? "not-allowed" : "pointer",
+          }}
+        >
+          {addLabel}
+        </button>
+      </div>
+      {suggestions.length > 0 ? (
+        <datalist id={listId}>
+          {suggestions.map((suggestion) => (
+            <option key={suggestion} value={suggestion} />
+          ))}
+        </datalist>
+      ) : null}
+    </div>
+  );
+}
+
+type RichTextEditorProps = {
+  id?: string;
+  value: string;
+  disabled?: boolean;
+  error?: string;
+  placeholder?: string;
+  minHeight?: number;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+};
+
+export function RichTextEditor({
+  id,
+  value,
+  disabled,
+  error,
+  placeholder,
+  minHeight = 160,
+  onChange,
+  onBlur,
+}: RichTextEditorProps) {
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || document.activeElement === editor) {
+      return;
+    }
+    if (editor.innerHTML !== value) {
+      editor.innerHTML = value || "";
+    }
+  }, [value]);
+
+  const runCommand = (command: string) => {
+    if (disabled) {
+      return;
+    }
+    editorRef.current?.focus();
+    document.execCommand(command, false);
+    onChange(editorRef.current?.innerHTML ?? "");
+  };
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.4rem",
+          marginBottom: "0.45rem",
+          flexWrap: "wrap",
+        }}
+      >
+        {(
+          [
+            ["bold", "B"],
+            ["italic", "I"],
+            ["insertUnorderedList", "• List"],
+          ] as const
+        ).map(([command, label]) => (
+          <button
+            key={command}
+            type="button"
+            disabled={disabled}
+            onMouseDown={(event) => {
+              event.preventDefault();
+              runCommand(command);
+            }}
+            style={{
+              border: `1px solid ${brand.border}`,
+              backgroundColor: brand.surface,
+              color: brand.text,
+              borderRadius: "0.55rem",
+              padding: "0.3rem 0.55rem",
+              fontWeight: 700,
+              fontSize: "0.8rem",
+              cursor: disabled ? "not-allowed" : "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div
+        id={id}
+        ref={editorRef}
+        role="textbox"
+        aria-multiline="true"
+        aria-invalid={Boolean(error)}
+        contentEditable={!disabled}
+        data-placeholder={placeholder}
+        suppressContentEditableWarning
+        onInput={() => onChange(editorRef.current?.innerHTML ?? "")}
+        onBlur={() => onBlur?.()}
+        style={{
+          ...baseFieldStyle(Boolean(error), Boolean(disabled)),
+          minHeight,
+          overflowY: "auto",
+          whiteSpace: "pre-wrap",
+        }}
+      />
     </div>
   );
 }
