@@ -520,13 +520,45 @@ export type Translation = {
       latestCandidate: string;
       noCandidates: string;
       linkCopiedToast: string;
+      expiredBadge: string;
+      expiresOn: string;
+      expiredOn: string;
       actions: {
         edit: string;
+        publish: string;
+        unpublish: string;
+        delete: string;
         viewCandidates: string;
         viewAllCandidates: string;
         copyLink: string;
         linkCopied: string;
         viewPublic: string;
+      };
+      publish: {
+        title: string;
+        description: string;
+        cancel: string;
+        confirm: string;
+        confirming: string;
+        successToast: string;
+        notPublishable: string;
+      };
+      unpublish: {
+        title: string;
+        description: string;
+        cancel: string;
+        confirm: string;
+        confirming: string;
+        successToast: string;
+      };
+      delete: {
+        title: string;
+        description: string;
+        cancel: string;
+        confirm: string;
+        confirming: string;
+        successToast: string;
+        hasCandidates: string;
       };
       stats: {
         applications: string;
@@ -1120,13 +1152,50 @@ export const translations: Record<Locale, Translation> = {
         latestCandidate: "آخرین متقاضی",
         noCandidates: "هنوز متقاضی‌ای درخواست نداده است.",
         linkCopiedToast: "لینک عمومی کپی شد.",
+        expiredBadge: "منقضی شده",
+        expiresOn: "تاریخ انقضا: {date}",
+        expiredOn: "منقضی شده در {date}",
         actions: {
           edit: "ویرایش",
+          publish: "انتشار",
+          unpublish: "لغو انتشار",
+          delete: "حذف",
           viewCandidates: "مشاهده متقاضیان",
           viewAllCandidates: "مشاهده همه متقاضیان",
           copyLink: "کپی لینک",
           linkCopied: "کپی شد",
           viewPublic: "مشاهده صفحه عمومی",
+        },
+        publish: {
+          title: "انتشار فرصت شغلی",
+          description:
+            "این فرصت شغلی به‌صورت عمومی در دسترس قرار می‌گیرد و متقاضیان می‌توانند درخواست ارسال کنند.",
+          cancel: "انصراف",
+          confirm: "انتشار",
+          confirming: "در حال انتشار...",
+          successToast: "فرصت شغلی با موفقیت منتشر شد.",
+          notPublishable:
+            "برای انتشار، فیلدهای الزامی فرصت شغلی را تکمیل کنید.",
+        },
+        unpublish: {
+          title: "لغو انتشار فرصت شغلی",
+          description:
+            "این فرصت شغلی دیگر به‌صورت عمومی در دسترس نخواهد بود و متقاضیان نمی‌توانند درخواست جدید ارسال کنند.",
+          cancel: "انصراف",
+          confirm: "لغو انتشار",
+          confirming: "در حال لغو انتشار...",
+          successToast: "انتشار فرصت شغلی لغو شد.",
+        },
+        delete: {
+          title: "حذف فرصت شغلی",
+          description:
+            "آیا مطمئن هستید که می‌خواهید این فرصت شغلی را برای همیشه حذف کنید؟ این عمل قابل بازگشت نیست.",
+          cancel: "انصراف",
+          confirm: "حذف",
+          confirming: "در حال حذف...",
+          successToast: "فرصت شغلی با موفقیت حذف شد.",
+          hasCandidates:
+            "این فرصت شغلی متقاضی دارد و قابل حذف نیست. به‌جای آن آن را بایگانی کنید.",
         },
         stats: {
           applications: "کل درخواست‌ها",
@@ -1721,13 +1790,50 @@ export const translations: Record<Locale, Translation> = {
         latestCandidate: "Latest candidate",
         noCandidates: "No candidates have applied yet.",
         linkCopiedToast: "Public link copied.",
+        expiredBadge: "Expired",
+        expiresOn: "Expires on {date}",
+        expiredOn: "Expired on {date}",
         actions: {
           edit: "Edit",
+          publish: "Publish",
+          unpublish: "Unpublish",
+          delete: "Delete",
           viewCandidates: "View candidates",
           viewAllCandidates: "View all candidates",
           copyLink: "Copy link",
           linkCopied: "Copied",
           viewPublic: "View public page",
+        },
+        publish: {
+          title: "Publish Job",
+          description:
+            "This job will become publicly available and candidates will be able to submit applications.",
+          cancel: "Cancel",
+          confirm: "Publish",
+          confirming: "Publishing...",
+          successToast: "Job published successfully.",
+          notPublishable:
+            "Complete the required job fields before publishing.",
+        },
+        unpublish: {
+          title: "Unpublish Job",
+          description:
+            "This job will no longer be publicly available and candidates will not be able to submit new applications.",
+          cancel: "Cancel",
+          confirm: "Unpublish",
+          confirming: "Unpublishing...",
+          successToast: "Job unpublished successfully.",
+        },
+        delete: {
+          title: "Delete Job",
+          description:
+            "Are you sure you want to permanently delete this job? This action cannot be undone.",
+          cancel: "Cancel",
+          confirm: "Delete",
+          confirming: "Deleting...",
+          successToast: "Job deleted successfully.",
+          hasCandidates:
+            "This job has submitted candidates and cannot be deleted. Archive it instead.",
         },
         stats: {
           applications: "Total applications",

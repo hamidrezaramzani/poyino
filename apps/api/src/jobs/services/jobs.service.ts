@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
@@ -7,11 +9,17 @@ import type {
   CreateJobInput,
   GenerateJobContentInput,
   ListJobsQuery,
+  UpdateJobExpirationInput,
   UpdateJobInput,
 } from "@poyino/contracts";
-import { JobErrorCode } from "@poyino/contracts";
+import { CreateJobSchema, JobErrorCode } from "@poyino/contracts";
 import type { Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
+import {
+  buildPublicJobUrl,
+  formatDateOnly,
+  isJobExpired,
+} from "../utils/job-expiration";
 
 @Injectable()
 export class JobsService {
@@ -94,7 +102,11 @@ export class JobsService {
     const orderBy = buildJobListOrderBy(query.sortBy, query.sortOrder);
     const skip = (query.page - 1) * query.pageSize;
 
-    const [totalItems, jobs] = await Promise.all([
+    const [organization, totalItems, jobs] = await Promise.all([
+      this.prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { timezone: true },
+      }),
       this.prisma.job.count({ where }),
       this.prisma.job.findMany({
         where,
@@ -108,6 +120,7 @@ export class JobsService {
           department: true,
           createdAt: true,
           publishedAt: true,
+          expirationDate: true,
           _count: {
             select: { candidates: true },
           },
@@ -115,6 +128,7 @@ export class JobsService {
       }),
     ]);
 
+    const timezone = organization?.timezone ?? "Asia/Tehran";
     const totalPages =
       totalItems === 0 ? 0 : Math.ceil(totalItems / query.pageSize);
 
@@ -124,6 +138,9 @@ export class JobsService {
         id: job.id,
         title: job.title,
         status: job.status,
+        isExpired:
+          job.status === "PUBLISHED" &&
+          isJobExpired(job.expirationDate, timezone),
         department: job.department,
         candidateCount: job._count.candidates,
         createdAt: job.createdAt.toISOString(),
@@ -145,7 +162,7 @@ export class JobsService {
       where: { id: jobId, organizationId },
       include: {
         organization: {
-          select: { slug: true },
+          select: { slug: true, timezone: true },
         },
         skills: {
           include: {
@@ -170,13 +187,7 @@ export class JobsService {
     });
 
     if (!job) {
-      throw new NotFoundException({
-        success: false,
-        error: {
-          code: JobErrorCode.JOB_NOT_FOUND,
-          message: "Job not found.",
-        },
-      });
+      throw jobNotFound();
     }
 
     const [applications, newApplications, interviews, hired] =
@@ -200,6 +211,9 @@ export class JobsService {
       ]);
 
     const latestCandidate = job.candidates[0] ?? null;
+    const isExpired =
+      job.status === "PUBLISHED" &&
+      isJobExpired(job.expirationDate, job.organization.timezone);
 
     return {
       success: true as const,
@@ -207,6 +221,7 @@ export class JobsService {
         id: job.id,
         title: job.title,
         status: job.status,
+        isExpired,
         department: job.department,
         employmentType: job.employmentType,
         workplaceType: job.workplaceType,
@@ -227,7 +242,7 @@ export class JobsService {
         publishedAt: job.publishedAt?.toISOString() ?? null,
         publicUrl:
           job.status === "PUBLISHED"
-            ? `/${job.organization.slug}/jobs/${job.id}`
+            ? buildPublicJobUrl(job.organization.slug, job.id)
             : null,
         statistics: {
           applications,
@@ -249,17 +264,11 @@ export class JobsService {
   async update(organizationId: string, jobId: string, input: UpdateJobInput) {
     const existing = await this.prisma.job.findFirst({
       where: { id: jobId, organizationId },
-      select: { id: true },
+      select: { id: true, expirationDate: true },
     });
 
     if (!existing) {
-      throw new NotFoundException({
-        success: false,
-        error: {
-          code: JobErrorCode.JOB_NOT_FOUND,
-          message: "Job not found.",
-        },
-      });
+      throw jobNotFound();
     }
 
     const organization = await this.prisma.organization.findUnique({
@@ -268,6 +277,12 @@ export class JobsService {
     });
     const currency = input.currency ?? organization?.defaultCurrency ?? "IRR";
     const skillNames = normalizeSkillNames(input.skills ?? []);
+    const nextExpirationDate = input.expirationDate
+      ? new Date(`${input.expirationDate}T00:00:00.000Z`)
+      : null;
+    const expirationChanged =
+      formatDateOnly(existing.expirationDate) !==
+      formatDateOnly(nextExpirationDate);
 
     await this.prisma.$transaction(async (tx) => {
       const skillRecords = await Promise.all(
@@ -310,9 +325,10 @@ export class JobsService {
           requirements: input.requirements,
           benefits: input.benefits,
           positions: input.positions,
-          expirationDate: input.expirationDate
-            ? new Date(`${input.expirationDate}T00:00:00.000Z`)
-            : null,
+          expirationDate: nextExpirationDate,
+          ...(expirationChanged
+            ? { expirationReminderSentAt: null }
+            : {}),
           skills: {
             create: skillRecords.map((skill) => ({
               skillId: skill.id,
@@ -320,6 +336,191 @@ export class JobsService {
           },
         },
       });
+    });
+
+    return {
+      success: true as const,
+    };
+  }
+
+  async publish(organizationId: string, jobId: string) {
+    const job = await this.prisma.job.findFirst({
+      where: { id: jobId, organizationId },
+      include: {
+        organization: {
+          select: { slug: true },
+        },
+        skills: {
+          include: {
+            skill: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!job) {
+      throw jobNotFound();
+    }
+
+    if (job.status !== "DRAFT") {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: JobErrorCode.INVALID_JOB_STATUS,
+          message: "Only draft jobs can be published.",
+        },
+      });
+    }
+
+    const publishInput = {
+      title: job.title,
+      department: job.department ?? undefined,
+      employmentType: job.employmentType,
+      workplaceType: job.workplaceType,
+      location: job.location ?? undefined,
+      salaryMin: job.salaryMin,
+      salaryMax: job.salaryMax,
+      currency: job.currency,
+      salaryVisible: job.salaryVisible,
+      description: job.description,
+      responsibilities: job.responsibilities ?? undefined,
+      requirements: job.requirements ?? undefined,
+      benefits: job.benefits ?? undefined,
+      skills: job.skills.map((item) => item.skill.name),
+      positions: job.positions,
+      expirationDate: formatDateOnly(job.expirationDate) ?? undefined,
+    };
+
+    const validation = CreateJobSchema.safeParse(publishInput);
+    if (!validation.success) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: JobErrorCode.JOB_NOT_PUBLISHABLE,
+          message: "Job is missing required fields for publishing.",
+          details: validation.error.flatten().fieldErrors,
+        },
+      });
+    }
+
+    await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        status: "PUBLISHED",
+        publishedAt: job.publishedAt ?? new Date(),
+      },
+    });
+
+    return {
+      success: true as const,
+      status: "PUBLISHED" as const,
+      publicUrl: buildPublicJobUrl(job.organization.slug, job.id),
+    };
+  }
+
+  async unpublish(organizationId: string, jobId: string) {
+    const job = await this.prisma.job.findFirst({
+      where: { id: jobId, organizationId },
+      select: { id: true, status: true },
+    });
+
+    if (!job) {
+      throw jobNotFound();
+    }
+
+    if (job.status !== "PUBLISHED") {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: JobErrorCode.INVALID_JOB_STATUS,
+          message: "Only published jobs can be unpublished.",
+        },
+      });
+    }
+
+    await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        status: "DRAFT",
+      },
+    });
+
+    return {
+      success: true as const,
+      status: "DRAFT" as const,
+    };
+  }
+
+  async remove(organizationId: string, jobId: string) {
+    const job = await this.prisma.job.findFirst({
+      where: { id: jobId, organizationId },
+      select: {
+        id: true,
+        status: true,
+        _count: {
+          select: { candidates: true },
+        },
+      },
+    });
+
+    if (!job) {
+      throw jobNotFound();
+    }
+
+    if (job._count.candidates > 0) {
+      throw new ConflictException({
+        success: false,
+        error: {
+          code: JobErrorCode.JOB_HAS_CANDIDATES,
+          message: "Job has candidates.",
+        },
+      });
+    }
+
+    if (job.status !== "DRAFT" && job.status !== "PUBLISHED") {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: JobErrorCode.INVALID_JOB_STATUS,
+          message: "Only draft or published jobs without candidates may be deleted.",
+        },
+      });
+    }
+
+    await this.prisma.job.delete({
+      where: { id: jobId },
+    });
+  }
+
+  async updateExpiration(
+    organizationId: string,
+    jobId: string,
+    input: UpdateJobExpirationInput,
+  ) {
+    const existing = await this.prisma.job.findFirst({
+      where: { id: jobId, organizationId },
+      select: { id: true, expirationDate: true },
+    });
+
+    if (!existing) {
+      throw jobNotFound();
+    }
+
+    const nextExpirationDate = input.expirationDate
+      ? new Date(`${input.expirationDate}T00:00:00.000Z`)
+      : null;
+    const expirationChanged =
+      formatDateOnly(existing.expirationDate) !==
+      formatDateOnly(nextExpirationDate);
+
+    await this.prisma.job.update({
+      where: { id: jobId },
+      data: {
+        expirationDate: nextExpirationDate,
+        ...(expirationChanged ? { expirationReminderSentAt: null } : {}),
+      },
     });
 
     return {
@@ -399,11 +600,14 @@ export class JobsService {
   }
 }
 
-function formatDateOnly(value: Date | null) {
-  if (!value) {
-    return null;
-  }
-  return value.toISOString().slice(0, 10);
+function jobNotFound() {
+  return new NotFoundException({
+    success: false,
+    error: {
+      code: JobErrorCode.JOB_NOT_FOUND,
+      message: "Job not found.",
+    },
+  });
 }
 
 function buildJobListOrderBy(

@@ -245,6 +245,7 @@ export const JobListItemSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   status: JobStatusSchema,
+  isExpired: z.boolean(),
   department: z.string().nullable(),
   candidateCount: z.number().int().nonnegative(),
   createdAt: z.string().datetime(),
@@ -277,6 +278,9 @@ export const JobErrorCode = {
   VALIDATION_ERROR: "VALIDATION_ERROR",
   JOB_NOT_FOUND: "JOB_NOT_FOUND",
   TEMPLATE_NOT_FOUND: "TEMPLATE_NOT_FOUND",
+  INVALID_JOB_STATUS: "INVALID_JOB_STATUS",
+  JOB_HAS_CANDIDATES: "JOB_HAS_CANDIDATES",
+  JOB_NOT_PUBLISHABLE: "JOB_NOT_PUBLISHABLE",
   TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
   UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
 } as const;
@@ -291,6 +295,66 @@ export const UpdateJobSuccessSchema = z.object({
 });
 
 export type UpdateJobSuccess = z.infer<typeof UpdateJobSuccessSchema>;
+
+const expirationDateField = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "EXPIRATION_DATE_INVALID")
+  .nullable()
+  .optional()
+  .transform((value) => (value && value.length > 0 ? value : null));
+
+export const UpdateJobExpirationSchema = z
+  .object({
+    expirationDate: expirationDateField,
+  })
+  .superRefine((value, ctx) => {
+    if (!value.expirationDate) {
+      return;
+    }
+
+    const expiration = new Date(`${value.expirationDate}T00:00:00.000Z`);
+    if (Number.isNaN(expiration.getTime())) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["expirationDate"],
+        message: "EXPIRATION_DATE_INVALID",
+      });
+      return;
+    }
+
+    if (expiration < startOfTodayUtc()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["expirationDate"],
+        message: "EXPIRATION_DATE_IN_PAST",
+      });
+    }
+  });
+
+export type UpdateJobExpirationInput = z.infer<typeof UpdateJobExpirationSchema>;
+
+export const UpdateJobExpirationSuccessSchema = z.object({
+  success: z.literal(true),
+});
+
+export type UpdateJobExpirationSuccess = z.infer<
+  typeof UpdateJobExpirationSuccessSchema
+>;
+
+export const PublishJobSuccessSchema = z.object({
+  success: z.literal(true),
+  status: z.literal("PUBLISHED"),
+  publicUrl: z.string(),
+});
+
+export type PublishJobSuccess = z.infer<typeof PublishJobSuccessSchema>;
+
+export const UnpublishJobSuccessSchema = z.object({
+  success: z.literal(true),
+  status: z.literal("DRAFT"),
+});
+
+export type UnpublishJobSuccess = z.infer<typeof UnpublishJobSuccessSchema>;
 
 export const JobDetailsCandidateSchema = z.object({
   id: z.string().uuid(),
@@ -313,6 +377,7 @@ export const JobDetailsSchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
   status: JobStatusSchema,
+  isExpired: z.boolean(),
   department: z.string().nullable(),
   employmentType: EmploymentTypeSchema,
   workplaceType: WorkplaceTypeSchema,

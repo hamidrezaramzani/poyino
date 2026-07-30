@@ -29,7 +29,7 @@ type ErrorBody = {
   };
 };
 
-export async function apiRequest<TSuccess extends { success: true }>(
+export async function apiRequest<TSuccess>(
   path: string,
   init?: RequestInit,
 ): Promise<TSuccess> {
@@ -42,12 +42,20 @@ export async function apiRequest<TSuccess extends { success: true }>(
     },
   });
 
+  if (response.status === 204) {
+    return undefined as TSuccess;
+  }
+
   const payload = (await response.json().catch(() => null)) as
-    | TSuccess
+    | (TSuccess & { success?: true })
     | ErrorBody
     | null;
 
-  if (!response.ok || !payload || payload.success !== true) {
+  if (
+    !response.ok ||
+    !payload ||
+    ("success" in payload && payload.success !== true)
+  ) {
     const errorPayload = payload && "error" in payload ? payload.error : null;
     throw new ApiRequestError(
       errorPayload?.message ?? "Unexpected error",
@@ -57,5 +65,5 @@ export async function apiRequest<TSuccess extends { success: true }>(
     );
   }
 
-  return payload;
+  return payload as TSuccess;
 }

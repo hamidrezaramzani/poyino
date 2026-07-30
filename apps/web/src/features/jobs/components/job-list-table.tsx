@@ -34,9 +34,14 @@ export function JobListTable() {
       header: t.jobs.list.columns.status,
       sortable: true,
       render: (job) => (
-        <Badge variant={statusVariant(job.status)}>
-          {t.dashboard.jobStatus[job.status]}
-        </Badge>
+        <div className="job-list-status-cell">
+          <Badge variant={statusVariant(job.status)}>
+            {t.dashboard.jobStatus[job.status]}
+          </Badge>
+          {job.isExpired ? (
+            <Badge variant="warning">{t.jobs.details.expiredBadge}</Badge>
+          ) : null}
+        </div>
       ),
     },
     {

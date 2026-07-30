@@ -168,18 +168,20 @@ model Job {
   requirements     String?         @db.Text
   benefits         String?         @db.Text
   positions        Int             @default(1)
-  expirationDate   DateTime?       @map("expiration_date") @db.Date
-  status           JobStatus       @default(DRAFT)
-  publishedAt      DateTime?       @map("published_at")
-  organizationId   String          @map("organization_id") @db.Uuid
-  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  candidates       Candidate[]
-  skills           JobSkill[]
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
+  expirationDate            DateTime?       @map("expiration_date") @db.Date
+  expirationReminderSentAt  DateTime?       @map("expiration_reminder_sent_at")
+  status                    JobStatus       @default(DRAFT)
+  publishedAt               DateTime?       @map("published_at")
+  organizationId            String          @map("organization_id") @db.Uuid
+  organization              Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  candidates                Candidate[]
+  skills                    JobSkill[]
+  createdAt                 DateTime        @default(now()) @map("created_at")
+  updatedAt                 DateTime        @updatedAt @map("updated_at")
 
   @@index([organizationId, createdAt])
   @@index([organizationId, status])
+  @@index([status, expirationDate])
   @@map("jobs")
 }
 

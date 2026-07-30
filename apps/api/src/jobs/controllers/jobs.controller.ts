@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Inject,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -17,10 +19,12 @@ import {
   CreateJobSchema,
   GenerateJobContentSchema,
   ListJobsQuerySchema,
+  UpdateJobExpirationSchema,
   UpdateJobSchema,
   type CreateJobInput,
   type GenerateJobContentInput,
   type ListJobsQuery,
+  type UpdateJobExpirationInput,
   type UpdateJobInput,
 } from "@poyino/contracts";
 import { CurrentUser } from "../../authentication/decorators/current-user.decorator";
@@ -94,5 +98,47 @@ export class JobsController {
     @Body(new ZodValidationPipe(UpdateJobSchema)) body: UpdateJobInput,
   ) {
     return this.jobsService.update(user.organizationId, jobId, body);
+  }
+
+  @Patch(":jobId/publish")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  publish(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+  ) {
+    return this.jobsService.publish(user.organizationId, jobId);
+  }
+
+  @Patch(":jobId/unpublish")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  unpublish(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+  ) {
+    return this.jobsService.unpublish(user.organizationId, jobId);
+  }
+
+  @Patch(":jobId/expiration")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  updateExpiration(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+    @Body(new ZodValidationPipe(UpdateJobExpirationSchema))
+    body: UpdateJobExpirationInput,
+  ) {
+    return this.jobsService.updateExpiration(user.organizationId, jobId, body);
+  }
+
+  @Delete(":jobId")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  async remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+  ) {
+    await this.jobsService.remove(user.organizationId, jobId);
   }
 }

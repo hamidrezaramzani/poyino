@@ -11,9 +11,20 @@ export type SendPasswordResetEmailInput = {
   expiresInMinutes: number;
 };
 
+export type SendJobExpirationReminderEmailInput = {
+  to: string;
+  organizationName: string;
+  jobTitle: string;
+  expirationDate: string;
+  jobUrl: string;
+};
+
 export interface EmailService {
   sendVerificationEmail(input: SendVerificationEmailInput): Promise<void>;
   sendPasswordResetEmail(input: SendPasswordResetEmailInput): Promise<void>;
+  sendJobExpirationReminderEmail(
+    input: SendJobExpirationReminderEmailInput,
+  ): Promise<void>;
 }
 
 export const EMAIL_SERVICE = Symbol("EMAIL_SERVICE");

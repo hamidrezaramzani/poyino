@@ -1535,6 +1535,20 @@ a {
   font-size: 0.92rem;
 }
 
+.job-details-expiration {
+  margin: 0.4rem 0 0;
+  color: var(--ui-warning, #b54708);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.job-list-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .job-details-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1637,6 +1651,25 @@ a {
 
 .poyino-button--secondary:active:not(:disabled) {
   transform: translateY(1px);
+}
+
+.poyino-button--danger:hover:not(:disabled) {
+  background-color: color-mix(
+    in srgb,
+    var(--ui-danger, #b42318) 88%,
+    white
+  ) !important;
+  box-shadow: 0 8px 18px rgba(180, 35, 24, 0.22);
+}
+
+.poyino-button--danger:active:not(:disabled) {
+  background-color: color-mix(
+    in srgb,
+    var(--ui-danger, #b42318) 78%,
+    black
+  ) !important;
+  transform: translateY(1px);
+  box-shadow: none;
 }
 
 @media (max-width: 900px) {

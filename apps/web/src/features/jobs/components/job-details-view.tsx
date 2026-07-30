@@ -12,12 +12,24 @@ import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { useJobDetails } from "../hooks/use-job-details";
+import { JobConfirmDialog } from "./job-confirm-dialog";
 
 export function JobDetailsView() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const { push } = useToast();
-  const { job, status, notFound, jobId, retry } = useJobDetails();
+  const {
+    job,
+    status,
+    notFound,
+    jobId,
+    retry,
+    pendingAction,
+    actionLoading,
+    requestAction,
+    cancelAction,
+    confirmAction,
+  } = useJobDetails();
 
   if (status === "loading") {
     return <JobDetailsSkeleton />;
@@ -43,6 +55,9 @@ export function JobDetailsView() {
   const publicAbsoluteUrl = job.publicUrl
     ? `${window.location.origin}${job.publicUrl}`
     : null;
+  const canDelete =
+    (job.status === "DRAFT" || job.status === "PUBLISHED") &&
+    job.statistics.applications === 0;
 
   return (
     <div className="job-details-layout">
@@ -54,6 +69,9 @@ export function JobDetailsView() {
               <Badge variant={statusVariant(job.status)}>
                 {t.dashboard.jobStatus[job.status]}
               </Badge>
+              {job.isExpired ? (
+                <Badge variant="warning">{t.jobs.details.expiredBadge}</Badge>
+              ) : null}
             </div>
             <p className="job-details-meta">
               {[
@@ -65,8 +83,41 @@ export function JobDetailsView() {
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+            {job.expirationDate ? (
+              <p className="job-details-expiration">
+                {job.isExpired
+                  ? t.jobs.details.expiredOn.replace(
+                      "{date}",
+                      formatDate(
+                        `${job.expirationDate}T00:00:00.000Z`,
+                        locale,
+                      ),
+                    )
+                  : t.jobs.details.expiresOn.replace(
+                      "{date}",
+                      formatDate(
+                        `${job.expirationDate}T00:00:00.000Z`,
+                        locale,
+                      ),
+                    )}
+              </p>
+            ) : null}
           </div>
           <div className="job-details-actions">
+            {job.status === "DRAFT" ? (
+              <Button type="button" onClick={() => requestAction("publish")}>
+                {t.jobs.details.actions.publish}
+              </Button>
+            ) : null}
+            {job.status === "PUBLISHED" ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => requestAction("unpublish")}
+              >
+                {t.jobs.details.actions.unpublish}
+              </Button>
+            ) : null}
             <Button
               type="button"
               variant="secondary"
@@ -81,7 +132,16 @@ export function JobDetailsView() {
             >
               {t.jobs.details.actions.viewCandidates}
             </Button>
-            {publicAbsoluteUrl ? (
+            {canDelete ? (
+              <Button
+                type="button"
+                variant="danger"
+                onClick={() => requestAction("delete")}
+              >
+                {t.jobs.details.actions.delete}
+              </Button>
+            ) : null}
+            {publicAbsoluteUrl && !job.isExpired ? (
               <>
                 <CopyLinkButton
                   value={publicAbsoluteUrl}
@@ -236,6 +296,41 @@ export function JobDetailsView() {
           />
         </Card>
       ) : null}
+
+      <JobConfirmDialog
+        open={pendingAction === "publish"}
+        title={t.jobs.details.publish.title}
+        description={t.jobs.details.publish.description}
+        confirmLabel={t.jobs.details.publish.confirm}
+        confirmingLabel={t.jobs.details.publish.confirming}
+        cancelLabel={t.jobs.details.publish.cancel}
+        loading={actionLoading}
+        onCancel={cancelAction}
+        onConfirm={() => void confirmAction()}
+      />
+      <JobConfirmDialog
+        open={pendingAction === "unpublish"}
+        title={t.jobs.details.unpublish.title}
+        description={t.jobs.details.unpublish.description}
+        confirmLabel={t.jobs.details.unpublish.confirm}
+        confirmingLabel={t.jobs.details.unpublish.confirming}
+        cancelLabel={t.jobs.details.unpublish.cancel}
+        loading={actionLoading}
+        onCancel={cancelAction}
+        onConfirm={() => void confirmAction()}
+      />
+      <JobConfirmDialog
+        open={pendingAction === "delete"}
+        title={t.jobs.details.delete.title}
+        description={t.jobs.details.delete.description}
+        confirmLabel={t.jobs.details.delete.confirm}
+        confirmingLabel={t.jobs.details.delete.confirming}
+        cancelLabel={t.jobs.details.delete.cancel}
+        loading={actionLoading}
+        danger
+        onCancel={cancelAction}
+        onConfirm={() => void confirmAction()}
+      />
     </div>
   );
 }
@@ -307,10 +402,7 @@ function statusVariant(status: JobStatus) {
   return "warning" as const;
 }
 
-function formatSalary(
-  job: JobDetails,
-  hiddenLabel: string,
-) {
+function formatSalary(job: JobDetails, hiddenLabel: string) {
   if (!job.salaryVisible) {
     return hiddenLabel;
   }

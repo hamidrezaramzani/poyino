@@ -34,7 +34,7 @@ export {
 
 type ButtonProps = PropsWithChildren<
   ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "primary" | "secondary" | "ghost";
+    variant?: "primary" | "secondary" | "ghost" | "danger";
     fullWidth?: boolean;
   }
 >;
@@ -366,7 +366,9 @@ export function ToastViewport({ toasts }: ToastViewportProps) {
   );
 }
 
-function getButtonVariantStyle(variant: "primary" | "secondary" | "ghost") {
+function getButtonVariantStyle(
+  variant: "primary" | "secondary" | "ghost" | "danger",
+) {
   if (variant === "secondary") {
     return {
       backgroundColor: brand.surface,
@@ -379,6 +381,14 @@ function getButtonVariantStyle(variant: "primary" | "secondary" | "ghost") {
     return {
       backgroundColor: "transparent",
       color: brand.primary,
+      border: "1px solid transparent",
+    };
+  }
+
+  if (variant === "danger") {
+    return {
+      backgroundColor: brand.danger,
+      color: "#ffffff",
       border: "1px solid transparent",
     };
   }

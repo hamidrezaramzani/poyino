@@ -7,6 +7,10 @@ import type {
   JobTemplatesSuccess,
   ListJobsQuery,
   ListJobsSuccess,
+  PublishJobSuccess,
+  UnpublishJobSuccess,
+  UpdateJobExpirationInput,
+  UpdateJobExpirationSuccess,
   UpdateJobInput,
   UpdateJobSuccess,
 } from "@poyino/contracts";
@@ -39,6 +43,34 @@ export async function fetchJob(jobId: string) {
 export async function updateJob(jobId: string, input: UpdateJobInput) {
   return apiRequest<UpdateJobSuccess>(`/jobs/${jobId}`, {
     method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function publishJob(jobId: string) {
+  return apiRequest<PublishJobSuccess>(`/jobs/${jobId}/publish`, {
+    method: "PATCH",
+  });
+}
+
+export async function unpublishJob(jobId: string) {
+  return apiRequest<UnpublishJobSuccess>(`/jobs/${jobId}/unpublish`, {
+    method: "PATCH",
+  });
+}
+
+export async function deleteJob(jobId: string) {
+  return apiRequest<void>(`/jobs/${jobId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function updateJobExpiration(
+  jobId: string,
+  input: UpdateJobExpirationInput,
+) {
+  return apiRequest<UpdateJobExpirationSuccess>(`/jobs/${jobId}/expiration`, {
+    method: "PATCH",
     body: JSON.stringify(input),
   });
 }
