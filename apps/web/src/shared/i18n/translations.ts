@@ -139,6 +139,7 @@ export type Translation = {
     sidebarLabel: string;
     openSidebar: string;
     closeSidebar: string;
+    breadcrumbsLabel: string;
     placeholder: string;
     placeholderHint: string;
     nav: {
@@ -761,6 +762,7 @@ export const translations: Record<Locale, Translation> = {
       sidebarLabel: "منوی اصلی",
       openSidebar: "باز کردن منو",
       closeSidebar: "بستن منو",
+      breadcrumbsLabel: "مسیر صفحه",
       placeholder: "این بخش به زودی آماده می‌شود.",
       placeholderHint: "ماژول انتخاب‌شده هنوز در نسخه فعلی پیاده‌سازی نشده است.",
       nav: {
@@ -1397,6 +1399,7 @@ export const translations: Record<Locale, Translation> = {
       sidebarLabel: "Main navigation",
       openSidebar: "Open menu",
       closeSidebar: "Close menu",
+      breadcrumbsLabel: "Breadcrumb",
       placeholder: "This module is coming soon.",
       placeholderHint: "The selected module is not implemented in this release yet.",
       nav: {

@@ -2,6 +2,7 @@ import { useState, type PropsWithChildren } from "react";
 import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useSession } from "../../../shared/session/session-provider";
+import { DashboardBreadcrumbs } from "../components/dashboard-breadcrumbs";
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 
 export function DashboardLayout({ children }: PropsWithChildren) {
@@ -49,9 +50,9 @@ export function DashboardLayout({ children }: PropsWithChildren) {
                   className="dashboard-header-logo"
                 />
               ) : null}
-              <div>
+              <div className="dashboard-header-copy">
                 <p className="dashboard-org-name">{organizationName}</p>
-                <p className="dashboard-page-label">{t.dashboard.nav.overview}</p>
+                <DashboardBreadcrumbs />
               </div>
             </div>
           </div>
