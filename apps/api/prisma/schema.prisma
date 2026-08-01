@@ -71,6 +71,7 @@ model Organization {
   users                   User[]
   jobs                    Job[]
   candidates              Candidate[]
+  applications            Application[]
   skills                  Skill[]
   jobTemplates            JobTemplate[]
   files                   StoredFile[] @relation("OrganizationFiles")
@@ -83,15 +84,22 @@ model StoredFile {
   id               String         @id @default(uuid()) @db.Uuid
   organizationId   String         @map("organization_id") @db.Uuid
   organization     Organization   @relation("OrganizationFiles", fields: [organizationId], references: [id], onDelete: Cascade)
-  storageKey       String         @map("storage_key") @db.VarChar(255)
+  provider         String         @db.VarChar(50)
+  bucket           String         @db.VarChar(255)
+  objectKey        String         @map("object_key") @db.VarChar(512)
   originalName     String         @map("original_name") @db.VarChar(255)
   mimeType         String         @map("mime_type") @db.VarChar(100)
+  extension        String         @db.VarChar(20)
   sizeBytes        Int            @map("size_bytes")
+  etag             String?        @db.VarChar(255)
+  publicUrl        String?        @map("public_url") @db.Text
   createdAt        DateTime       @default(now()) @map("created_at")
   logoFor          Organization[] @relation("OrganizationLogo")
   darkLogoFor      Organization[] @relation("OrganizationDarkLogo")
+  resumeApplications Application[] @relation("ApplicationResume")
 
   @@index([organizationId])
+  @@index([objectKey])
   @@map("stored_files")
 }
 
@@ -175,6 +183,7 @@ model Job {
   organizationId            String          @map("organization_id") @db.Uuid
   organization              Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   candidates                Candidate[]
+  applications              Application[]
   skills                    JobSkill[]
   createdAt                 DateTime        @default(now()) @map("created_at")
   updatedAt                 DateTime        @updatedAt @map("updated_at")
@@ -239,19 +248,67 @@ model JobTemplate {
 }
 
 model Candidate {
-  id             String          @id @default(uuid()) @db.Uuid
-  fullName       String          @map("full_name") @db.VarChar(120)
-  status         CandidateStatus @default(APPLIED)
-  aiScore        Int?            @map("ai_score")
-  jobId          String          @map("job_id") @db.Uuid
-  job            Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  organizationId String          @map("organization_id") @db.Uuid
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  appliedAt      DateTime        @default(now()) @map("applied_at")
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  id              String          @id @default(uuid()) @db.Uuid
+  fullName        String          @map("full_name") @db.VarChar(120)
+  email           String          @db.VarChar(255)
+  phone           String          @db.VarChar(40)
+  currentPosition String?         @map("current_position") @db.VarChar(120)
+  skills          Json?
+  experience      String?         @db.Text
+  education       String?         @db.Text
+  linkedin        String?         @db.VarChar(255)
+  portfolio       String?         @db.VarChar(255)
+  website         String?         @db.VarChar(255)
+  status          CandidateStatus @default(APPLIED)
+  aiScore         Int?            @map("ai_score")
+  jobId           String?         @map("job_id") @db.Uuid
+  job             Job?            @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  organizationId  String          @map("organization_id") @db.Uuid
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  applications    Application[]
+  appliedAt       DateTime        @default(now()) @map("applied_at")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
 
+  @@unique([organizationId, email])
   @@index([organizationId, appliedAt])
   @@index([jobId])
   @@map("candidates")
+}
+
+model Application {
+  id                String                   @id @default(uuid()) @db.Uuid
+  status            CandidateStatus          @default(APPLIED)
+  trackingTokenHash String                   @unique @map("tracking_token_hash") @db.VarChar(64)
+  extractedText     String?                  @map("extracted_text") @db.Text
+  aiAnalysis        Json?                    @map("ai_analysis")
+  resumeFileId      String?                  @map("resume_file_id") @db.Uuid
+  resumeFile        StoredFile?              @relation("ApplicationResume", fields: [resumeFileId], references: [id], onDelete: SetNull)
+  candidateId       String                   @map("candidate_id") @db.Uuid
+  candidate         Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  jobId             String                   @map("job_id") @db.Uuid
+  job               Job                      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  organizationId    String                   @map("organization_id") @db.Uuid
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  statusEvents      ApplicationStatusEvent[]
+  appliedAt         DateTime                 @default(now()) @map("applied_at")
+  createdAt         DateTime                 @default(now()) @map("created_at")
+  updatedAt         DateTime                 @updatedAt @map("updated_at")
+
+  @@unique([jobId, candidateId])
+  @@index([organizationId, appliedAt])
+  @@index([jobId])
+  @@index([candidateId])
+  @@map("applications")
+}
+
+model ApplicationStatusEvent {
+  id            String          @id @default(uuid()) @db.Uuid
+  applicationId String          @map("application_id") @db.Uuid
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status        CandidateStatus
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@index([applicationId, createdAt])
+  @@map("application_status_events")
 }

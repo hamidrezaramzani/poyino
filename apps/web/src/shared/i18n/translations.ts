@@ -579,6 +579,131 @@ export type Translation = {
     missingToken: string;
     loginLink: string;
   };
+  publicJob: {
+    applyNow: string;
+    companyInfo: string;
+    overview: string;
+    description: string;
+    responsibilities: string;
+    requirements: string;
+    benefits: string;
+    employmentType: string;
+    workplaceType: string;
+    department: string;
+    positions: string;
+    publishedAt: string;
+    expirationDate: string;
+    location: string;
+    expiredTitle: string;
+    expiredDescription: string;
+    notFoundTitle: string;
+    notFoundDescription: string;
+    loadFailed: string;
+    retry: string;
+    emptyValue: string;
+    apply: {
+      title: string;
+      description: string;
+      backToJob: string;
+      uploadStep: string;
+      reviewStep: string;
+      uploadHint: string;
+      chooseFile: string;
+      resumeSelected: string;
+      removeResume: string;
+      uploading: string;
+      continue: string;
+      extractingTitle: string;
+      extractingDescription: string;
+      analyzingTitle: string;
+      analyzingDescription: string;
+      personalTitle: string;
+      professionalTitle: string;
+      linksTitle: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      currentPosition: string;
+      skills: string;
+      skillsHint: string;
+      experience: string;
+      education: string;
+      linkedin: string;
+      portfolio: string;
+      website: string;
+      submit: string;
+      submitting: string;
+      errors: {
+        resumeRequired: string;
+        unsupportedFile: string;
+        fileTooLarge: string;
+        uploadFailed: string;
+        extractionFailed: string;
+        analysisFailed: string;
+        fullNameRequired: string;
+        emailRequired: string;
+        emailInvalid: string;
+        phoneRequired: string;
+        duplicate: string;
+        unexpected: string;
+      };
+    };
+    success: {
+      title: string;
+      description: string;
+      summaryTitle: string;
+      jobTitle: string;
+      organization: string;
+      submittedAt: string;
+      trackingTitle: string;
+      trackingHint: string;
+      copyLink: string;
+      linkCopied: string;
+      openTracking: string;
+      nextStepsTitle: string;
+      nextSteps: string;
+      keepSafe: string;
+    };
+    tracking: {
+      title: string;
+      statusTitle: string;
+      timelineTitle: string;
+      jobTitle: string;
+      submittedTitle: string;
+      lastUpdated: string;
+      notFoundTitle: string;
+      notFoundDescription: string;
+      loadFailed: string;
+      retry: string;
+      fullName: string;
+      email: string;
+      phone: string;
+      currentPosition: string;
+      statusLabels: {
+        APPLIED: string;
+        REVIEWING: string;
+        INTERVIEW_SCHEDULED: string;
+        INTERVIEW_PASSED: string;
+        HIRED: string;
+        REJECTED: string;
+      };
+      statusDescriptions: {
+        APPLIED: string;
+        REVIEWING: string;
+        INTERVIEW_SCHEDULED: string;
+        INTERVIEW_PASSED: string;
+        HIRED: string;
+        REJECTED: string;
+      };
+      timelineSteps: {
+        APPLIED: string;
+        REVIEWING: string;
+        INTERVIEW_SCHEDULED: string;
+        INTERVIEW_PASSED: string;
+        FINAL: string;
+      };
+    };
+  };
 };
 
 export const translations: Record<Locale, Translation> = {
@@ -1218,6 +1343,139 @@ export const translations: Record<Locale, Translation> = {
       missingToken: "لینک تأیید نامعتبر است یا توکن ندارد.",
       loginLink: "بازگشت به ورود",
     },
+    publicJob: {
+      applyNow: "ارسال درخواست",
+      companyInfo: "درباره شرکت",
+      overview: "خلاصه فرصت شغلی",
+      description: "شرح موقعیت",
+      responsibilities: "مسئولیت‌ها",
+      requirements: "الزامات",
+      benefits: "مزایا",
+      employmentType: "نوع همکاری",
+      workplaceType: "محل کار",
+      department: "دپارتمان",
+      positions: "تعداد موقعیت",
+      publishedAt: "تاریخ انتشار",
+      expirationDate: "مهلت ارسال",
+      location: "موقعیت مکانی",
+      expiredTitle: "این فرصت دیگر پذیرش درخواست ندارد.",
+      expiredDescription: "مهلت ارسال درخواست به پایان رسیده است.",
+      notFoundTitle: "فرصت شغلی پیدا نشد",
+      notFoundDescription:
+        "فرصت شغلی مورد نظر وجود ندارد یا دیگر در دسترس نیست.",
+      loadFailed: "بارگذاری فرصت شغلی با خطا مواجه شد.",
+      retry: "تلاش مجدد",
+      emptyValue: "—",
+      apply: {
+        title: "ارسال درخواست",
+        description:
+          "رزومه خود را بارگذاری کنید تا فرم به صورت خودکار تکمیل شود، سپس اطلاعات را بررسی و ارسال کنید.",
+        backToJob: "بازگشت به فرصت شغلی",
+        uploadStep: "بارگذاری رزومه",
+        reviewStep: "بررسی اطلاعات",
+        uploadHint: "فقط فایل PDF تا ۱۰ مگابایت",
+        chooseFile: "انتخاب فایل",
+        resumeSelected: "رزومه آماده بارگذاری است.",
+        removeResume: "حذف فایل",
+        uploading: "در حال بارگذاری رزومه...",
+        continue: "ادامه",
+        extractingTitle: "در حال خواندن رزومه...",
+        extractingDescription: "متن رزومه استخراج می‌شود.",
+        analyzingTitle: "در حال تحلیل رزومه با هوش مصنوعی...",
+        analyzingDescription: "اطلاعات ساختاریافته از رزومه استخراج می‌شود.",
+        personalTitle: "اطلاعات شخصی",
+        professionalTitle: "اطلاعات حرفه‌ای",
+        linksTitle: "لینک‌ها",
+        fullName: "نام و نام خانوادگی",
+        email: "ایمیل",
+        phone: "شماره تماس",
+        currentPosition: "سمت فعلی",
+        skills: "مهارت‌ها",
+        skillsHint: "مهارت‌ها را با ویرگول جدا کنید.",
+        experience: "سوابق کاری",
+        education: "تحصیلات",
+        linkedin: "لینکدین",
+        portfolio: "نمونه کار",
+        website: "وب‌سایت",
+        submit: "ارسال درخواست",
+        submitting: "در حال ارسال...",
+        errors: {
+          resumeRequired: "لطفاً رزومه خود را بارگذاری کنید.",
+          unsupportedFile: "فقط فایل‌های PDF پشتیبانی می‌شوند.",
+          fileTooLarge: "حجم فایل از حد مجاز بیشتر است.",
+          uploadFailed: "بارگذاری رزومه با خطا مواجه شد.",
+          extractionFailed:
+            "خواندن رزومه ممکن نشد. لطفاً فایل PDF دیگری بارگذاری کنید.",
+          analysisFailed:
+            "تحلیل رزومه ممکن نشد. لطفاً فرم را به صورت دستی تکمیل کنید.",
+          fullNameRequired: "نام و نام خانوادگی الزامی است.",
+          emailRequired: "ایمیل الزامی است.",
+          emailInvalid: "ایمیل معتبر نیست.",
+          phoneRequired: "شماره تماس الزامی است.",
+          duplicate: "شما قبلاً برای این فرصت شغلی درخواست داده‌اید.",
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      success: {
+        title: "درخواست با موفقیت ارسال شد",
+        description:
+          "درخواست شما دریافت شد. تیم جذب آن را بررسی کرده و وضعیت را به‌روزرسانی می‌کند.",
+        summaryTitle: "خلاصه درخواست",
+        jobTitle: "عنوان شغلی",
+        organization: "سازمان",
+        submittedAt: "زمان ارسال",
+        trackingTitle: "لینک پیگیری خصوصی",
+        trackingHint: "برای مشاهده وضعیت درخواست از این لینک استفاده کنید.",
+        copyLink: "کپی لینک",
+        linkCopied: "لینک پیگیری کپی شد.",
+        openTracking: "باز کردن صفحه پیگیری",
+        nextStepsTitle: "مراحل بعدی",
+        nextSteps:
+          "هر زمان می‌توانید با لینک پیگیری، وضعیت درخواست خود را بررسی کنید.",
+        keepSafe: "لطفاً این لینک را در جای امنی نگه دارید.",
+      },
+      tracking: {
+        title: "پیگیری درخواست",
+        statusTitle: "وضعیت فعلی",
+        timelineTitle: "مسیر پیشرفت",
+        jobTitle: "اطلاعات فرصت شغلی",
+        submittedTitle: "اطلاعات ارسال‌شده",
+        lastUpdated: "آخرین به‌روزرسانی",
+        notFoundTitle: "لینک پیگیری پیدا نشد",
+        notFoundDescription: "لینک پیگیری نامعتبر است یا منقضی شده است.",
+        loadFailed: "بارگذاری اطلاعات پیگیری با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        fullName: "نام و نام خانوادگی",
+        email: "ایمیل",
+        phone: "شماره تماس",
+        currentPosition: "سمت فعلی",
+        statusLabels: {
+          APPLIED: "ارسال شده",
+          REVIEWING: "در حال بررسی",
+          INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شده",
+          INTERVIEW_PASSED: "مصاحبه انجام شده",
+          HIRED: "استخدام شده",
+          REJECTED: "رد شده",
+        },
+        statusDescriptions: {
+          APPLIED: "درخواست شما با موفقیت دریافت شد.",
+          REVIEWING: "تیم جذب در حال بررسی درخواست شماست.",
+          INTERVIEW_SCHEDULED: "تبریک! شما به مصاحبه دعوت شده‌اید.",
+          INTERVIEW_PASSED:
+            "مصاحبه شما انجام شده و تصمیم نهایی در حال آماده‌سازی است.",
+          HIRED: "تبریک! شما فرآیند جذب را با موفقیت پشت سر گذاشته‌اید.",
+          REJECTED:
+            "از علاقه‌مندی شما سپاسگزاریم. پس از بررسی، تصمیم گرفتیم با متقاضی دیگری ادامه دهیم.",
+        },
+        timelineSteps: {
+          APPLIED: "ارسال درخواست",
+          REVIEWING: "در حال بررسی",
+          INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شده",
+          INTERVIEW_PASSED: "مصاحبه انجام شده",
+          FINAL: "تصمیم نهایی",
+        },
+      },
+    },
   },
   en: {
     languageLabel: "English",
@@ -1856,6 +2114,140 @@ export const translations: Record<Locale, Translation> = {
         "A verification token was detected. Full verification will be enabled soon.",
       missingToken: "This verification link is missing a token.",
       loginLink: "Back to login",
+    },
+    publicJob: {
+      applyNow: "Apply Now",
+      companyInfo: "About the company",
+      overview: "Job overview",
+      description: "Job description",
+      responsibilities: "Responsibilities",
+      requirements: "Requirements",
+      benefits: "Benefits",
+      employmentType: "Employment type",
+      workplaceType: "Workplace type",
+      department: "Department",
+      positions: "Number of positions",
+      publishedAt: "Published date",
+      expirationDate: "Expiration date",
+      location: "Location",
+      expiredTitle: "This job is no longer accepting applications.",
+      expiredDescription: "The application deadline has passed.",
+      notFoundTitle: "Job not found",
+      notFoundDescription:
+        "The requested job does not exist or is no longer available.",
+      loadFailed: "Unable to load this job.",
+      retry: "Retry",
+      emptyValue: "—",
+      apply: {
+        title: "Apply for this job",
+        description:
+          "Upload your resume so we can autofill the form, then review and submit.",
+        backToJob: "Back to job",
+        uploadStep: "Upload resume",
+        reviewStep: "Review information",
+        uploadHint: "PDF only, up to 10 MB",
+        chooseFile: "Choose file",
+        resumeSelected: "Resume ready to upload.",
+        removeResume: "Remove file",
+        uploading: "Uploading resume...",
+        continue: "Continue",
+        extractingTitle: "Reading your resume...",
+        extractingDescription: "Extracting text from your PDF.",
+        analyzingTitle: "Analyzing your resume with AI...",
+        analyzingDescription: "Filling the application form from your resume.",
+        personalTitle: "Personal information",
+        professionalTitle: "Professional information",
+        linksTitle: "Links",
+        fullName: "Full name",
+        email: "Email",
+        phone: "Phone number",
+        currentPosition: "Current position",
+        skills: "Skills",
+        skillsHint: "Separate skills with commas.",
+        experience: "Work experience",
+        education: "Education",
+        linkedin: "LinkedIn",
+        portfolio: "Portfolio",
+        website: "Website",
+        submit: "Submit application",
+        submitting: "Submitting...",
+        errors: {
+          resumeRequired: "Please upload your resume.",
+          unsupportedFile: "Only PDF files are supported.",
+          fileTooLarge: "File size exceeds the maximum allowed limit.",
+          uploadFailed: "Unable to upload your resume.",
+          extractionFailed:
+            "Unable to read your resume. Please upload another PDF.",
+          analysisFailed:
+            "Unable to analyze your resume. Please complete the application manually.",
+          fullNameRequired: "Full name is required.",
+          emailRequired: "Email is required.",
+          emailInvalid: "Email is invalid.",
+          phoneRequired: "Phone number is required.",
+          duplicate: "You have already applied for this job.",
+          unexpected: "Something went wrong.",
+        },
+      },
+      success: {
+        title: "Application submitted successfully",
+        description:
+          "Your application has been received. Our recruitment team will review it and update its status.",
+        summaryTitle: "Application summary",
+        jobTitle: "Job title",
+        organization: "Organization",
+        submittedAt: "Submitted at",
+        trackingTitle: "Private tracking link",
+        trackingHint: "Use this link anytime to check your application status.",
+        copyLink: "Copy link",
+        linkCopied: "Tracking link copied.",
+        openTracking: "Open tracking page",
+        nextStepsTitle: "Next steps",
+        nextSteps:
+          "You can use the tracking link at any time to check the status of your application.",
+        keepSafe: "Please keep this link in a safe place.",
+      },
+      tracking: {
+        title: "Application tracking",
+        statusTitle: "Current status",
+        timelineTitle: "Progress timeline",
+        jobTitle: "Job information",
+        submittedTitle: "Submitted information",
+        lastUpdated: "Last updated",
+        notFoundTitle: "Tracking link not found",
+        notFoundDescription: "The tracking link is invalid or has expired.",
+        loadFailed: "Unable to load tracking information.",
+        retry: "Retry",
+        fullName: "Full name",
+        email: "Email",
+        phone: "Phone number",
+        currentPosition: "Current position",
+        statusLabels: {
+          APPLIED: "Submitted",
+          REVIEWING: "Under review",
+          INTERVIEW_SCHEDULED: "Interview scheduled",
+          INTERVIEW_PASSED: "Interview completed",
+          HIRED: "Hired",
+          REJECTED: "Rejected",
+        },
+        statusDescriptions: {
+          APPLIED: "Your application has been received successfully.",
+          REVIEWING: "Our recruitment team is currently reviewing your application.",
+          INTERVIEW_SCHEDULED: "Congratulations! You have been invited to an interview.",
+          INTERVIEW_PASSED:
+            "Your interview has been completed. The final decision is being prepared.",
+          HIRED:
+            "Congratulations! You have successfully passed the recruitment process.",
+          REJECTED:
+            "Thank you for your interest. After careful consideration, we decided to move forward with another candidate.",
+        },
+        timelineSteps: {
+          APPLIED: "Application submitted",
+          REVIEWING: "Under review",
+          INTERVIEW_SCHEDULED: "Interview scheduled",
+          INTERVIEW_PASSED: "Interview completed",
+          FINAL: "Final decision",
+        },
+      },
     },
   },
 };

@@ -16,7 +16,7 @@ export class DashboardService {
       totalCandidates,
       totalHired,
       recentJobs,
-      recentCandidates,
+      recentApplications,
     ] = await Promise.all([
       this.prisma.job.count({
         where: { organizationId },
@@ -24,10 +24,10 @@ export class DashboardService {
       this.prisma.job.count({
         where: { organizationId, status: "PUBLISHED" },
       }),
-      this.prisma.candidate.count({
+      this.prisma.application.count({
         where: { organizationId },
       }),
-      this.prisma.candidate.count({
+      this.prisma.application.count({
         where: { organizationId, status: "HIRED" },
       }),
       this.prisma.job.findMany({
@@ -40,24 +40,29 @@ export class DashboardService {
           status: true,
           publishedAt: true,
           _count: {
-            select: { candidates: true },
+            select: { applications: true },
           },
         },
       }),
-      this.prisma.candidate.findMany({
+      this.prisma.application.findMany({
         where: { organizationId },
         orderBy: { appliedAt: "desc" },
         take: RECENT_LIMIT,
         select: {
           id: true,
-          fullName: true,
-          aiScore: true,
           status: true,
           appliedAt: true,
           jobId: true,
           job: {
             select: {
               title: true,
+            },
+          },
+          candidate: {
+            select: {
+              id: true,
+              fullName: true,
+              aiScore: true,
             },
           },
         },
@@ -77,16 +82,16 @@ export class DashboardService {
         title: job.title,
         status: job.status,
         publishedAt: job.publishedAt?.toISOString() ?? null,
-        candidateCount: job._count.candidates,
+        candidateCount: job._count.applications,
       })),
-      recentCandidates: recentCandidates.map((candidate) => ({
-        id: candidate.id,
-        fullName: candidate.fullName,
-        jobTitle: candidate.job.title,
-        jobId: candidate.jobId,
-        aiScore: candidate.aiScore,
-        status: candidate.status,
-        submittedAt: candidate.appliedAt.toISOString(),
+      recentCandidates: recentApplications.map((application) => ({
+        id: application.candidate.id,
+        fullName: application.candidate.fullName,
+        jobTitle: application.job.title,
+        jobId: application.jobId,
+        aiScore: application.candidate.aiScore,
+        status: application.status,
+        submittedAt: application.appliedAt.toISOString(),
       })),
     };
   }

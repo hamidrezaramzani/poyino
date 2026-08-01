@@ -136,7 +136,7 @@ export class JobsService {
           publishedAt: true,
           expirationDate: true,
           _count: {
-            select: { candidates: true },
+            select: { applications: true },
           },
         },
       }),
@@ -156,7 +156,7 @@ export class JobsService {
           job.status === "PUBLISHED" &&
           isJobExpired(job.expirationDate, timezone),
         department: job.department,
-        candidateCount: job._count.candidates,
+        candidateCount: job._count.applications,
         createdAt: job.createdAt.toISOString(),
         publishedAt: job.publishedAt?.toISOString() ?? null,
       })),
@@ -188,13 +188,18 @@ export class JobsService {
             createdAt: "asc",
           },
         },
-        candidates: {
+        applications: {
           orderBy: { appliedAt: "desc" },
           take: 1,
           select: {
             id: true,
-            fullName: true,
             appliedAt: true,
+            candidate: {
+              select: {
+                id: true,
+                fullName: true,
+              },
+            },
           },
         },
       },
@@ -206,25 +211,25 @@ export class JobsService {
 
     const [applications, newApplications, interviews, hired] =
       await Promise.all([
-        this.prisma.candidate.count({
+        this.prisma.application.count({
           where: { jobId, organizationId },
         }),
-        this.prisma.candidate.count({
+        this.prisma.application.count({
           where: { jobId, organizationId, status: "APPLIED" },
         }),
-        this.prisma.candidate.count({
+        this.prisma.application.count({
           where: {
             jobId,
             organizationId,
             status: { in: ["INTERVIEW_SCHEDULED", "INTERVIEW_PASSED"] },
           },
         }),
-        this.prisma.candidate.count({
+        this.prisma.application.count({
           where: { jobId, organizationId, status: "HIRED" },
         }),
       ]);
 
-    const latestCandidate = job.candidates[0] ?? null;
+    const latestApplication = job.applications[0] ?? null;
     const isExpired =
       job.status === "PUBLISHED" &&
       isJobExpired(job.expirationDate, job.organization.timezone);
@@ -264,11 +269,11 @@ export class JobsService {
           interviews,
           hired,
         },
-        latestCandidate: latestCandidate
+        latestCandidate: latestApplication
           ? {
-              id: latestCandidate.id,
-              fullName: latestCandidate.fullName,
-              appliedAt: latestCandidate.appliedAt.toISOString(),
+              id: latestApplication.candidate.id,
+              fullName: latestApplication.candidate.fullName,
+              appliedAt: latestApplication.appliedAt.toISOString(),
             }
           : null,
       },
@@ -474,7 +479,7 @@ export class JobsService {
         id: true,
         status: true,
         _count: {
-          select: { candidates: true },
+          select: { applications: true },
         },
       },
     });
@@ -483,7 +488,7 @@ export class JobsService {
       throw jobNotFound();
     }
 
-    if (job._count.candidates > 0) {
+    if (job._count.applications > 0) {
       throw new ConflictException({
         success: false,
         error: {
@@ -630,7 +635,7 @@ function buildJobListOrderBy(
 ): Prisma.JobOrderByWithRelationInput {
   if (sortBy === "candidateCount") {
     return {
-      candidates: {
+      applications: {
         _count: sortOrder,
       },
     };

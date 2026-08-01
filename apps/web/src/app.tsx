@@ -17,6 +17,10 @@ import { GeneralSettingsPage } from "./features/settings/pages/general-settings-
 import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
 import { ProfileSettingsPage } from "./features/settings/pages/profile-settings-page";
 import { SettingsLayoutPage } from "./features/settings/pages/settings-layout-page";
+import { ApplyPage } from "./features/public-job/pages/apply-page";
+import { ApplySuccessPage } from "./features/public-job/pages/apply-success-page";
+import { PublicJobPage } from "./features/public-job/pages/public-job-page";
+import { TrackingPage } from "./features/public-job/pages/tracking-page";
 import { HomePage } from "./pages/home-page";
 import { useI18n } from "./shared/i18n/i18n-provider";
 import { ProtectedRoute } from "./shared/session/protected-route";
@@ -118,6 +122,13 @@ export function App() {
             <VerifyEmailPage />
           </AuthLayout>
         }
+      />
+      <Route path="/tracking/:token" element={<TrackingPage />} />
+      <Route path="/:orgSlug/jobs/:jobId" element={<PublicJobPage />} />
+      <Route path="/:orgSlug/jobs/:jobId/apply" element={<ApplyPage />} />
+      <Route
+        path="/:orgSlug/jobs/:jobId/apply/success"
+        element={<ApplySuccessPage />}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

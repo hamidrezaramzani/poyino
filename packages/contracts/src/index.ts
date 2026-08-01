@@ -13,6 +13,9 @@ export * from "./settings/notification.schema";
 export * from "./settings/change-password.schema";
 export * from "./settings/file.schema";
 export * from "./jobs/create-job.schema";
+export * from "./public-job/public-job.schema";
+export * from "./public-job/apply.schema";
+export * from "./public-job/tracking.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),

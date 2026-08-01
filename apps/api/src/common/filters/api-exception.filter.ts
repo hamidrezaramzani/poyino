@@ -4,16 +4,31 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from "@nestjs/common";
 import { ThrottlerException } from "@nestjs/throttler";
+import { ApplyErrorCode, LoginErrorCode } from "@poyino/contracts";
 import type { Response } from "express";
-import { LoginErrorCode } from "@poyino/contracts";
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(ApiExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<{ method?: string; url?: string }>();
+
+    if (isPayloadTooLargeError(exception)) {
+      response.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
+        success: false,
+        error: {
+          code: ApplyErrorCode.FILE_TOO_LARGE,
+          message: "File size exceeds the maximum allowed limit.",
+        },
+      });
+      return;
+    }
 
     if (exception instanceof ThrottlerException) {
       response.status(HttpStatus.TOO_MANY_REQUESTS).json({
@@ -40,6 +55,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
         return;
       }
 
+      if (status >= 500) {
+        this.logger.error(
+          `Unhandled HttpException on ${request.method ?? "UNKNOWN"} ${request.url ?? ""}`,
+          exception instanceof Error ? exception.stack : String(exception),
+        );
+      }
+
       response.status(status).json({
         success: false,
         error: {
@@ -50,6 +72,11 @@ export class ApiExceptionFilter implements ExceptionFilter {
       return;
     }
 
+    this.logger.error(
+      `Unhandled exception on ${request.method ?? "UNKNOWN"} ${request.url ?? ""}`,
+      exception instanceof Error ? exception.stack : String(exception),
+    );
+
     response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: {
@@ -58,4 +85,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
       },
     });
   }
+}
+
+function isPayloadTooLargeError(exception: unknown) {
+  return (
+    exception instanceof Error &&
+    (exception.name === "PayloadTooLargeError" ||
+      ("type" in exception &&
+        (exception as { type?: string }).type === "entity.too.large") ||
+      /request entity too large/i.test(exception.message))
+  );
 }

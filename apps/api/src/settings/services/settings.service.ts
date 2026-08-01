@@ -1,7 +1,3 @@
-import { mkdir, writeFile, readFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   BadRequestException,
   ConflictException,
@@ -23,22 +19,24 @@ import {
 import * as bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
+import {
+  StorageObjectNotFoundException,
+  StorageService,
+  StorageValidationException,
+} from "../../storage";
 
 const BCRYPT_ROUNDS = 12;
-const ALLOWED_MIME_TYPES = new Set([
+const ALLOWED_MIME_TYPES = [
   "image/png",
   "image/jpeg",
   "image/svg+xml",
-]);
-
-const UPLOADS_ROOT = resolve(
-  fileURLToPath(new URL("../../../uploads", import.meta.url)),
-);
+] as const;
 
 @Injectable()
 export class SettingsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(StorageService) private readonly storageService: StorageService,
   ) {}
 
   async getGeneral(organizationId: string) {
@@ -235,7 +233,7 @@ export class SettingsService {
   async uploadFile(organizationId: string, input: UploadFileInput) {
     const mimeType = input.mimeType;
 
-    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    if (!ALLOWED_MIME_TYPES.includes(mimeType as (typeof ALLOWED_MIME_TYPES)[number])) {
       throw new BadRequestException({
         success: false,
         error: {
@@ -268,45 +266,60 @@ export class SettingsService {
       });
     }
 
-    const fileId = randomUUID();
-    const storageKey = join(organizationId, `${fileId}${extensionFor(mimeType)}`);
-    const absolutePath = join(UPLOADS_ROOT, storageKey);
-
-    await mkdir(dirname(absolutePath), { recursive: true });
-    await writeFile(absolutePath, buffer);
-
-    const file = await this.prisma.storedFile.create({
-      data: {
-        id: fileId,
+    try {
+      const file = await this.storageService.upload({
         organizationId,
-        storageKey,
+        folder: "organizations",
+        scope: organizationId,
+        buffer,
         originalName: input.fileName,
         mimeType,
-        sizeBytes: buffer.byteLength,
-      },
-    });
+        maxBytes: MAX_UPLOAD_BYTES,
+        allowedMimeTypes: ALLOWED_MIME_TYPES,
+      });
 
-    return {
-      success: true as const,
-      file: {
-        id: file.id,
-        url: this.fileUrl(file.id),
-        fileName: file.originalName,
-        mimeType: file.mimeType,
-        sizeBytes: file.sizeBytes,
-      },
-    };
+      return {
+        success: true as const,
+        file: {
+          id: file.id,
+          url: this.fileUrl(file.id),
+          fileName: file.originalName,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+        },
+      };
+    } catch (error) {
+      if (error instanceof StorageValidationException) {
+        throw new BadRequestException({
+          success: false,
+          error: {
+            code: SettingsErrorCode.FILE_INVALID_TYPE,
+            message: "فایل نامعتبر است.",
+          },
+        });
+      }
+      throw error;
+    }
   }
 
   async getFileContent(organizationId: string, fileId: string) {
-    const file = await this.requireOwnedFile(organizationId, fileId);
-    const absolutePath = join(UPLOADS_ROOT, file.storageKey);
-    const content = await readFile(absolutePath);
-    return {
-      content,
-      mimeType: file.mimeType,
-      fileName: file.originalName,
-    };
+    try {
+      return await this.storageService.downloadByOrganization(
+        organizationId,
+        fileId,
+      );
+    } catch (error) {
+      if (error instanceof StorageObjectNotFoundException) {
+        throw new BadRequestException({
+          success: false,
+          error: {
+            code: SettingsErrorCode.FILE_NOT_FOUND,
+            message: "فایل یافت نشد.",
+          },
+        });
+      }
+      throw error;
+    }
   }
 
   private async requireOrganization(organizationId: string) {
@@ -441,18 +454,5 @@ export class SettingsService {
         },
       });
     }
-  }
-}
-
-function extensionFor(mimeType: string) {
-  switch (mimeType) {
-    case "image/png":
-      return ".png";
-    case "image/jpeg":
-      return ".jpg";
-    case "image/svg+xml":
-      return ".svg";
-    default:
-      return "";
   }
 }

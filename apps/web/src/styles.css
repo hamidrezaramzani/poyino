@@ -1753,3 +1753,225 @@ a {
 .poyino-toast {
   font-family: var(--font-fa) !important;
 }
+
+.public-job-shell {
+  --ui-primary: #78c0e0;
+  --ui-primary-hover: #9ad2ea;
+  --ui-on-primary: #0b0f14;
+  --ui-accent: #8ea2ff;
+  --ui-border: #2a3441;
+  --ui-text: #e8eef4;
+  --ui-muted: #93a0b0;
+  --ui-danger: #f2a3a0;
+  --ui-danger-bg: rgba(180, 35, 24, 0.18);
+  --ui-danger-border: rgba(180, 35, 24, 0.35);
+  --ui-surface: #121820;
+  --ui-surface-muted: #171e27;
+  --ui-success: #7dcea0;
+  --ui-success-bg: rgba(2, 122, 72, 0.18);
+  --ui-success-border: rgba(2, 122, 72, 0.35);
+  --ui-warning: #e8c07a;
+  --ui-warning-bg: rgba(181, 71, 8, 0.18);
+  --ui-warning-border: rgba(181, 71, 8, 0.35);
+  --ui-info-bg: rgba(57, 67, 183, 0.2);
+  --ui-info-border: rgba(142, 162, 255, 0.35);
+  --ui-icon-bg: rgba(120, 192, 224, 0.12);
+  --ui-shadow: none;
+  --ui-skeleton-from: #1a222c;
+  --ui-skeleton-via: #243041;
+  --dash-bg: #0b0f14;
+  --dash-hover: rgba(255, 255, 255, 0.06);
+
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  background: var(--dash-bg);
+  color: var(--ui-text);
+}
+
+.public-job-shell::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0 0 auto;
+  height: 28rem;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% -15%, rgba(120, 192, 224, 0.16), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 90% 10%, rgba(142, 162, 255, 0.08), transparent 65%);
+}
+
+.public-job-shell-header {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 56rem);
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.public-job-shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--ui-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.public-job-shell-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.65rem;
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+  font-size: 0.95rem;
+}
+
+.public-job-shell .language-toggle {
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  color: var(--ui-text);
+  font-weight: 600;
+}
+
+.public-job-shell .language-toggle:hover,
+.public-job-shell .language-toggle:focus-visible {
+  background: var(--dash-hover);
+  outline: none;
+}
+
+.public-job-shell-main {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 56rem);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  flex: 1;
+}
+
+.public-job-shell-main a {
+  color: var(--ui-primary);
+  font-weight: 600;
+}
+
+.public-job-shell .job-details-title-row h1,
+.public-job-shell .job-details-info-row strong,
+.public-job-shell .job-details-rich-section h3,
+.public-job-shell .job-details-rich-content {
+  color: var(--ui-text);
+}
+
+.public-job-shell .job-details-meta,
+.public-job-shell .job-details-info-row span,
+.public-job-shell .create-job-hint {
+  color: var(--ui-muted);
+}
+
+.public-job-shell .job-details-info-row,
+.public-job-shell .job-details-rich-section {
+  border-color: var(--ui-border);
+}
+
+.public-job-section-title {
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+  color: var(--ui-text);
+}
+
+.public-job-upload-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.public-job-upload-dropzone {
+  border: 1px dashed var(--ui-border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: var(--ui-surface-muted);
+}
+
+.public-job-upload-dropzone.is-active {
+  border-color: var(--ui-primary);
+  background: rgba(120, 192, 224, 0.08);
+}
+
+.public-job-upload-empty,
+.public-job-upload-file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.public-job-upload-empty {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.public-job-ai-indicator {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.85rem;
+  background: var(--ui-surface-muted);
+  border: 1px solid var(--ui-border);
+}
+
+.public-job-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.public-job-timeline-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.85rem;
+  opacity: 0.45;
+}
+
+.public-job-timeline-item.is-complete,
+.public-job-timeline-item.is-current {
+  opacity: 1;
+}
+
+.public-job-timeline-marker {
+  width: 0.85rem;
+  height: 0.85rem;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  border: 2px solid var(--ui-border, #d7deea);
+  background: var(--ui-surface, #fff);
+}
+
+.public-job-timeline-item.is-complete .public-job-timeline-marker,
+.public-job-timeline-item.is-current .public-job-timeline-marker {
+  border-color: var(--ui-primary, #150578);
+  background: var(--ui-primary, #150578);
+}
+
+.public-job-tracking-url {
+  display: block;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--ui-surface-muted, #f8fafc);
+  border: 1px solid var(--ui-border, #d7deea);
+  word-break: break-all;
+  font-size: 0.85rem;
+}

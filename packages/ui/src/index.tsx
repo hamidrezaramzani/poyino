@@ -14,6 +14,7 @@ export { Avatar } from "./avatar";
 export { Badge } from "./badge";
 export { CopyLinkButton } from "./copy-link-button";
 export { EmptyState } from "./empty-state";
+export { ProgressBar } from "./progress-bar";
 export { Skeleton, SkeletonText, skeletonKeyframes } from "./skeleton";
 export { Spinner, spinnerKeyframes } from "./spinner";
 export { StatisticCard } from "./statistic-card";

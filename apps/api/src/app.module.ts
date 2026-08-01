@@ -8,7 +8,9 @@ import { AuthenticationModule } from "./authentication/authentication.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { PrismaModule } from "./prisma/prisma.module";
+import { PublicJobModule } from "./public-job/public-job.module";
 import { SettingsModule } from "./settings/settings.module";
+import { StorageModule } from "./storage/storage.module";
 
 @Module({
   imports: [
@@ -19,10 +21,12 @@ import { SettingsModule } from "./settings/settings.module";
       },
     ]),
     AiModule,
+    StorageModule,
     PrismaModule,
     AuthenticationModule,
     DashboardModule,
     JobsModule,
+    PublicJobModule,
     SettingsModule,
   ],
   controllers: [AppController],

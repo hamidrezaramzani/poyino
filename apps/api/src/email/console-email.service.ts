@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type {
   EmailService,
+  SendApplicationConfirmationEmailInput,
   SendJobExpirationReminderEmailInput,
   SendPasswordResetEmailInput,
   SendVerificationEmailInput,
@@ -47,6 +48,20 @@ export class ConsoleEmailService implements EmailService {
         `jobTitle=${input.jobTitle}`,
         `expirationDate=${input.expirationDate}`,
         `jobUrl=${input.jobUrl}`,
+      ].join(" | "),
+    );
+  }
+
+  async sendApplicationConfirmationEmail(
+    input: SendApplicationConfirmationEmailInput,
+  ): Promise<void> {
+    this.logger.log(
+      [
+        "Application confirmation email (console adapter)",
+        `to=${input.to}`,
+        `organization=${input.organizationName}`,
+        `jobTitle=${input.jobTitle}`,
+        `trackingUrl=${input.trackingUrl}`,
       ].join(" | "),
     );
   }

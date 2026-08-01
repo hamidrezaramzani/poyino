@@ -19,11 +19,21 @@ export type SendJobExpirationReminderEmailInput = {
   jobUrl: string;
 };
 
+export type SendApplicationConfirmationEmailInput = {
+  to: string;
+  organizationName: string;
+  jobTitle: string;
+  trackingUrl: string;
+};
+
 export interface EmailService {
   sendVerificationEmail(input: SendVerificationEmailInput): Promise<void>;
   sendPasswordResetEmail(input: SendPasswordResetEmailInput): Promise<void>;
   sendJobExpirationReminderEmail(
     input: SendJobExpirationReminderEmailInput,
+  ): Promise<void>;
+  sendApplicationConfirmationEmail(
+    input: SendApplicationConfirmationEmailInput,
   ): Promise<void>;
 }
 
