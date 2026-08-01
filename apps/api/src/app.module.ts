@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
+import { AiModule } from "./ai/ai.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
@@ -17,6 +18,7 @@ import { SettingsModule } from "./settings/settings.module";
         limit: 100,
       },
     ]),
+    AiModule,
     PrismaModule,
     AuthenticationModule,
     DashboardModule,

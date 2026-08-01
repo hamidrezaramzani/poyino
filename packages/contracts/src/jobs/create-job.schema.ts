@@ -179,10 +179,20 @@ export const GenerateJobContentSuccessSchema = z.object({
   success: z.literal(true),
   content: z.object({
     title: z.string(),
+    department: z.string().nullable(),
+    employmentType: EmploymentTypeSchema,
+    workplaceType: WorkplaceTypeSchema,
+    location: z.string().nullable(),
+    salaryMin: z.number().int().nonnegative().nullable(),
+    salaryMax: z.number().int().nonnegative().nullable(),
+    currency: z.string(),
+    salaryVisible: z.boolean(),
     description: z.string(),
     responsibilities: z.string(),
     requirements: z.string(),
     benefits: z.string(),
+    skills: z.array(z.string()),
+    positions: z.number().int().positive(),
   }),
 });
 

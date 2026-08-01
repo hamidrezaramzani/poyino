@@ -186,14 +186,54 @@ export function useCreateJobForm() {
     setErrors((current) => ({ ...current, aiPrompt: undefined }));
     try {
       const response = await generateJobContent(parsed.data);
+      const content = response.content;
       setValues((current) => ({
         ...current,
-        title: response.content.title,
-        description: response.content.description,
-        responsibilities: response.content.responsibilities,
-        requirements: response.content.requirements,
-        benefits: response.content.benefits,
+        title: content.title,
+        department: content.department ?? "",
+        employmentType: content.employmentType,
+        workplaceType: content.workplaceType,
+        location: content.location ?? "",
+        salaryMin:
+          content.salaryMin != null ? String(content.salaryMin) : current.salaryMin,
+        salaryMax:
+          content.salaryMax != null ? String(content.salaryMax) : current.salaryMax,
+        currency: content.currency || current.currency,
+        salaryVisible: content.salaryVisible ? "visible" : "hidden",
+        description: content.description,
+        responsibilities: content.responsibilities,
+        requirements: content.requirements,
+        benefits: content.benefits,
+        skills: content.skills?.length ? content.skills : current.skills,
+        positions:
+          content.positions != null
+            ? String(content.positions)
+            : current.positions,
       }));
+      setErrors((current) => {
+        const next = { ...current };
+        for (const field of [
+          "aiPrompt",
+          "title",
+          "department",
+          "employmentType",
+          "workplaceType",
+          "location",
+          "salaryMin",
+          "salaryMax",
+          "currency",
+          "salaryVisible",
+          "description",
+          "responsibilities",
+          "requirements",
+          "benefits",
+          "skills",
+          "positions",
+        ] as const) {
+          delete next[field];
+        }
+        return next;
+      });
     } catch (error) {
       if (error instanceof ApiRequestError) {
         if (error.code === JobErrorCode.TOO_MANY_REQUESTS) {

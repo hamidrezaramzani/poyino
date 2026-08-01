@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from "@nestjs/common";
 import type {
   CreateJobInput,
@@ -14,7 +15,19 @@ import type {
 } from "@poyino/contracts";
 import { CreateJobSchema, JobErrorCode } from "@poyino/contracts";
 import type { Prisma } from "@prisma/client";
+import {
+  AiException,
+  AiInvalidResponseException,
+  AiService,
+} from "../../ai";
 import { PrismaService } from "../../prisma/prisma.service";
+import {
+  buildJobContentUserPrompt,
+  GeneratedJobContentSchema,
+  JOB_CONTENT_SCHEMA_HINT,
+  JOB_CONTENT_SYSTEM_PROMPT,
+  normalizeGeneratedJobContent,
+} from "../ai/generate-job-content";
 import {
   buildPublicJobUrl,
   formatDateOnly,
@@ -25,6 +38,7 @@ import {
 export class JobsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(AiService) private readonly aiService: AiService,
   ) {}
 
   async create(organizationId: string, input: CreateJobInput) {
@@ -558,45 +572,45 @@ export class JobsService {
     };
   }
 
-  generateContent(input: GenerateJobContentInput) {
-    const prompt = input.prompt.trim();
-    const title = deriveTitle(prompt);
+  async generateContent(input: GenerateJobContentInput) {
+    try {
+      const result = await this.aiService.generateStructured({
+        system: JOB_CONTENT_SYSTEM_PROMPT,
+        prompt: buildJobContentUserPrompt(input.prompt),
+        schema: GeneratedJobContentSchema,
+        schemaName: "GeneratedJobContent",
+        schemaHint: JOB_CONTENT_SCHEMA_HINT,
+        maxTokens: 2_500,
+        normalize: normalizeGeneratedJobContent,
+      });
 
-    return {
-      success: true as const,
-      content: {
-        title,
-        description: [
-          `<p>${escapeHtml(prompt)}</p>`,
-          `<p>We are hiring a ${escapeHtml(title)} to join our team and help us deliver high-quality work.</p>`,
-          "<p>You will collaborate with cross-functional partners, take ownership of meaningful outcomes, and contribute to a culture of continuous improvement.</p>",
-        ].join(""),
-        responsibilities: [
-          "<ul>",
-          `<li>Own key deliverables related to ${escapeHtml(title)} responsibilities.</li>`,
-          "<li>Collaborate with teammates to plan, execute, and improve day-to-day work.</li>",
-          "<li>Communicate progress clearly and proactively surface risks or blockers.</li>",
-          "<li>Contribute to documentation, mentoring, and team best practices.</li>",
-          "</ul>",
-        ].join(""),
-        requirements: [
-          "<ul>",
-          `<li>Proven experience relevant to ${escapeHtml(title)}.</li>`,
-          "<li>Strong communication and problem-solving skills.</li>",
-          "<li>Ability to work independently and as part of a team.</li>",
-          "<li>Comfortable adapting to changing priorities in a growing organization.</li>",
-          "</ul>",
-        ].join(""),
-        benefits: [
-          "<ul>",
-          "<li>Competitive compensation package.</li>",
-          "<li>Flexible working arrangements where possible.</li>",
-          "<li>Opportunities for professional growth and learning.</li>",
-          "<li>Supportive and collaborative team environment.</li>",
-          "</ul>",
-        ].join(""),
-      },
-    };
+      return {
+        success: true as const,
+        content: result.data,
+      };
+    } catch (error) {
+      if (error instanceof AiInvalidResponseException) {
+        throw new BadRequestException({
+          success: false,
+          error: {
+            code: JobErrorCode.UNEXPECTED_ERROR,
+            message: "AI could not generate valid job content. Please try again.",
+          },
+        });
+      }
+
+      if (error instanceof AiException) {
+        throw new ServiceUnavailableException({
+          success: false,
+          error: {
+            code: JobErrorCode.UNEXPECTED_ERROR,
+            message: "AI service is temporarily unavailable. Please try again.",
+          },
+        });
+      }
+
+      throw error;
+    }
   }
 }
 
@@ -651,37 +665,4 @@ function normalizeSkillNames(skills: string[]) {
   }
 
   return normalized;
-}
-
-function deriveTitle(prompt: string) {
-  const cleaned = prompt.replace(/\s+/g, " ").trim();
-  const lookingForMatch = cleaned.match(
-    /(?:looking for|hiring|need|seeking)\s+(?:an?\s+|a\s+)?(.+?)(?:\s+with|\s+who|\.|$)/i,
-  );
-  const candidate = (lookingForMatch?.[1] ?? cleaned)
-    .replace(/^(an?|the)\s+/i, "")
-    .trim();
-
-  if (candidate.length >= 3 && candidate.length <= 100) {
-    return toTitleCase(candidate);
-  }
-
-  return toTitleCase(cleaned.slice(0, 100));
-}
-
-function toTitleCase(value: string) {
-  return value
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
