@@ -99,6 +99,12 @@ export function CandidateDetailsView() {
             <Button type="button" onClick={details.openCreateInterview}>
               {t.candidates.details.actions.scheduleInterview}
             </Button>
+            <Link
+              to={`/jobs/${details.jobId}/candidates/${details.candidateId}/interviews`}
+              className="candidates-name-link"
+            >
+              {t.candidates.details.interviews.manageButton}
+            </Link>
             {candidate.resume ? (
               <a
                 href={details.resumeDownloadUrl}
@@ -111,70 +117,6 @@ export function CandidateDetailsView() {
             ) : null}
           </div>
         </div>
-      </Card>
-
-      <Card title={t.candidates.details.ai.title}>
-        {!candidate.jobMatchAnalysis ? (
-          <EmptyState title={t.candidates.details.ai.empty} />
-        ) : (
-          <div className="candidate-ai-summary">
-            <div className="candidate-ai-score-row">
-              <Badge variant={aiScoreVariant(candidate.jobMatchAnalysis.matchScore)}>
-                {candidate.jobMatchAnalysis.matchScore}
-              </Badge>
-              <span>{t.candidates.details.ai.matchScore}</span>
-            </div>
-            {candidate.jobMatchAnalysis.executiveSummary ? (
-              <p className="candidate-ai-summary-text">
-                {candidate.jobMatchAnalysis.executiveSummary}
-              </p>
-            ) : null}
-            <div className="candidate-ai-columns">
-              {candidate.jobMatchAnalysis.strengths.length > 0 ? (
-                <div>
-                  <h4>{t.candidates.details.ai.strengths}</h4>
-                  <ul>
-                    {candidate.jobMatchAnalysis.strengths.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {candidate.jobMatchAnalysis.weaknesses.length > 0 ? (
-                <div>
-                  <h4>{t.candidates.details.ai.weaknesses}</h4>
-                  <ul>
-                    {candidate.jobMatchAnalysis.weaknesses.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-            {candidate.jobMatchAnalysis.missingSkills.length > 0 ? (
-              <div className="candidate-ai-block">
-                <h4>{t.candidates.details.ai.missingSkills}</h4>
-                <div className="job-details-skills">
-                  {candidate.jobMatchAnalysis.missingSkills.map((skill) => (
-                    <Badge key={skill} variant="warning">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {candidate.jobMatchAnalysis.interviewQuestions.length > 0 ? (
-              <div className="candidate-ai-block">
-                <h4>{t.candidates.details.ai.interviewQuestions}</h4>
-                <ol>
-                  {candidate.jobMatchAnalysis.interviewQuestions.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ol>
-              </div>
-            ) : null}
-          </div>
-        )}
       </Card>
 
       <div className="candidate-profile-grid">
@@ -263,6 +205,18 @@ export function CandidateDetailsView() {
       </div>
 
       <Card title={t.candidates.details.interviews.title}>
+        {candidate.interviewProcessStatus ? (
+          <p className="candidate-interview-process-status">
+            {t.candidates.details.interviews.processStatus}:{" "}
+            <Badge variant="info">
+              {
+                t.candidates.interview.processStatuses[
+                  candidate.interviewProcessStatus
+                ]
+              }
+            </Badge>
+          </p>
+        ) : null}
         {candidate.interviews.length === 0 ? (
           <EmptyState title={t.candidates.details.interviews.empty} />
         ) : (
@@ -418,12 +372,14 @@ function InterviewCard({
   onComplete: () => void;
 }) {
   const { t, locale } = useI18n();
-  const isScheduled = interview.status === "SCHEDULED";
+  const editable =
+    interview.status === "SCHEDULED" || interview.status === "IN_PROGRESS";
 
   return (
     <div className="candidate-interview-card">
       <div className="candidate-interview-card-header">
         <div className="candidate-interview-card-title">
+          <strong>{interview.name}</strong>
           <Badge variant="info">{t.candidates.interview.types[interview.type]}</Badge>
           <Badge variant={interviewStatusVariant(interview.status)}>
             {t.candidates.interview.statuses[interview.status]}
@@ -446,10 +402,10 @@ function InterviewCard({
           {t.candidates.details.interviews.joinAction}
         </a>
       ) : null}
-      {interview.notes ? (
-        <p className="candidate-interview-card-notes">{interview.notes}</p>
+      {interview.internalNotes ? (
+        <p className="candidate-interview-card-notes">{interview.internalNotes}</p>
       ) : null}
-      {isScheduled ? (
+      {editable ? (
         <div className="dashboard-row-actions">
           <Button type="button" variant="secondary" onClick={onEdit}>
             {t.candidates.details.interviews.editAction}
@@ -555,7 +511,6 @@ function CandidateDetailsSkeleton() {
         <Skeleton height={32} width="40%" />
         <Skeleton height={20} width="60%" style={{ marginTop: "0.75rem" }} />
       </Card>
-      <Skeleton height={160} />
       <div className="candidate-profile-grid">
         <Skeleton height={220} />
         <Skeleton height={220} />
@@ -566,24 +521,17 @@ function CandidateDetailsSkeleton() {
   );
 }
 
-function aiScoreVariant(score: number): "success" | "warning" | "neutral" {
-  if (score >= 90) {
-    return "success";
-  }
-  if (score >= 70) {
-    return "warning";
-  }
-  return "neutral";
-}
-
 function interviewStatusVariant(
   status: Interview["status"],
 ): "neutral" | "success" | "warning" | "danger" | "info" {
   if (status === "COMPLETED") {
     return "success";
   }
-  if (status === "CANCELLED") {
+  if (status === "CANCELLED" || status === "NO_SHOW") {
     return "danger";
+  }
+  if (status === "IN_PROGRESS") {
+    return "warning";
   }
   return "info";
 }

@@ -1,4 +1,8 @@
-import type { CreateInterviewInput, Interview, InterviewType } from "@poyino/contracts";
+import type {
+  CreateInterviewInput,
+  Interview,
+  InterviewType,
+} from "@poyino/contracts";
 import {
   Button,
   Form,
@@ -10,13 +14,25 @@ import {
 } from "@poyino/ui";
 import { useEffect, useState, type FormEvent } from "react";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import {
+  defaultStageName,
+  type RecruiterOption,
+} from "../../interviews/services/interviews.service";
 
-const INTERVIEW_TYPES: InterviewType[] = ["HR", "TECHNICAL", "MANAGER", "FINAL"];
+const INTERVIEW_TYPES: InterviewType[] = [
+  "HR",
+  "TECHNICAL",
+  "TEAM_LEAD",
+  "MANAGER",
+  "FINAL",
+  "CUSTOM",
+];
 
 type InterviewFormDialogProps = {
   open: boolean;
   mode: "create" | "edit";
   interview?: Interview | null;
+  recruiters?: RecruiterOption[];
   loading?: boolean;
   onCancel: () => void;
   onSubmit: (input: CreateInterviewInput) => void;
@@ -26,68 +42,77 @@ export function InterviewFormDialog({
   open,
   mode,
   interview = null,
+  recruiters = [],
   loading = false,
   onCancel,
   onSubmit,
 }: InterviewFormDialogProps) {
   const { t } = useI18n();
+  const [name, setName] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [type, setType] = useState<InterviewType>("HR");
+  const [recruiterUserId, setRecruiterUserId] = useState("");
   const [location, setLocation] = useState("");
   const [meetingUrl, setMeetingUrl] = useState("");
-  const [notes, setNotes] = useState("");
+  const [internalNotes, setInternalNotes] = useState("");
+  const [candidateNotes, setCandidateNotes] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!open) {
-      return;
-    }
+    if (!open) return;
     if (interview) {
+      setName(interview.name);
       setScheduledAt(toLocalInputValue(interview.scheduledAt));
       setType(interview.type);
+      setRecruiterUserId(interview.recruiterUserId ?? "");
       setLocation(interview.location ?? "");
       setMeetingUrl(interview.meetingUrl ?? "");
-      setNotes(interview.notes ?? "");
+      setInternalNotes(interview.internalNotes ?? "");
+      setCandidateNotes(interview.candidateNotes ?? "");
     } else {
+      setName(defaultStageName("HR"));
       setScheduledAt(toLocalInputValue(new Date().toISOString()));
       setType("HR");
+      setRecruiterUserId("");
       setLocation("");
       setMeetingUrl("");
-      setNotes("");
+      setInternalNotes("");
+      setCandidateNotes("");
     }
     setError("");
   }, [open, interview]);
 
-  if (!open) {
-    return null;
-  }
+  if (!open) return null;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+    if (!name.trim()) {
+      setError(t.candidates.interview.form.errors.nameRequired);
+      return;
+    }
     if (!scheduledAt) {
       setError(t.candidates.interview.form.errors.scheduledAtRequired);
       return;
     }
-
     const scheduledDate = new Date(scheduledAt);
     if (Number.isNaN(scheduledDate.getTime())) {
       setError(t.candidates.interview.form.errors.scheduledAtRequired);
       return;
     }
-
     if (meetingUrl.trim() && !/^https?:\/\/.+/i.test(meetingUrl.trim())) {
       setError(t.candidates.interview.form.errors.meetingUrlInvalid);
       return;
     }
-
     setError("");
     onSubmit({
+      name: name.trim(),
       scheduledAt: scheduledDate.toISOString(),
       type,
+      recruiterUserId: recruiterUserId || null,
       location: location.trim() || null,
       meetingUrl: meetingUrl.trim() || null,
-      notes: notes.trim() || null,
+      internalNotes: internalNotes.trim() || null,
+      candidateNotes: candidateNotes.trim() || null,
     });
   };
 
@@ -106,10 +131,24 @@ export function InterviewFormDialog({
         </h2>
         <Form onSubmit={handleSubmit}>
           <FormField
+            label={t.candidates.interview.form.nameLabel}
+            htmlFor="interview-name"
+            required
+            error={error || undefined}
+          >
+            <Input
+              id="interview-name"
+              value={name}
+              placeholder={t.candidates.interview.form.namePlaceholder}
+              onChange={(event) => setName(event.target.value)}
+              maxLength={120}
+              required
+            />
+          </FormField>
+          <FormField
             label={t.candidates.interview.form.dateTimeLabel}
             htmlFor="interview-scheduled-at"
             required
-            error={error || undefined}
           >
             <Input
               id="interview-scheduled-at"
@@ -127,11 +166,35 @@ export function InterviewFormDialog({
             <Select
               id="interview-type"
               value={type}
-              onChange={(event) => setType(event.target.value as InterviewType)}
+              onChange={(event) => {
+                const next = event.target.value as InterviewType;
+                setType(next);
+                if (!interview) setName(defaultStageName(next));
+              }}
               options={INTERVIEW_TYPES.map((value) => ({
                 value,
                 label: t.candidates.interview.types[value],
               }))}
+            />
+          </FormField>
+          <FormField
+            label={t.candidates.interview.form.recruiterLabel}
+            htmlFor="interview-recruiter"
+          >
+            <Select
+              id="interview-recruiter"
+              value={recruiterUserId}
+              onChange={(event) => setRecruiterUserId(event.target.value)}
+              options={[
+                {
+                  value: "",
+                  label: t.candidates.interview.form.recruiterNone,
+                },
+                ...recruiters.map((user) => ({
+                  value: user.id,
+                  label: user.email,
+                })),
+              ]}
             />
           </FormField>
           <FormField
@@ -159,14 +222,28 @@ export function InterviewFormDialog({
             />
           </FormField>
           <FormField
-            label={t.candidates.interview.form.notesLabel}
-            htmlFor="interview-notes"
+            label={t.candidates.interview.form.internalNotesLabel}
+            htmlFor="interview-internal-notes"
           >
             <Textarea
-              id="interview-notes"
-              value={notes}
-              placeholder={t.candidates.interview.form.notesPlaceholder}
-              onChange={(event) => setNotes(event.target.value)}
+              id="interview-internal-notes"
+              value={internalNotes}
+              placeholder={t.candidates.interview.form.internalNotesPlaceholder}
+              onChange={(event) => setInternalNotes(event.target.value)}
+              maxLength={5000}
+            />
+          </FormField>
+          <FormField
+            label={t.candidates.interview.form.candidateNotesLabel}
+            htmlFor="interview-candidate-notes"
+          >
+            <Textarea
+              id="interview-candidate-notes"
+              value={candidateNotes}
+              placeholder={
+                t.candidates.interview.form.candidateNotesPlaceholder
+              }
+              onChange={(event) => setCandidateNotes(event.target.value)}
               maxLength={5000}
             />
           </FormField>
@@ -195,9 +272,7 @@ export function InterviewFormDialog({
 
 function toLocalInputValue(isoValue: string) {
   const date = new Date(isoValue);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
+  if (Number.isNaN(date.getTime())) return "";
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60_000);
   return local.toISOString().slice(0, 16);

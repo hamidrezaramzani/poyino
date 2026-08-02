@@ -148,9 +148,11 @@ export function useCandidateDetails() {
     [candidateId, jobId, push, refresh, statusUpdating, t.candidates.details],
   );
 
+  // Prefer the authenticated API resume endpoint so the browser receives
+  // Content-Disposition: inline and the PDF previews instead of downloading.
+  // S3 signed URLs often force attachment downloads when used as iframe src.
   const resumeDownloadUrl =
-    candidate?.resume?.downloadUrl ||
-    (jobId && candidateId ? getResumeDownloadUrl(jobId, candidateId) : "");
+    jobId && candidateId ? getResumeDownloadUrl(jobId, candidateId) : "";
 
   const addNote = useCallback(async () => {
     const body = noteDraft.trim();
@@ -293,6 +295,9 @@ export function useCandidateDetails() {
       try {
         if (interviewDialog.mode === "create") {
           const response = await createInterview(jobId, candidateId, input);
+          if (response.conflict) {
+            push(t.candidates.interview.form.conflictWarning, "info");
+          }
           setCandidate((current) =>
             current
               ? { ...current, interviews: [response.interview, ...current.interviews] }
@@ -306,6 +311,9 @@ export function useCandidateDetails() {
             interviewDialog.interview.id,
             input,
           );
+          if (response.conflict) {
+            push(t.candidates.interview.form.conflictWarning, "info");
+          }
           setCandidate((current) =>
             current
               ? {
@@ -400,7 +408,7 @@ export function useCandidateDetails() {
     setInterviewActionLoading(true);
     try {
       const input: CompleteInterviewInput = {
-        notes: completeNotes.trim() || null,
+        internalNotes: completeNotes.trim() || null,
       };
       const response = await completeInterview(
         jobId,

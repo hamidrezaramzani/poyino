@@ -66,6 +66,48 @@ export function TrackingPage() {
             timezone={tracking.timezone}
           />
 
+          {tracking.interviews.length > 0 ? (
+            <Card title={t.candidates.details.interviews.title}>
+              <div className="candidate-interviews-list">
+                {tracking.interviews.map((interview) => (
+                  <div key={interview.id} className="candidate-interview-card">
+                    <div className="candidate-interview-card-header">
+                      <div className="candidate-interview-card-title">
+                        <strong>{interview.name}</strong>
+                        <span>
+                          {t.candidates.interview.types[interview.type]}
+                        </span>
+                        <span>
+                          {t.candidates.interview.statuses[interview.status]}
+                        </span>
+                      </div>
+                    </div>
+                    {interview.location ? (
+                      <p className="candidate-interview-card-detail">
+                        {interview.location}
+                      </p>
+                    ) : null}
+                    {interview.meetingUrl ? (
+                      <a
+                        href={interview.meetingUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="candidates-name-link"
+                      >
+                        {t.candidates.details.interviews.joinAction}
+                      </a>
+                    ) : null}
+                    {interview.candidateNotes ? (
+                      <p className="candidate-interview-card-notes">
+                        {interview.candidateNotes}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ) : null}
+
           <Card title={t.publicJob.tracking.jobTitle}>
             <InfoRow
               label={t.publicJob.success.jobTitle}

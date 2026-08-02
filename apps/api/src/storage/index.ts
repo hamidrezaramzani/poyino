@@ -13,4 +13,6 @@ export {
   StorageErrorCode,
   StorageValidationException,
   StorageObjectNotFoundException,
+  StorageNetworkException,
+  StorageTimeoutException,
 } from "./exceptions/storage.exceptions";

@@ -5,10 +5,10 @@ import type {
   CreateInterviewInput,
   DeleteCandidateNoteSuccess,
   GetCandidateProfileSuccess,
+  InterviewProcessSuccess,
   InterviewSuccess,
   ListCandidatesQuery,
   ListCandidatesSuccess,
-  ListInterviewsSuccess,
   ListOrgCandidatesQuery,
   ListOrgCandidatesSuccess,
   UpdateCandidateNoteInput,
@@ -113,7 +113,7 @@ export async function deleteCandidateNote(
 }
 
 export async function fetchInterviews(jobId: string, candidateId: string) {
-  return apiRequest<ListInterviewsSuccess>(
+  return apiRequest<InterviewProcessSuccess>(
     `/jobs/${jobId}/candidates/${candidateId}/interviews`,
   );
 }

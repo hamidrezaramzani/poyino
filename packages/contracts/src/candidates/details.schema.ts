@@ -17,6 +17,9 @@ export const ApplicationActivityTypeSchema = z.enum([
   "INTERVIEW_UPDATED",
   "INTERVIEW_CANCELLED",
   "INTERVIEW_COMPLETED",
+  "INTERVIEW_STARTED",
+  "INTERVIEW_NO_SHOW",
+  "INTERVIEW_PROCESS_UPDATED",
 ]);
 
 export type ApplicationActivityType = z.infer<
@@ -66,6 +69,9 @@ export const CandidateProfileSchema = z.object({
   notes: z.array(CandidateNoteSchema),
   timeline: z.array(CandidateActivityEventSchema),
   interviews: z.array(InterviewSchema),
+  interviewProcessStatus: z
+    .enum(["WAITING", "INTERVIEWING", "PASSED", "FAILED", "HIRED"])
+    .nullable(),
 });
 
 export type CandidateProfile = z.infer<typeof CandidateProfileSchema>;

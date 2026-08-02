@@ -582,6 +582,19 @@ export class PublicJobService {
             createdAt: true,
           },
         },
+        interviews: {
+          orderBy: { scheduledAt: "asc" },
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            status: true,
+            scheduledAt: true,
+            location: true,
+            meetingUrl: true,
+            candidateNotes: true,
+          },
+        },
       },
     });
 
@@ -616,6 +629,16 @@ export class PublicJobService {
         timeline: application.statusEvents.map((event) => ({
           status: event.status,
           createdAt: event.createdAt.toISOString(),
+        })),
+        interviews: application.interviews.map((interview) => ({
+          id: interview.id,
+          name: interview.name,
+          type: interview.type,
+          status: interview.status,
+          scheduledAt: interview.scheduledAt.toISOString(),
+          location: interview.location,
+          meetingUrl: interview.meetingUrl,
+          candidateNotes: interview.candidateNotes,
         })),
       },
     };

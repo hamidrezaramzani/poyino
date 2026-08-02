@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -8,16 +7,14 @@ import {
   CandidateErrorCode,
   JobMatchAnalysisSchema,
   ResumeAnalysisSchema,
-  type CompleteInterviewInput,
   type CreateCandidateNoteInput,
-  type CreateInterviewInput,
   type ListCandidatesQuery,
   type ListOrgCandidatesQuery,
   type UpdateCandidateNoteInput,
   type UpdateCandidateStatusInput,
-  type UpdateInterviewInput,
 } from "@poyino/contracts";
 import type { CandidateStatus, Prisma } from "@prisma/client";
+import { mapInterview } from "../../interviews/services/interviews.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { StorageService } from "../../storage";
 
@@ -177,7 +174,7 @@ export class CandidatesService {
       candidateId,
     );
 
-    const [notes, timeline, interviews, resumeMeta] = await Promise.all([
+    const [notes, timeline, interviews, process, resumeMeta] = await Promise.all([
       this.prisma.candidateNote.findMany({
         where: { applicationId: application.id },
         orderBy: { createdAt: "desc" },
@@ -195,6 +192,13 @@ export class CandidatesService {
       this.prisma.interview.findMany({
         where: { applicationId: application.id },
         orderBy: { scheduledAt: "desc" },
+        include: {
+          recruiterUser: { select: { id: true, email: true } },
+        },
+      }),
+      this.prisma.interviewProcess.findUnique({
+        where: { applicationId: application.id },
+        select: { status: true },
       }),
       application.resumeFileId
         ? this.storageService.getOwnedMetadata(
@@ -281,6 +285,7 @@ export class CandidatesService {
           createdAt: event.createdAt.toISOString(),
         })),
         interviews: interviews.map(mapInterview),
+        interviewProcessStatus: process?.status ?? null,
       },
     };
   }
@@ -486,236 +491,6 @@ export class CandidatesService {
     return { success: true as const };
   }
 
-  async listInterviews(
-    organizationId: string,
-    jobId: string,
-    candidateId: string,
-  ) {
-    const application = await this.requireApplication(
-      organizationId,
-      jobId,
-      candidateId,
-    );
-
-    const interviews = await this.prisma.interview.findMany({
-      where: { applicationId: application.id },
-      orderBy: { scheduledAt: "desc" },
-    });
-
-    return {
-      success: true as const,
-      interviews: interviews.map(mapInterview),
-    };
-  }
-
-  async createInterview(
-    organizationId: string,
-    userId: string,
-    jobId: string,
-    candidateId: string,
-    input: CreateInterviewInput,
-  ) {
-    const application = await this.requireApplication(
-      organizationId,
-      jobId,
-      candidateId,
-    );
-    const scheduledAt = parseFutureDate(input.scheduledAt);
-
-    const interview = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.interview.create({
-        data: {
-          applicationId: application.id,
-          organizationId,
-          jobId,
-          candidateId,
-          scheduledAt,
-          type: input.type,
-          status: "SCHEDULED",
-          location: input.location,
-          meetingUrl: input.meetingUrl,
-          notes: input.notes,
-          createdByUserId: userId,
-        },
-      });
-
-      await tx.application.update({
-        where: { id: application.id },
-        data: { status: "INTERVIEW_SCHEDULED" },
-      });
-      await tx.candidate.update({
-        where: { id: candidateId },
-        data: { status: "INTERVIEW_SCHEDULED" },
-      });
-      await tx.applicationStatusEvent.create({
-        data: {
-          applicationId: application.id,
-          status: "INTERVIEW_SCHEDULED",
-        },
-      });
-      await tx.applicationActivityEvent.create({
-        data: {
-          applicationId: application.id,
-          organizationId,
-          type: "INTERVIEW_SCHEDULED",
-          description: `Interview scheduled (${input.type})`,
-          actorUserId: userId,
-          metadata: { interviewId: created.id },
-        },
-      });
-
-      return created;
-    });
-
-    return { success: true as const, interview: mapInterview(interview) };
-  }
-
-  async updateInterview(
-    organizationId: string,
-    userId: string,
-    jobId: string,
-    candidateId: string,
-    interviewId: string,
-    input: UpdateInterviewInput,
-  ) {
-    const application = await this.requireApplication(
-      organizationId,
-      jobId,
-      candidateId,
-    );
-    const interview = await this.requireEditableInterview(
-      application.id,
-      interviewId,
-    );
-    const scheduledAt = parseFutureDate(input.scheduledAt);
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const result = await tx.interview.update({
-        where: { id: interview.id },
-        data: {
-          scheduledAt,
-          type: input.type,
-          location: input.location,
-          meetingUrl: input.meetingUrl,
-          notes: input.notes,
-        },
-      });
-
-      await tx.applicationActivityEvent.create({
-        data: {
-          applicationId: application.id,
-          organizationId,
-          type: "INTERVIEW_UPDATED",
-          description: "Interview updated",
-          actorUserId: userId,
-          metadata: { interviewId: interview.id },
-        },
-      });
-
-      return result;
-    });
-
-    return { success: true as const, interview: mapInterview(updated) };
-  }
-
-  async cancelInterview(
-    organizationId: string,
-    userId: string,
-    jobId: string,
-    candidateId: string,
-    interviewId: string,
-  ) {
-    const application = await this.requireApplication(
-      organizationId,
-      jobId,
-      candidateId,
-    );
-    const interview = await this.requireEditableInterview(
-      application.id,
-      interviewId,
-    );
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const result = await tx.interview.update({
-        where: { id: interview.id },
-        data: { status: "CANCELLED" },
-      });
-
-      await tx.applicationActivityEvent.create({
-        data: {
-          applicationId: application.id,
-          organizationId,
-          type: "INTERVIEW_CANCELLED",
-          description: "Interview cancelled",
-          actorUserId: userId,
-          metadata: { interviewId: interview.id },
-        },
-      });
-
-      return result;
-    });
-
-    return { success: true as const, interview: mapInterview(updated) };
-  }
-
-  async completeInterview(
-    organizationId: string,
-    userId: string,
-    jobId: string,
-    candidateId: string,
-    interviewId: string,
-    input: CompleteInterviewInput,
-  ) {
-    const application = await this.requireApplication(
-      organizationId,
-      jobId,
-      candidateId,
-    );
-    const interview = await this.requireEditableInterview(
-      application.id,
-      interviewId,
-    );
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const result = await tx.interview.update({
-        where: { id: interview.id },
-        data: {
-          status: "COMPLETED",
-          notes: input.notes ?? interview.notes,
-        },
-      });
-
-      await tx.application.update({
-        where: { id: application.id },
-        data: { status: "INTERVIEW_PASSED" },
-      });
-      await tx.candidate.update({
-        where: { id: candidateId },
-        data: { status: "INTERVIEW_PASSED" },
-      });
-      await tx.applicationStatusEvent.create({
-        data: {
-          applicationId: application.id,
-          status: "INTERVIEW_PASSED",
-        },
-      });
-      await tx.applicationActivityEvent.create({
-        data: {
-          applicationId: application.id,
-          organizationId,
-          type: "INTERVIEW_COMPLETED",
-          description: "Interview completed",
-          actorUserId: userId,
-          metadata: { interviewId: interview.id },
-        },
-      });
-
-      return result;
-    });
-
-    return { success: true as const, interview: mapInterview(updated) };
-  }
-
   async downloadResume(
     organizationId: string,
     jobId: string,
@@ -850,37 +625,6 @@ export class CandidatesService {
 
     return application;
   }
-
-  private async requireEditableInterview(
-    applicationId: string,
-    interviewId: string,
-  ) {
-    const interview = await this.prisma.interview.findFirst({
-      where: { id: interviewId, applicationId },
-    });
-
-    if (!interview) {
-      throw new NotFoundException({
-        success: false,
-        error: {
-          code: CandidateErrorCode.INTERVIEW_NOT_FOUND,
-          message: "Interview not found.",
-        },
-      });
-    }
-
-    if (interview.status !== "SCHEDULED") {
-      throw new BadRequestException({
-        success: false,
-        error: {
-          code: CandidateErrorCode.INTERVIEW_NOT_EDITABLE,
-          message: "Completed or cancelled interviews cannot be edited.",
-        },
-      });
-    }
-
-    return interview;
-  }
 }
 
 function mapListItem(
@@ -915,32 +659,6 @@ function mapListItem(
   };
 }
 
-function mapInterview(interview: {
-  id: string;
-  scheduledAt: Date;
-  type: "HR" | "TECHNICAL" | "MANAGER" | "FINAL";
-  status: "SCHEDULED" | "CANCELLED" | "COMPLETED";
-  location: string | null;
-  meetingUrl: string | null;
-  notes: string | null;
-  createdByUserId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: interview.id,
-    scheduledAt: interview.scheduledAt.toISOString(),
-    type: interview.type,
-    status: interview.status,
-    location: interview.location,
-    meetingUrl: interview.meetingUrl,
-    notes: interview.notes,
-    createdByUserId: interview.createdByUserId,
-    createdAt: interview.createdAt.toISOString(),
-    updatedAt: interview.updatedAt.toISOString(),
-  };
-}
-
 function parseSkills(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -958,31 +676,6 @@ function parseResumeAnalysis(value: unknown) {
 function parseJobMatchAnalysis(value: unknown) {
   const parsed = JobMatchAnalysisSchema.safeParse(value);
   return parsed.success ? parsed.data : null;
-}
-
-function parseFutureDate(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new BadRequestException({
-      success: false,
-      error: {
-        code: CandidateErrorCode.VALIDATION_ERROR,
-        message: "Interview date is invalid.",
-      },
-    });
-  }
-
-  if (date.getTime() < Date.now() - 60_000) {
-    throw new BadRequestException({
-      success: false,
-      error: {
-        code: CandidateErrorCode.VALIDATION_ERROR,
-        message: "Interview date cannot be in the past.",
-      },
-    });
-  }
-
-  return date;
 }
 
 function resolveDateFilter(query: ListCandidatesQuery) {

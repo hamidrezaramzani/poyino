@@ -43,14 +43,32 @@ enum CandidateStatus {
 enum InterviewType {
   HR
   TECHNICAL
+  TEAM_LEAD
   MANAGER
   FINAL
+  CUSTOM
 }
 
 enum InterviewStatus {
   SCHEDULED
-  CANCELLED
+  IN_PROGRESS
   COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InterviewProcessStatus {
+  WAITING
+  INTERVIEWING
+  PASSED
+  FAILED
+  HIRED
+}
+
+enum InterviewResult {
+  PASSED
+  FAILED
+  PENDING
 }
 
 enum ApplicationActivityType {
@@ -65,6 +83,9 @@ enum ApplicationActivityType {
   INTERVIEW_UPDATED
   INTERVIEW_CANCELLED
   INTERVIEW_COMPLETED
+  INTERVIEW_STARTED
+  INTERVIEW_NO_SHOW
+  INTERVIEW_PROCESS_UPDATED
 }
 
 model Organization {
@@ -103,6 +124,7 @@ model Organization {
   jobTemplates            JobTemplate[]
   files                   StoredFile[] @relation("OrganizationFiles")
   candidateNotes          CandidateNote[]
+  interviewProcesses      InterviewProcess[]
   interviews              Interview[]
   applicationActivities   ApplicationActivityEvent[]
 
@@ -149,6 +171,7 @@ model User {
   sessions           Session[]
   candidateNotes     CandidateNote[]
   interviewsCreated  Interview[]               @relation("InterviewCreatedBy")
+  interviewsAssigned Interview[]               @relation("InterviewRecruiter")
   activityEvents     ApplicationActivityEvent[]
 
   @@map("users")
@@ -217,6 +240,7 @@ model Job {
   organization              Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   candidates                Candidate[]
   applications              Application[]
+  interviewProcesses        InterviewProcess[]
   interviews                Interview[]
   skills                    JobSkill[]
   createdAt                 DateTime        @default(now()) @map("created_at")
@@ -299,11 +323,12 @@ model Candidate {
   job             Job?            @relation(fields: [jobId], references: [id], onDelete: SetNull)
   organizationId  String          @map("organization_id") @db.Uuid
   organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  applications    Application[]
-  interviews      Interview[]
-  appliedAt       DateTime        @default(now()) @map("applied_at")
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  applications       Application[]
+  interviewProcesses InterviewProcess[]
+  interviews         Interview[]
+  appliedAt          DateTime        @default(now()) @map("applied_at")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
 
   @@unique([organizationId, email])
   @@index([organizationId, appliedAt])
@@ -330,6 +355,7 @@ model Application {
   statusEvents      ApplicationStatusEvent[]
   activityEvents    ApplicationActivityEvent[]
   notes             CandidateNote[]
+  interviewProcess  InterviewProcess?
   interviews        Interview[]
   appliedAt         DateTime                   @default(now()) @map("applied_at")
   createdAt         DateTime                   @default(now()) @map("created_at")
@@ -388,30 +414,65 @@ model CandidateNote {
   @@map("candidate_notes")
 }
 
-model Interview {
-  id              String          @id @default(uuid()) @db.Uuid
-  applicationId   String          @map("application_id") @db.Uuid
-  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  organizationId  String          @map("organization_id") @db.Uuid
-  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  jobId           String          @map("job_id") @db.Uuid
-  job             Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  candidateId     String          @map("candidate_id") @db.Uuid
-  candidate       Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  scheduledAt     DateTime        @map("scheduled_at")
-  type            InterviewType
-  status          InterviewStatus @default(SCHEDULED)
-  location        String?         @db.VarChar(255)
-  meetingUrl      String?         @map("meeting_url") @db.VarChar(500)
-  notes           String?         @db.VarChar(5000)
-  createdByUserId String          @map("created_by_user_id") @db.Uuid
-  createdByUser   User            @relation("InterviewCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+model InterviewProcess {
+  id             String                 @id @default(uuid()) @db.Uuid
+  applicationId  String                 @unique @map("application_id") @db.Uuid
+  application    Application            @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  organizationId String                 @map("organization_id") @db.Uuid
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  jobId          String                 @map("job_id") @db.Uuid
+  job            Job                    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId    String                 @map("candidate_id") @db.Uuid
+  candidate      Candidate              @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  status               InterviewProcessStatus @default(WAITING)
+  aiSummary            Json?                  @map("ai_summary")
+  aiSummaryGeneratedAt DateTime?              @map("ai_summary_generated_at")
+  stages               Interview[]
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
 
+  @@index([organizationId, status])
+  @@index([jobId])
+  @@index([candidateId])
+  @@map("interview_processes")
+}
+
+model Interview {
+  id               String           @id @default(uuid()) @db.Uuid
+  processId        String           @map("process_id") @db.Uuid
+  process          InterviewProcess @relation(fields: [processId], references: [id], onDelete: Cascade)
+  applicationId    String           @map("application_id") @db.Uuid
+  application      Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  organizationId   String           @map("organization_id") @db.Uuid
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  jobId            String           @map("job_id") @db.Uuid
+  job              Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId      String           @map("candidate_id") @db.Uuid
+  candidate        Candidate        @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name             String           @db.VarChar(120)
+  scheduledAt      DateTime         @map("scheduled_at")
+  type             InterviewType
+  status           InterviewStatus  @default(SCHEDULED)
+  result           InterviewResult?
+  location         String?          @db.VarChar(255)
+  meetingUrl       String?          @map("meeting_url") @db.VarChar(500)
+  internalNotes    String?          @map("internal_notes") @db.VarChar(5000)
+  candidateNotes   String?          @map("candidate_notes") @db.VarChar(5000)
+  aiPreparation    Json?            @map("ai_preparation")
+  aiPrompt         String?          @map("ai_prompt") @db.VarChar(2000)
+  aiGeneratedAt    DateTime?        @map("ai_generated_at")
+  recruiterUserId  String?          @map("recruiter_user_id") @db.Uuid
+  recruiterUser    User?            @relation("InterviewRecruiter", fields: [recruiterUserId], references: [id], onDelete: SetNull)
+  createdByUserId  String           @map("created_by_user_id") @db.Uuid
+  createdByUser    User             @relation("InterviewCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([processId, scheduledAt])
   @@index([applicationId, scheduledAt])
   @@index([organizationId, scheduledAt])
   @@index([jobId])
   @@index([candidateId])
+  @@index([recruiterUserId, scheduledAt])
   @@map("interviews")
 }

@@ -730,12 +730,17 @@ export type Translation = {
           INTERVIEW_UPDATED: string;
           INTERVIEW_CANCELLED: string;
           INTERVIEW_COMPLETED: string;
+          INTERVIEW_STARTED: string;
+          INTERVIEW_NO_SHOW: string;
+          INTERVIEW_PROCESS_UPDATED: string;
         };
       };
       interviews: {
         title: string;
         empty: string;
         scheduleButton: string;
+        manageButton: string;
+        processStatus: string;
         editAction: string;
         cancelAction: string;
         completeAction: string;
@@ -749,29 +754,55 @@ export type Translation = {
       types: {
         HR: string;
         TECHNICAL: string;
+        TEAM_LEAD: string;
         MANAGER: string;
         FINAL: string;
+        CUSTOM: string;
       };
       statuses: {
         SCHEDULED: string;
-        CANCELLED: string;
+        IN_PROGRESS: string;
         COMPLETED: string;
+        CANCELLED: string;
+        NO_SHOW: string;
+      };
+      processStatuses: {
+        WAITING: string;
+        INTERVIEWING: string;
+        PASSED: string;
+        FAILED: string;
+        HIRED: string;
+      };
+      results: {
+        PASSED: string;
+        FAILED: string;
+        PENDING: string;
       };
       form: {
         createTitle: string;
         editTitle: string;
+        nameLabel: string;
+        namePlaceholder: string;
         dateTimeLabel: string;
         typeLabel: string;
+        recruiterLabel: string;
+        recruiterNone: string;
         locationLabel: string;
         locationPlaceholder: string;
         meetingUrlLabel: string;
         meetingUrlPlaceholder: string;
+        internalNotesLabel: string;
+        internalNotesPlaceholder: string;
+        candidateNotesLabel: string;
+        candidateNotesPlaceholder: string;
         notesLabel: string;
         notesPlaceholder: string;
         save: string;
         saving: string;
         cancel: string;
+        conflictWarning: string;
         errors: {
+          nameRequired: string;
           scheduledAtRequired: string;
           meetingUrlInvalid: string;
           notesTooLong: string;
@@ -788,6 +819,7 @@ export type Translation = {
       completeDialog: {
         title: string;
         description: string;
+        resultLabel: string;
         notesLabel: string;
         notesPlaceholder: string;
         cancel: string;
@@ -799,10 +831,95 @@ export type Translation = {
         updated: string;
         cancelled: string;
         completed: string;
+        hired: string;
+        rejected: string;
+        statusUpdated: string;
       };
       errors: {
         notEditable: string;
         unexpected: string;
+      };
+    };
+    interviewsModule: {
+      process: {
+        title: string;
+        backToProfile: string;
+        scheduleStage: string;
+        hire: string;
+        reject: string;
+        empty: string;
+        loadFailed: string;
+        retry: string;
+      };
+      ai: {
+        title: string;
+        promptLabel: string;
+        promptPlaceholder: string;
+        generate: string;
+        regenerate: string;
+        regenerating: string;
+        stageLabel: string;
+        preparing: string;
+        generatingQuestions: string;
+        buildingChecklist: string;
+        failed: string;
+        retry: string;
+        objectives: string;
+        technical: string;
+        behavioral: string;
+        followUp: string;
+        strengths: string;
+        weaknesses: string;
+        missingSkills: string;
+        checklist: string;
+      };
+      summary: {
+        title: string;
+        description: string;
+        generate: string;
+        regenerate: string;
+        generating: string;
+        failed: string;
+        retry: string;
+        emptyCompleted: string;
+        executiveSummary: string;
+        timeline: string;
+        consensus: string;
+        strengths: string;
+        weaknesses: string;
+        risks: string;
+        outstandingQuestions: string;
+        suggestedNextStep: string;
+        advisoryNote: string;
+      };
+      calendar: {
+        title: string;
+        description: string;
+        month: string;
+        week: string;
+        day: string;
+        today: string;
+        previous: string;
+        next: string;
+        filters: string;
+        recruiter: string;
+        job: string;
+        type: string;
+        status: string;
+        all: string;
+        todayTitle: string;
+        upcomingTitle: string;
+        emptyTitle: string;
+        emptyDescription: string;
+        loadFailed: string;
+        retry: string;
+        conflict: string;
+        drawerTitle: string;
+        openProfile: string;
+        edit: string;
+        complete: string;
+        cancel: string;
+        quickStatus: string;
       };
     };
   };
@@ -1777,12 +1894,17 @@ export const translations: Record<Locale, Translation> = {
             INTERVIEW_UPDATED: "مصاحبه ویرایش شد",
             INTERVIEW_CANCELLED: "مصاحبه لغو شد",
             INTERVIEW_COMPLETED: "مصاحبه برگزار شد",
+            INTERVIEW_STARTED: "مصاحبه آغاز شد",
+            INTERVIEW_NO_SHOW: "عدم حضور در مصاحبه",
+            INTERVIEW_PROCESS_UPDATED: "فرآیند مصاحبه به‌روزرسانی شد",
           },
         },
         interviews: {
           title: "مصاحبه‌ها",
           empty: "هنوز مصاحبه‌ای زمان‌بندی نشده است.",
           scheduleButton: "زمان‌بندی مصاحبه",
+          manageButton: "مدیریت فرآیند مصاحبه",
+          processStatus: "وضعیت فرآیند",
           editAction: "ویرایش",
           cancelAction: "لغو",
           completeAction: "ثبت نتیجه",
@@ -1796,29 +1918,55 @@ export const translations: Record<Locale, Translation> = {
         types: {
           HR: "منابع انسانی",
           TECHNICAL: "فنی",
+          TEAM_LEAD: "لید تیم",
           MANAGER: "مدیریتی",
           FINAL: "نهایی",
+          CUSTOM: "سفارشی",
         },
         statuses: {
           SCHEDULED: "زمان‌بندی شده",
-          CANCELLED: "لغو شده",
+          IN_PROGRESS: "در حال برگزاری",
           COMPLETED: "برگزار شده",
+          CANCELLED: "لغو شده",
+          NO_SHOW: "عدم حضور",
+        },
+        processStatuses: {
+          WAITING: "در انتظار",
+          INTERVIEWING: "در حال مصاحبه",
+          PASSED: "قبول",
+          FAILED: "رد",
+          HIRED: "استخدام",
+        },
+        results: {
+          PASSED: "قبول",
+          FAILED: "رد",
+          PENDING: "در انتظار",
         },
         form: {
           createTitle: "زمان‌بندی مصاحبه",
           editTitle: "ویرایش مصاحبه",
+          nameLabel: "نام مرحله",
+          namePlaceholder: "مثلاً مصاحبه فنی اول",
           dateTimeLabel: "تاریخ و ساعت",
           typeLabel: "نوع مصاحبه",
+          recruiterLabel: "مصاحبه‌کننده",
+          recruiterNone: "بدون تخصیص",
           locationLabel: "محل برگزاری",
           locationPlaceholder: "مثلاً دفتر مرکزی یا لینک آنلاین",
           meetingUrlLabel: "لینک جلسه",
           meetingUrlPlaceholder: "https://...",
+          internalNotesLabel: "یادداشت داخلی",
+          internalNotesPlaceholder: "فقط برای تیم استخدام...",
+          candidateNotesLabel: "یادداشت برای متقاضی",
+          candidateNotesPlaceholder: "در صفحه پیگیری نمایش داده می‌شود...",
           notesLabel: "یادداشت",
           notesPlaceholder: "توضیحات یا نکات مصاحبه...",
           save: "ذخیره",
           saving: "در حال ذخیره...",
           cancel: "انصراف",
+          conflictWarning: "تداخل زمانی برای این مصاحبه‌کننده شناسایی شد.",
           errors: {
+            nameRequired: "نام مرحله الزامی است.",
             scheduledAtRequired: "تاریخ و ساعت مصاحبه الزامی است.",
             meetingUrlInvalid: "لینک جلسه معتبر نیست.",
             notesTooLong: "یادداشت باید حداکثر ۵۰۰۰ کاراکتر باشد.",
@@ -1835,6 +1983,7 @@ export const translations: Record<Locale, Translation> = {
         completeDialog: {
           title: "ثبت نتیجه مصاحبه",
           description: "این مصاحبه به عنوان برگزار شده ثبت می‌شود.",
+          resultLabel: "نتیجه",
           notesLabel: "یادداشت نتیجه (اختیاری)",
           notesPlaceholder: "خلاصه نتیجه مصاحبه...",
           cancel: "انصراف",
@@ -1846,10 +1995,97 @@ export const translations: Record<Locale, Translation> = {
           updated: "مصاحبه با موفقیت به‌روزرسانی شد.",
           cancelled: "مصاحبه لغو شد.",
           completed: "نتیجه مصاحبه ثبت شد.",
+          hired: "متقاضی استخدام شد.",
+          rejected: "متقاضی رد شد.",
+          statusUpdated: "وضعیت مصاحبه به‌روزرسانی شد.",
         },
         errors: {
           notEditable: "این مصاحبه دیگر قابل ویرایش نیست.",
           unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      interviewsModule: {
+        process: {
+          title: "فرآیند مصاحبه",
+          backToProfile: "بازگشت به پروفایل",
+          scheduleStage: "افزودن مرحله مصاحبه",
+          hire: "استخدام",
+          reject: "رد کردن",
+          empty: "هنوز مرحله‌ای برای مصاحبه تعریف نشده است.",
+          loadFailed: "بارگذاری فرآیند مصاحبه ناموفق بود.",
+          retry: "تلاش مجدد",
+        },
+        ai: {
+          title: "آماده‌سازی مصاحبه با هوش مصنوعی",
+          promptLabel: "دستورالعمل اختیاری",
+          promptPlaceholder: "مثلاً روی معماری سیستم تمرکز کن...",
+          generate: "تولید راهنما",
+          regenerate: "تولید مجدد",
+          regenerating: "در حال تولید مجدد...",
+          stageLabel: "مرحله مصاحبه",
+          preparing: "در حال آماده‌سازی مصاحبه...",
+          generatingQuestions: "در حال تولید سؤالات...",
+          buildingChecklist: "در حال ساخت چک‌لیست ارزیابی...",
+          failed: "امکان تولید آماده‌سازی مصاحبه وجود ندارد. لطفاً دوباره تلاش کنید.",
+          retry: "تلاش مجدد",
+          objectives: "اهداف مصاحبه",
+          technical: "سؤالات فنی",
+          behavioral: "سؤالات رفتاری",
+          followUp: "سؤالات پیگیری",
+          strengths: "نقاط قوت",
+          weaknesses: "نقاط ضعف احتمالی",
+          missingSkills: "مهارت‌های ناقص",
+          checklist: "چک‌لیست ارزیابی",
+        },
+        summary: {
+          title: "خلاصه فرآیند مصاحبه",
+          description:
+            "خلاصه هوش مصنوعی بر اساس مصاحبه‌های تکمیل‌شده و یادداشت‌های داخلی.",
+          generate: "تولید خلاصه",
+          regenerate: "تولید مجدد خلاصه",
+          generating: "در حال تولید خلاصه مصاحبه...",
+          failed: "امکان تولید خلاصه مصاحبه وجود ندارد. لطفاً دوباره تلاش کنید.",
+          retry: "تلاش مجدد",
+          emptyCompleted:
+            "برای تولید خلاصه، حداقل یک مصاحبه تکمیل‌شده لازم است.",
+          executiveSummary: "خلاصه اجرایی",
+          timeline: "خلاصه مراحل مصاحبه",
+          consensus: "اجماع مصاحبه‌کنندگان",
+          strengths: "نقاط قوت",
+          weaknesses: "نقاط ضعف",
+          risks: "ریسک‌ها",
+          outstandingQuestions: "سؤالات باقی‌مانده",
+          suggestedNextStep: "پیشنهاد گام بعدی",
+          advisoryNote: "این پیشنهاد صرفاً جنبه مشورتی دارد و تصمیم نهایی با شماست.",
+        },
+        calendar: {
+          title: "تقویم مصاحبه‌ها",
+          description: "همه مصاحبه‌های زمان‌بندی‌شده سازمان را مدیریت کنید.",
+          month: "ماه",
+          week: "هفته",
+          day: "روز",
+          today: "امروز",
+          previous: "قبلی",
+          next: "بعدی",
+          filters: "فیلترها",
+          recruiter: "مصاحبه‌کننده",
+          job: "فرصت شغلی",
+          type: "نوع",
+          status: "وضعیت",
+          all: "همه",
+          todayTitle: "مصاحبه‌های امروز",
+          upcomingTitle: "۷ روز آینده",
+          emptyTitle: "مصاحبه‌ای زمان‌بندی نشده است.",
+          emptyDescription: "برای بازه انتخاب‌شده مصاحبه‌ای وجود ندارد.",
+          loadFailed: "بارگذاری تقویم ناموفق بود.",
+          retry: "تلاش مجدد",
+          conflict: "تداخل زمانی شناسایی شد",
+          drawerTitle: "جزئیات مصاحبه",
+          openProfile: "پروفایل متقاضی",
+          edit: "ویرایش",
+          complete: "ثبت نتیجه",
+          cancel: "لغو",
+          quickStatus: "تغییر وضعیت",
         },
       },
     },
@@ -2833,12 +3069,17 @@ export const translations: Record<Locale, Translation> = {
             INTERVIEW_UPDATED: "Interview updated",
             INTERVIEW_CANCELLED: "Interview cancelled",
             INTERVIEW_COMPLETED: "Interview completed",
+            INTERVIEW_STARTED: "Interview started",
+            INTERVIEW_NO_SHOW: "Interview no-show",
+            INTERVIEW_PROCESS_UPDATED: "Interview process updated",
           },
         },
         interviews: {
           title: "Interviews",
           empty: "No interviews have been scheduled yet.",
           scheduleButton: "Schedule interview",
+          manageButton: "Manage interview process",
+          processStatus: "Process status",
           editAction: "Edit",
           cancelAction: "Cancel",
           completeAction: "Mark completed",
@@ -2852,29 +3093,55 @@ export const translations: Record<Locale, Translation> = {
         types: {
           HR: "HR",
           TECHNICAL: "Technical",
+          TEAM_LEAD: "Team lead",
           MANAGER: "Managerial",
           FINAL: "Final",
+          CUSTOM: "Custom",
         },
         statuses: {
           SCHEDULED: "Scheduled",
-          CANCELLED: "Cancelled",
+          IN_PROGRESS: "In progress",
           COMPLETED: "Completed",
+          CANCELLED: "Cancelled",
+          NO_SHOW: "No show",
+        },
+        processStatuses: {
+          WAITING: "Waiting",
+          INTERVIEWING: "Interviewing",
+          PASSED: "Passed",
+          FAILED: "Failed",
+          HIRED: "Hired",
+        },
+        results: {
+          PASSED: "Passed",
+          FAILED: "Failed",
+          PENDING: "Pending",
         },
         form: {
           createTitle: "Schedule interview",
           editTitle: "Edit interview",
+          nameLabel: "Stage name",
+          namePlaceholder: "e.g. First technical interview",
           dateTimeLabel: "Date and time",
           typeLabel: "Interview type",
+          recruiterLabel: "Recruiter",
+          recruiterNone: "Unassigned",
           locationLabel: "Location",
           locationPlaceholder: "e.g. HQ office or online link",
           meetingUrlLabel: "Meeting URL",
           meetingUrlPlaceholder: "https://...",
+          internalNotesLabel: "Internal notes",
+          internalNotesPlaceholder: "Visible only to recruiters...",
+          candidateNotesLabel: "Candidate notes",
+          candidateNotesPlaceholder: "Shown on the tracking page...",
           notesLabel: "Notes",
           notesPlaceholder: "Details or talking points...",
           save: "Save",
           saving: "Saving...",
           cancel: "Cancel",
+          conflictWarning: "Schedule conflict detected for this recruiter.",
           errors: {
+            nameRequired: "Stage name is required.",
             scheduledAtRequired: "Interview date and time is required.",
             meetingUrlInvalid: "Meeting URL is invalid.",
             notesTooLong: "Notes must be at most 5000 characters.",
@@ -2891,6 +3158,7 @@ export const translations: Record<Locale, Translation> = {
         completeDialog: {
           title: "Complete interview",
           description: "This interview will be marked as completed.",
+          resultLabel: "Result",
           notesLabel: "Outcome notes (optional)",
           notesPlaceholder: "Summary of the interview outcome...",
           cancel: "Cancel",
@@ -2902,10 +3170,98 @@ export const translations: Record<Locale, Translation> = {
           updated: "Interview updated successfully.",
           cancelled: "Interview cancelled.",
           completed: "Interview outcome recorded.",
+          hired: "Candidate hired.",
+          rejected: "Candidate rejected.",
+          statusUpdated: "Interview status updated.",
         },
         errors: {
           notEditable: "This interview can no longer be edited.",
           unexpected: "Something went wrong. Please try again.",
+        },
+      },
+      interviewsModule: {
+        process: {
+          title: "Interview process",
+          backToProfile: "Back to profile",
+          scheduleStage: "Add interview stage",
+          hire: "Hire",
+          reject: "Reject",
+          empty: "No interview stages yet.",
+          loadFailed: "Unable to load the interview process.",
+          retry: "Retry",
+        },
+        ai: {
+          title: "AI interview preparation",
+          promptLabel: "Optional instructions",
+          promptPlaceholder: "e.g. Focus on system design...",
+          generate: "Generate guide",
+          regenerate: "Regenerate",
+          regenerating: "Regenerating...",
+          stageLabel: "Interview stage",
+          preparing: "Preparing interview...",
+          generatingQuestions: "Generating questions...",
+          buildingChecklist: "Building evaluation checklist...",
+          failed: "Unable to generate interview preparation. Please try again.",
+          retry: "Retry",
+          objectives: "Interview objectives",
+          technical: "Technical questions",
+          behavioral: "Behavioral questions",
+          followUp: "Follow-up questions",
+          strengths: "Strengths",
+          weaknesses: "Potential concerns",
+          missingSkills: "Missing skills",
+          checklist: "Evaluation checklist",
+        },
+        summary: {
+          title: "Interview journey summary",
+          description:
+            "AI summary based on completed interviews and internal recruiter notes.",
+          generate: "Generate summary",
+          regenerate: "Regenerate summary",
+          generating: "Generating interview summary...",
+          failed: "Unable to generate interview summary. Please try again.",
+          retry: "Retry",
+          emptyCompleted:
+            "At least one completed interview is required to generate a summary.",
+          executiveSummary: "Executive summary",
+          timeline: "Interview timeline summary",
+          consensus: "Recruiter consensus",
+          strengths: "Strengths",
+          weaknesses: "Weaknesses",
+          risks: "Risks",
+          outstandingQuestions: "Outstanding questions",
+          suggestedNextStep: "Suggested next step",
+          advisoryNote:
+            "This recommendation is advisory only. Recruiters make the final decision.",
+        },
+        calendar: {
+          title: "Interview calendar",
+          description: "Manage all scheduled interviews across your organization.",
+          month: "Month",
+          week: "Week",
+          day: "Day",
+          today: "Today",
+          previous: "Previous",
+          next: "Next",
+          filters: "Filters",
+          recruiter: "Recruiter",
+          job: "Job",
+          type: "Type",
+          status: "Status",
+          all: "All",
+          todayTitle: "Today's interviews",
+          upcomingTitle: "Next 7 days",
+          emptyTitle: "No interviews scheduled.",
+          emptyDescription: "There are no interviews for the selected period.",
+          loadFailed: "Unable to load the calendar.",
+          retry: "Retry",
+          conflict: "Schedule conflict detected",
+          drawerTitle: "Interview details",
+          openProfile: "Open candidate profile",
+          edit: "Edit",
+          complete: "Complete",
+          cancel: "Cancel",
+          quickStatus: "Update status",
         },
       },
     },

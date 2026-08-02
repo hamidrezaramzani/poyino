@@ -8,7 +8,7 @@ export const AI_CONFIG = {
 } as const;
 
 export const AI_DEFAULTS = {
-  TIMEOUT_MS: 45_000,
+  TIMEOUT_MS: 90_000,
   /** Default completion budget for structured generation. */
   STRUCTURED_MAX_TOKENS: 2_500,
 } as const;

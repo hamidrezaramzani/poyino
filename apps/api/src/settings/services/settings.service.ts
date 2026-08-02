@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
 import {
@@ -20,8 +21,10 @@ import * as bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
+  StorageNetworkException,
   StorageObjectNotFoundException,
   StorageService,
+  StorageTimeoutException,
   StorageValidationException,
 } from "../../storage";
 
@@ -310,11 +313,23 @@ export class SettingsService {
       );
     } catch (error) {
       if (error instanceof StorageObjectNotFoundException) {
-        throw new BadRequestException({
+        throw new NotFoundException({
           success: false,
           error: {
             code: SettingsErrorCode.FILE_NOT_FOUND,
             message: "فایل یافت نشد.",
+          },
+        });
+      }
+      if (
+        error instanceof StorageNetworkException ||
+        error instanceof StorageTimeoutException
+      ) {
+        throw new ServiceUnavailableException({
+          success: false,
+          error: {
+            code: SettingsErrorCode.UNEXPECTED_ERROR,
+            message: "دریافت فایل موقتاً ممکن نیست. لطفاً دوباره تلاش کنید.",
           },
         });
       }

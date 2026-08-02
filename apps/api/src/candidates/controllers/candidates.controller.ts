@@ -19,6 +19,8 @@ import {
   CompleteInterviewSchema,
   CreateCandidateNoteSchema,
   CreateInterviewSchema,
+  InterviewAiRequestSchema,
+  InterviewHiringDecisionSchema,
   ListCandidatesQuerySchema,
   UpdateCandidateNoteSchema,
   UpdateCandidateStatusSchema,
@@ -26,6 +28,8 @@ import {
   type CompleteInterviewInput,
   type CreateCandidateNoteInput,
   type CreateInterviewInput,
+  type InterviewAiRequest,
+  type InterviewHiringDecisionInput,
   type ListCandidatesQuery,
   type UpdateCandidateNoteInput,
   type UpdateCandidateStatusInput,
@@ -36,6 +40,7 @@ import { CurrentUser } from "../../authentication/decorators/current-user.decora
 import { SessionAuthGuard } from "../../authentication/guards/session-auth.guard";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { InterviewsService } from "../../interviews/services/interviews.service";
 import { CandidatesService } from "../services/candidates.service";
 
 @Controller("jobs/:jobId/candidates")
@@ -44,6 +49,8 @@ export class CandidatesController {
   constructor(
     @Inject(CandidatesService)
     private readonly candidatesService: CandidatesService,
+    @Inject(InterviewsService)
+    private readonly interviewsService: InterviewsService,
   ) {}
 
   @Get()
@@ -185,7 +192,7 @@ export class CandidatesController {
     @Param("jobId", ParseUUIDPipe) jobId: string,
     @Param("candidateId", ParseUUIDPipe) candidateId: string,
   ) {
-    return this.candidatesService.listInterviews(
+    return this.interviewsService.getProcess(
       user.organizationId,
       jobId,
       candidateId,
@@ -202,7 +209,7 @@ export class CandidatesController {
     @Body(new ZodValidationPipe(CreateInterviewSchema))
     body: CreateInterviewInput,
   ) {
-    return this.candidatesService.createInterview(
+    return this.interviewsService.createStage(
       user.organizationId,
       user.id,
       jobId,
@@ -222,7 +229,7 @@ export class CandidatesController {
     @Body(new ZodValidationPipe(UpdateInterviewSchema))
     body: UpdateInterviewInput,
   ) {
-    return this.candidatesService.updateInterview(
+    return this.interviewsService.updateStage(
       user.organizationId,
       user.id,
       jobId,
@@ -241,7 +248,7 @@ export class CandidatesController {
     @Param("candidateId", ParseUUIDPipe) candidateId: string,
     @Param("interviewId", ParseUUIDPipe) interviewId: string,
   ) {
-    return this.candidatesService.cancelInterview(
+    return this.interviewsService.cancelStage(
       user.organizationId,
       user.id,
       jobId,
@@ -261,12 +268,64 @@ export class CandidatesController {
     @Body(new ZodValidationPipe(CompleteInterviewSchema))
     body: CompleteInterviewInput,
   ) {
-    return this.candidatesService.completeInterview(
+    return this.interviewsService.completeStage(
       user.organizationId,
       user.id,
       jobId,
       candidateId,
       interviewId,
+      body,
+    );
+  }
+
+  @Post(":candidateId/interview-ai")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  generateInterviewAi(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+    @Param("candidateId", ParseUUIDPipe) candidateId: string,
+    @Body(new ZodValidationPipe(InterviewAiRequestSchema))
+    body: InterviewAiRequest,
+  ) {
+    return this.interviewsService.generateInterviewAi(
+      user.organizationId,
+      jobId,
+      candidateId,
+      body,
+    );
+  }
+
+  @Post(":candidateId/interview-summary")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  generateInterviewSummary(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+    @Param("candidateId", ParseUUIDPipe) candidateId: string,
+  ) {
+    return this.interviewsService.generateInterviewSummary(
+      user.organizationId,
+      jobId,
+      candidateId,
+    );
+  }
+
+  @Post(":candidateId/interviews/decision")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  hiringDecision(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+    @Param("candidateId", ParseUUIDPipe) candidateId: string,
+    @Body(new ZodValidationPipe(InterviewHiringDecisionSchema))
+    body: InterviewHiringDecisionInput,
+  ) {
+    return this.interviewsService.hiringDecision(
+      user.organizationId,
+      user.id,
+      jobId,
+      candidateId,
       body,
     );
   }

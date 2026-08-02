@@ -11,7 +11,8 @@ import { CandidateListPage } from "./features/candidates/pages/candidate-list-pa
 import { OrgCandidatesPage } from "./features/candidates/pages/org-candidates-page";
 import { DashboardLayout } from "./features/dashboard/layouts/dashboard-layout";
 import { DashboardOverviewPage } from "./features/dashboard/pages/dashboard-overview-page";
-import { ModulePlaceholderPage } from "./features/dashboard/pages/module-placeholder-page";
+import { InterviewCalendarPage } from "./features/interviews/pages/interview-calendar-page";
+import { InterviewProcessPage } from "./features/interviews/pages/interview-process-page";
 import { CreateJobPage } from "./features/jobs/pages/create-job-page";
 import { EditJobPage } from "./features/jobs/pages/edit-job-page";
 import { JobDetailsPage } from "./features/jobs/pages/job-details-page";
@@ -26,7 +27,6 @@ import { ApplySuccessPage } from "./features/public-job/pages/apply-success-page
 import { PublicJobPage } from "./features/public-job/pages/public-job-page";
 import { TrackingPage } from "./features/public-job/pages/tracking-page";
 import { HomePage } from "./pages/home-page";
-import { useI18n } from "./shared/i18n/i18n-provider";
 import { ProtectedRoute } from "./shared/session/protected-route";
 
 function AuthenticatedShell() {
@@ -37,11 +37,6 @@ function AuthenticatedShell() {
       </DashboardLayout>
     </ProtectedRoute>
   );
-}
-
-function InterviewsPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.interviews} />;
 }
 
 export function App() {
@@ -63,8 +58,12 @@ export function App() {
           path="/jobs/:jobId/candidates/:candidateId"
           element={<CandidateDetailsPage />}
         />
+        <Route
+          path="/jobs/:jobId/candidates/:candidateId/interviews"
+          element={<InterviewProcessPage />}
+        />
         <Route path="/candidates" element={<OrgCandidatesPage />} />
-        <Route path="/interviews" element={<InterviewsPlaceholder />} />
+        <Route path="/interviews" element={<InterviewCalendarPage />} />
         <Route path="/reports" element={<AnalyticsPage />} />
         <Route path="/settings" element={<SettingsLayoutPage />}>
           <Route index element={<Navigate to="general" replace />} />

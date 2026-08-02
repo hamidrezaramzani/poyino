@@ -3,6 +3,7 @@ import {
   EmploymentTypeSchema,
   WorkplaceTypeSchema,
 } from "../jobs/create-job.schema";
+import { PublicInterviewSchema } from "../candidates/interviews.schema";
 
 export const ApplicationStatusSchema = z.enum([
   "APPLIED",
@@ -49,6 +50,7 @@ export const TrackingInfoSchema = z.object({
   job: TrackingJobInfoSchema,
   submitted: TrackingSubmittedInfoSchema,
   timeline: z.array(TrackingTimelineEventSchema),
+  interviews: z.array(PublicInterviewSchema).default([]),
 });
 
 export type TrackingInfo = z.infer<typeof TrackingInfoSchema>;
