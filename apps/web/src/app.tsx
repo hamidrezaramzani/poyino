@@ -1,10 +1,14 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { AnalyticsPage } from "./features/analytics/pages/analytics-page";
 import { AuthLayout } from "./features/authentication/layouts/auth-layout";
 import { ForgotPasswordPage } from "./features/authentication/pages/forgot-password-page";
 import { LoginPage } from "./features/authentication/pages/login-page";
 import { RegisterPage } from "./features/authentication/pages/register-page";
 import { ResetPasswordPage } from "./features/authentication/pages/reset-password-page";
 import { VerifyEmailPage } from "./features/authentication/pages/verify-email-page";
+import { CandidateDetailsPage } from "./features/candidates/pages/candidate-details-page";
+import { CandidateListPage } from "./features/candidates/pages/candidate-list-page";
+import { OrgCandidatesPage } from "./features/candidates/pages/org-candidates-page";
 import { DashboardLayout } from "./features/dashboard/layouts/dashboard-layout";
 import { DashboardOverviewPage } from "./features/dashboard/pages/dashboard-overview-page";
 import { ModulePlaceholderPage } from "./features/dashboard/pages/module-placeholder-page";
@@ -35,24 +39,9 @@ function AuthenticatedShell() {
   );
 }
 
-function JobCandidatesPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.candidates} />;
-}
-
-function CandidatesPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.candidates} />;
-}
-
 function InterviewsPlaceholder() {
   const { t } = useI18n();
   return <ModulePlaceholderPage title={t.dashboard.nav.interviews} />;
-}
-
-function ReportsPlaceholder() {
-  const { t } = useI18n();
-  return <ModulePlaceholderPage title={t.dashboard.nav.reports} />;
 }
 
 export function App() {
@@ -68,12 +57,15 @@ export function App() {
         <Route path="/jobs/:jobId/edit" element={<EditJobPage />} />
         <Route
           path="/jobs/:jobId/candidates"
-          element={<JobCandidatesPlaceholder />}
+          element={<CandidateListPage />}
         />
-        <Route path="/candidates" element={<CandidatesPlaceholder />} />
-        <Route path="/candidates/:candidateId" element={<CandidatesPlaceholder />} />
+        <Route
+          path="/jobs/:jobId/candidates/:candidateId"
+          element={<CandidateDetailsPage />}
+        />
+        <Route path="/candidates" element={<OrgCandidatesPage />} />
         <Route path="/interviews" element={<InterviewsPlaceholder />} />
-        <Route path="/reports" element={<ReportsPlaceholder />} />
+        <Route path="/reports" element={<AnalyticsPage />} />
         <Route path="/settings" element={<SettingsLayoutPage />}>
           <Route index element={<Navigate to="general" replace />} />
           <Route path="general" element={<GeneralSettingsPage />} />

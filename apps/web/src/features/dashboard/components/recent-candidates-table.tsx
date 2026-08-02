@@ -33,7 +33,7 @@ export function RecentCandidatesTable({
       header: t.dashboard.candidates.columns.name,
       render: (candidate) => (
         <Link
-          to={`/candidates/${candidate.id}`}
+          to={`/jobs/${candidate.jobId}/candidates/${candidate.id}`}
           className="dashboard-candidate-name"
         >
           <Avatar name={candidate.fullName} size={32} />
@@ -83,7 +83,9 @@ export function RecentCandidatesTable({
         <Button
           type="button"
           variant="secondary"
-          onClick={() => navigate(`/candidates/${candidate.id}`)}
+          onClick={() =>
+            navigate(`/jobs/${candidate.jobId}/candidates/${candidate.id}`)
+          }
           style={{ padding: "0.45rem 0.75rem", fontSize: "0.85rem" }}
         >
           {t.dashboard.candidates.view}

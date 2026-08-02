@@ -572,6 +572,290 @@ export type Translation = {
       };
     };
   };
+  candidates: {
+    list: {
+      title: string;
+      description: string;
+      searchPlaceholder: string;
+      loadFailed: string;
+      retry: string;
+      empty: string;
+      stats: {
+        total: string;
+        reviewing: string;
+        interviewScheduled: string;
+        hired: string;
+        rejected: string;
+      };
+      filters: {
+        statusLabel: string;
+        allStatuses: string;
+        experienceLevelLabel: string;
+        allExperienceLevels: string;
+        educationLabel: string;
+        educationPlaceholder: string;
+        dateRangeLabel: string;
+        allDateRanges: string;
+      };
+      experienceLevels: {
+        JUNIOR: string;
+        MID: string;
+        SENIOR: string;
+      };
+      dateRanges: {
+        TODAY: string;
+        LAST_7_DAYS: string;
+        LAST_30_DAYS: string;
+        CUSTOM: string;
+      };
+      columns: {
+        name: string;
+        position: string;
+        aiScore: string;
+        experience: string;
+        skills: string;
+        status: string;
+        appliedAt: string;
+        actions: string;
+      };
+      actions: {
+        view: string;
+      };
+      pagination: {
+        previous: string;
+        next: string;
+        summary: string;
+      };
+      errors: {
+        unexpected: string;
+      };
+    };
+    org: {
+      title: string;
+      description: string;
+      loadFailed: string;
+      retry: string;
+      empty: string;
+      columns: {
+        name: string;
+        job: string;
+        aiScore: string;
+        status: string;
+        appliedAt: string;
+        actions: string;
+      };
+      actions: {
+        view: string;
+      };
+      pagination: {
+        previous: string;
+        next: string;
+        summary: string;
+      };
+      errors: {
+        unexpected: string;
+      };
+    };
+    details: {
+      title: string;
+      notFound: string;
+      loadFailed: string;
+      retry: string;
+      backToList: string;
+      emptyValue: string;
+      statusLabel: string;
+      statusUpdated: string;
+      actions: {
+        scheduleInterview: string;
+        downloadResume: string;
+      };
+      ai: {
+        title: string;
+        empty: string;
+        matchScore: string;
+        summary: string;
+        strengths: string;
+        weaknesses: string;
+        missingSkills: string;
+        interviewQuestions: string;
+      };
+      resume: {
+        title: string;
+        empty: string;
+        download: string;
+      };
+      profile: {
+        title: string;
+        email: string;
+        phone: string;
+        currentPosition: string;
+        yearsExperience: string;
+        education: string;
+        experience: string;
+        skills: string;
+        links: string;
+        appliedAt: string;
+      };
+      notes: {
+        title: string;
+        empty: string;
+        placeholder: string;
+        add: string;
+        adding: string;
+        edit: string;
+        save: string;
+        cancel: string;
+        delete: string;
+        editedLabel: string;
+        deleteConfirm: {
+          title: string;
+          description: string;
+          cancel: string;
+          confirm: string;
+          confirming: string;
+        };
+      };
+      timeline: {
+        title: string;
+        empty: string;
+        events: {
+          APPLICATION_SUBMITTED: string;
+          RESUME_PROCESSED: string;
+          AI_ANALYSIS_COMPLETED: string;
+          STATUS_CHANGED: string;
+          NOTE_ADDED: string;
+          NOTE_UPDATED: string;
+          NOTE_DELETED: string;
+          INTERVIEW_SCHEDULED: string;
+          INTERVIEW_UPDATED: string;
+          INTERVIEW_CANCELLED: string;
+          INTERVIEW_COMPLETED: string;
+        };
+      };
+      interviews: {
+        title: string;
+        empty: string;
+        scheduleButton: string;
+        editAction: string;
+        cancelAction: string;
+        completeAction: string;
+        joinAction: string;
+      };
+      errors: {
+        unexpected: string;
+      };
+    };
+    interview: {
+      types: {
+        HR: string;
+        TECHNICAL: string;
+        MANAGER: string;
+        FINAL: string;
+      };
+      statuses: {
+        SCHEDULED: string;
+        CANCELLED: string;
+        COMPLETED: string;
+      };
+      form: {
+        createTitle: string;
+        editTitle: string;
+        dateTimeLabel: string;
+        typeLabel: string;
+        locationLabel: string;
+        locationPlaceholder: string;
+        meetingUrlLabel: string;
+        meetingUrlPlaceholder: string;
+        notesLabel: string;
+        notesPlaceholder: string;
+        save: string;
+        saving: string;
+        cancel: string;
+        errors: {
+          scheduledAtRequired: string;
+          meetingUrlInvalid: string;
+          notesTooLong: string;
+          unexpected: string;
+        };
+      };
+      cancelDialog: {
+        title: string;
+        description: string;
+        cancel: string;
+        confirm: string;
+        confirming: string;
+      };
+      completeDialog: {
+        title: string;
+        description: string;
+        notesLabel: string;
+        notesPlaceholder: string;
+        cancel: string;
+        confirm: string;
+        confirming: string;
+      };
+      toasts: {
+        created: string;
+        updated: string;
+        cancelled: string;
+        completed: string;
+      };
+      errors: {
+        notEditable: string;
+        unexpected: string;
+      };
+    };
+  };
+  analytics: {
+    title: string;
+    description: string;
+    loadFailed: string;
+    retry: string;
+    empty: string;
+    rangeLabel: string;
+    ranges: {
+      LAST_7_DAYS: string;
+      LAST_30_DAYS: string;
+      LAST_90_DAYS: string;
+      LAST_YEAR: string;
+      CUSTOM: string;
+    };
+    kpis: {
+      totalJobs: string;
+      activeJobs: string;
+      totalApplications: string;
+      totalCandidates: string;
+      interviewsScheduled: string;
+      hiredCandidates: string;
+      rejectedCandidates: string;
+      averageTimeToHireDays: string;
+      averageTimeToHireEmpty: string;
+    };
+    charts: {
+      trendsTitle: string;
+      trendsDescription: string;
+      statusDistributionTitle: string;
+      funnelTitle: string;
+      jobPerformanceTitle: string;
+    };
+    funnelStages: {
+      APPLICATIONS: string;
+      UNDER_REVIEW: string;
+      INTERVIEW_SCHEDULED: string;
+      INTERVIEW_COMPLETED: string;
+      HIRED: string;
+    };
+    jobPerformance: {
+      columns: {
+        title: string;
+        applications: string;
+        interviews: string;
+        hires: string;
+        hireRate: string;
+      };
+      empty: string;
+    };
+  };
   verifyEmail: {
     title: string;
     description: string;
@@ -897,7 +1181,7 @@ export const translations: Record<Locale, Translation> = {
         jobList: "فهرست فرصت‌ها",
         candidates: "متقاضیان",
         interviews: "مصاحبه‌ها",
-        reports: "گزارش‌ها",
+        reports: "تحلیل‌ها",
         settings: "تنظیمات",
       },
       sidebar: {
@@ -1335,6 +1619,290 @@ export const translations: Record<Locale, Translation> = {
         },
       },
     },
+    candidates: {
+      list: {
+        title: "متقاضیان",
+        description: "مشاهده، فیلتر و مدیریت متقاضیان این فرصت شغلی.",
+        searchPlaceholder: "جستجو بر اساس نام، ایمیل یا مهارت...",
+        loadFailed: "بارگذاری فهرست متقاضیان با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        empty: "هنوز متقاضی‌ای برای این فرصت شغلی ثبت نشده است.",
+        stats: {
+          total: "کل متقاضیان",
+          reviewing: "در حال بررسی",
+          interviewScheduled: "مصاحبه زمان‌بندی شده",
+          hired: "استخدام شده",
+          rejected: "رد شده",
+        },
+        filters: {
+          statusLabel: "وضعیت",
+          allStatuses: "همه وضعیت‌ها",
+          experienceLevelLabel: "سطح تجربه",
+          allExperienceLevels: "همه سطوح",
+          educationLabel: "تحصیلات",
+          educationPlaceholder: "مثلاً کارشناسی",
+          dateRangeLabel: "بازه زمانی درخواست",
+          allDateRanges: "همه بازه‌ها",
+        },
+        experienceLevels: {
+          JUNIOR: "جونیور",
+          MID: "میدسنیور",
+          SENIOR: "سنیور",
+        },
+        dateRanges: {
+          TODAY: "امروز",
+          LAST_7_DAYS: "۷ روز گذشته",
+          LAST_30_DAYS: "۳۰ روز گذشته",
+          CUSTOM: "بازه دلخواه",
+        },
+        columns: {
+          name: "متقاضی",
+          position: "سمت فعلی",
+          aiScore: "امتیاز هوش مصنوعی",
+          experience: "تجربه",
+          skills: "مهارت‌ها",
+          status: "وضعیت",
+          appliedAt: "تاریخ درخواست",
+          actions: "اقدامات",
+        },
+        actions: {
+          view: "مشاهده پروفایل",
+        },
+        pagination: {
+          previous: "قبلی",
+          next: "بعدی",
+          summary: "نمایش {from} تا {to} از {total}",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      org: {
+        title: "همه متقاضیان",
+        description: "متقاضیان همه فرصت‌های شغلی سازمان شما.",
+        loadFailed: "بارگذاری فهرست متقاضیان با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        empty: "هنوز هیچ متقاضی‌ای درخواست نداده است.",
+        columns: {
+          name: "متقاضی",
+          job: "فرصت شغلی",
+          aiScore: "امتیاز هوش مصنوعی",
+          status: "وضعیت",
+          appliedAt: "تاریخ درخواست",
+          actions: "اقدامات",
+        },
+        actions: {
+          view: "مشاهده پروفایل",
+        },
+        pagination: {
+          previous: "قبلی",
+          next: "بعدی",
+          summary: "نمایش {from} تا {to} از {total}",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      details: {
+        title: "پروفایل متقاضی",
+        notFound: "متقاضی یافت نشد.",
+        loadFailed: "بارگذاری پروفایل متقاضی با خطا مواجه شد.",
+        retry: "تلاش مجدد",
+        backToList: "بازگشت به فهرست متقاضیان",
+        emptyValue: "—",
+        statusLabel: "وضعیت",
+        statusUpdated: "وضعیت متقاضی به‌روزرسانی شد.",
+        actions: {
+          scheduleInterview: "زمان‌بندی مصاحبه",
+          downloadResume: "دانلود رزومه",
+        },
+        ai: {
+          title: "تحلیل هوش مصنوعی",
+          empty: "تحلیل هوش مصنوعی برای این متقاضی در دسترس نیست.",
+          matchScore: "امتیاز تطبیق",
+          summary: "خلاصه اجرایی",
+          strengths: "نقاط قوت",
+          weaknesses: "نقاط قابل بهبود",
+          missingSkills: "مهارت‌های مورد نیاز اما موجود نیست",
+          interviewQuestions: "پیشنهاد سؤالات مصاحبه",
+        },
+        resume: {
+          title: "رزومه",
+          empty: "رزومه‌ای بارگذاری نشده است.",
+          download: "دانلود رزومه",
+        },
+        profile: {
+          title: "اطلاعات متقاضی",
+          email: "ایمیل",
+          phone: "شماره تماس",
+          currentPosition: "سمت فعلی",
+          yearsExperience: "سال‌های تجربه",
+          education: "تحصیلات",
+          experience: "سوابق کاری",
+          skills: "مهارت‌ها",
+          links: "لینک‌ها",
+          appliedAt: "تاریخ درخواست",
+        },
+        notes: {
+          title: "یادداشت‌ها",
+          empty: "هنوز یادداشتی ثبت نشده است.",
+          placeholder: "یادداشت خود را بنویسید...",
+          add: "افزودن یادداشت",
+          adding: "در حال افزودن...",
+          edit: "ویرایش",
+          save: "ذخیره",
+          cancel: "انصراف",
+          delete: "حذف",
+          editedLabel: "ویرایش شده",
+          deleteConfirm: {
+            title: "حذف یادداشت",
+            description: "آیا از حذف این یادداشت اطمینان دارید؟",
+            cancel: "انصراف",
+            confirm: "حذف",
+            confirming: "در حال حذف...",
+          },
+        },
+        timeline: {
+          title: "خط زمانی فعالیت‌ها",
+          empty: "هنوز فعالیتی ثبت نشده است.",
+          events: {
+            APPLICATION_SUBMITTED: "درخواست ارسال شد",
+            RESUME_PROCESSED: "رزومه پردازش شد",
+            AI_ANALYSIS_COMPLETED: "تحلیل هوش مصنوعی تکمیل شد",
+            STATUS_CHANGED: "وضعیت تغییر کرد",
+            NOTE_ADDED: "یادداشت افزوده شد",
+            NOTE_UPDATED: "یادداشت ویرایش شد",
+            NOTE_DELETED: "یادداشت حذف شد",
+            INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شد",
+            INTERVIEW_UPDATED: "مصاحبه ویرایش شد",
+            INTERVIEW_CANCELLED: "مصاحبه لغو شد",
+            INTERVIEW_COMPLETED: "مصاحبه برگزار شد",
+          },
+        },
+        interviews: {
+          title: "مصاحبه‌ها",
+          empty: "هنوز مصاحبه‌ای زمان‌بندی نشده است.",
+          scheduleButton: "زمان‌بندی مصاحبه",
+          editAction: "ویرایش",
+          cancelAction: "لغو",
+          completeAction: "ثبت نتیجه",
+          joinAction: "ورود به جلسه",
+        },
+        errors: {
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+      interview: {
+        types: {
+          HR: "منابع انسانی",
+          TECHNICAL: "فنی",
+          MANAGER: "مدیریتی",
+          FINAL: "نهایی",
+        },
+        statuses: {
+          SCHEDULED: "زمان‌بندی شده",
+          CANCELLED: "لغو شده",
+          COMPLETED: "برگزار شده",
+        },
+        form: {
+          createTitle: "زمان‌بندی مصاحبه",
+          editTitle: "ویرایش مصاحبه",
+          dateTimeLabel: "تاریخ و ساعت",
+          typeLabel: "نوع مصاحبه",
+          locationLabel: "محل برگزاری",
+          locationPlaceholder: "مثلاً دفتر مرکزی یا لینک آنلاین",
+          meetingUrlLabel: "لینک جلسه",
+          meetingUrlPlaceholder: "https://...",
+          notesLabel: "یادداشت",
+          notesPlaceholder: "توضیحات یا نکات مصاحبه...",
+          save: "ذخیره",
+          saving: "در حال ذخیره...",
+          cancel: "انصراف",
+          errors: {
+            scheduledAtRequired: "تاریخ و ساعت مصاحبه الزامی است.",
+            meetingUrlInvalid: "لینک جلسه معتبر نیست.",
+            notesTooLong: "یادداشت باید حداکثر ۵۰۰۰ کاراکتر باشد.",
+            unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+          },
+        },
+        cancelDialog: {
+          title: "لغو مصاحبه",
+          description: "آیا از لغو این مصاحبه اطمینان دارید؟",
+          cancel: "انصراف",
+          confirm: "لغو مصاحبه",
+          confirming: "در حال لغو...",
+        },
+        completeDialog: {
+          title: "ثبت نتیجه مصاحبه",
+          description: "این مصاحبه به عنوان برگزار شده ثبت می‌شود.",
+          notesLabel: "یادداشت نتیجه (اختیاری)",
+          notesPlaceholder: "خلاصه نتیجه مصاحبه...",
+          cancel: "انصراف",
+          confirm: "ثبت نتیجه",
+          confirming: "در حال ثبت...",
+        },
+        toasts: {
+          created: "مصاحبه با موفقیت زمان‌بندی شد.",
+          updated: "مصاحبه با موفقیت به‌روزرسانی شد.",
+          cancelled: "مصاحبه لغو شد.",
+          completed: "نتیجه مصاحبه ثبت شد.",
+        },
+        errors: {
+          notEditable: "این مصاحبه دیگر قابل ویرایش نیست.",
+          unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+        },
+      },
+    },
+    analytics: {
+      title: "تحلیل‌ها",
+      description: "شاخص‌های کلیدی استخدام و عملکرد فرصت‌های شغلی را بررسی کنید.",
+      loadFailed: "بارگذاری اطلاعات تحلیلی با خطا مواجه شد.",
+      retry: "تلاش مجدد",
+      empty: "داده‌ای برای نمایش وجود ندارد.",
+      rangeLabel: "بازه زمانی",
+      ranges: {
+        LAST_7_DAYS: "۷ روز گذشته",
+        LAST_30_DAYS: "۳۰ روز گذشته",
+        LAST_90_DAYS: "۹۰ روز گذشته",
+        LAST_YEAR: "یک سال گذشته",
+        CUSTOM: "بازه دلخواه",
+      },
+      kpis: {
+        totalJobs: "کل فرصت‌های شغلی",
+        activeJobs: "فرصت‌های فعال",
+        totalApplications: "کل درخواست‌ها",
+        totalCandidates: "کل متقاضیان",
+        interviewsScheduled: "مصاحبه‌های زمان‌بندی شده",
+        hiredCandidates: "استخدام‌شده‌ها",
+        rejectedCandidates: "رد شده‌ها",
+        averageTimeToHireDays: "میانگین زمان استخدام (روز)",
+        averageTimeToHireEmpty: "داده کافی نیست",
+      },
+      charts: {
+        trendsTitle: "روند درخواست‌ها",
+        trendsDescription: "تعداد درخواست‌های دریافتی در طول زمان",
+        statusDistributionTitle: "توزیع وضعیت متقاضیان",
+        funnelTitle: "قیف استخدام",
+        jobPerformanceTitle: "عملکرد فرصت‌های شغلی",
+      },
+      funnelStages: {
+        APPLICATIONS: "درخواست‌ها",
+        UNDER_REVIEW: "در حال بررسی",
+        INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شده",
+        INTERVIEW_COMPLETED: "مصاحبه برگزار شده",
+        HIRED: "استخدام شده",
+      },
+      jobPerformance: {
+        columns: {
+          title: "فرصت شغلی",
+          applications: "درخواست‌ها",
+          interviews: "مصاحبه‌ها",
+          hires: "استخدامی‌ها",
+          hireRate: "نرخ استخدام",
+        },
+        empty: "هنوز داده‌ای برای فرصت‌های شغلی وجود ندارد.",
+      },
+    },
     verifyEmail: {
       title: "تأیید ایمیل",
       description: "لینک تأیید ایمیل دریافت شد.",
@@ -1667,7 +2235,7 @@ export const translations: Record<Locale, Translation> = {
         jobList: "Job list",
         candidates: "Candidates",
         interviews: "Interviews",
-        reports: "Reports",
+        reports: "Analytics",
         settings: "Settings",
       },
       sidebar: {
@@ -2105,6 +2673,290 @@ export const translations: Record<Locale, Translation> = {
         errors: {
           unexpected: "Something went wrong. Please try again.",
         },
+      },
+    },
+    candidates: {
+      list: {
+        title: "Candidates",
+        description: "View, filter, and manage candidates for this job.",
+        searchPlaceholder: "Search by name, email, or skill...",
+        loadFailed: "Unable to load the candidate list.",
+        retry: "Retry",
+        empty: "No candidates have applied for this job yet.",
+        stats: {
+          total: "Total candidates",
+          reviewing: "Reviewing",
+          interviewScheduled: "Interview scheduled",
+          hired: "Hired",
+          rejected: "Rejected",
+        },
+        filters: {
+          statusLabel: "Status",
+          allStatuses: "All statuses",
+          experienceLevelLabel: "Experience level",
+          allExperienceLevels: "All levels",
+          educationLabel: "Education",
+          educationPlaceholder: "e.g. Bachelor's degree",
+          dateRangeLabel: "Applied within",
+          allDateRanges: "All time",
+        },
+        experienceLevels: {
+          JUNIOR: "Junior",
+          MID: "Mid-level",
+          SENIOR: "Senior",
+        },
+        dateRanges: {
+          TODAY: "Today",
+          LAST_7_DAYS: "Last 7 days",
+          LAST_30_DAYS: "Last 30 days",
+          CUSTOM: "Custom range",
+        },
+        columns: {
+          name: "Candidate",
+          position: "Current position",
+          aiScore: "AI score",
+          experience: "Experience",
+          skills: "Skills",
+          status: "Status",
+          appliedAt: "Applied date",
+          actions: "Actions",
+        },
+        actions: {
+          view: "View profile",
+        },
+        pagination: {
+          previous: "Previous",
+          next: "Next",
+          summary: "Showing {from} to {to} of {total}",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
+        },
+      },
+      org: {
+        title: "All candidates",
+        description: "Candidates across every job in your organization.",
+        loadFailed: "Unable to load the candidate list.",
+        retry: "Retry",
+        empty: "No candidates have applied yet.",
+        columns: {
+          name: "Candidate",
+          job: "Job",
+          aiScore: "AI score",
+          status: "Status",
+          appliedAt: "Applied date",
+          actions: "Actions",
+        },
+        actions: {
+          view: "View profile",
+        },
+        pagination: {
+          previous: "Previous",
+          next: "Next",
+          summary: "Showing {from} to {to} of {total}",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
+        },
+      },
+      details: {
+        title: "Candidate profile",
+        notFound: "Candidate not found.",
+        loadFailed: "Unable to load the candidate profile.",
+        retry: "Retry",
+        backToList: "Back to candidates",
+        emptyValue: "—",
+        statusLabel: "Status",
+        statusUpdated: "Candidate status updated.",
+        actions: {
+          scheduleInterview: "Schedule interview",
+          downloadResume: "Download resume",
+        },
+        ai: {
+          title: "AI analysis",
+          empty: "AI analysis is not available for this candidate.",
+          matchScore: "Match score",
+          summary: "Executive summary",
+          strengths: "Strengths",
+          weaknesses: "Areas for improvement",
+          missingSkills: "Missing required skills",
+          interviewQuestions: "Suggested interview questions",
+        },
+        resume: {
+          title: "Resume",
+          empty: "No resume has been uploaded.",
+          download: "Download resume",
+        },
+        profile: {
+          title: "Candidate information",
+          email: "Email",
+          phone: "Phone number",
+          currentPosition: "Current position",
+          yearsExperience: "Years of experience",
+          education: "Education",
+          experience: "Work experience",
+          skills: "Skills",
+          links: "Links",
+          appliedAt: "Applied date",
+        },
+        notes: {
+          title: "Notes",
+          empty: "No notes have been added yet.",
+          placeholder: "Write your note...",
+          add: "Add note",
+          adding: "Adding...",
+          edit: "Edit",
+          save: "Save",
+          cancel: "Cancel",
+          delete: "Delete",
+          editedLabel: "Edited",
+          deleteConfirm: {
+            title: "Delete note",
+            description: "Are you sure you want to delete this note?",
+            cancel: "Cancel",
+            confirm: "Delete",
+            confirming: "Deleting...",
+          },
+        },
+        timeline: {
+          title: "Activity timeline",
+          empty: "No activity has been recorded yet.",
+          events: {
+            APPLICATION_SUBMITTED: "Application submitted",
+            RESUME_PROCESSED: "Resume processed",
+            AI_ANALYSIS_COMPLETED: "AI analysis completed",
+            STATUS_CHANGED: "Status changed",
+            NOTE_ADDED: "Note added",
+            NOTE_UPDATED: "Note updated",
+            NOTE_DELETED: "Note deleted",
+            INTERVIEW_SCHEDULED: "Interview scheduled",
+            INTERVIEW_UPDATED: "Interview updated",
+            INTERVIEW_CANCELLED: "Interview cancelled",
+            INTERVIEW_COMPLETED: "Interview completed",
+          },
+        },
+        interviews: {
+          title: "Interviews",
+          empty: "No interviews have been scheduled yet.",
+          scheduleButton: "Schedule interview",
+          editAction: "Edit",
+          cancelAction: "Cancel",
+          completeAction: "Mark completed",
+          joinAction: "Join meeting",
+        },
+        errors: {
+          unexpected: "Something went wrong. Please try again.",
+        },
+      },
+      interview: {
+        types: {
+          HR: "HR",
+          TECHNICAL: "Technical",
+          MANAGER: "Managerial",
+          FINAL: "Final",
+        },
+        statuses: {
+          SCHEDULED: "Scheduled",
+          CANCELLED: "Cancelled",
+          COMPLETED: "Completed",
+        },
+        form: {
+          createTitle: "Schedule interview",
+          editTitle: "Edit interview",
+          dateTimeLabel: "Date and time",
+          typeLabel: "Interview type",
+          locationLabel: "Location",
+          locationPlaceholder: "e.g. HQ office or online link",
+          meetingUrlLabel: "Meeting URL",
+          meetingUrlPlaceholder: "https://...",
+          notesLabel: "Notes",
+          notesPlaceholder: "Details or talking points...",
+          save: "Save",
+          saving: "Saving...",
+          cancel: "Cancel",
+          errors: {
+            scheduledAtRequired: "Interview date and time is required.",
+            meetingUrlInvalid: "Meeting URL is invalid.",
+            notesTooLong: "Notes must be at most 5000 characters.",
+            unexpected: "Something went wrong. Please try again.",
+          },
+        },
+        cancelDialog: {
+          title: "Cancel interview",
+          description: "Are you sure you want to cancel this interview?",
+          cancel: "Cancel",
+          confirm: "Cancel interview",
+          confirming: "Cancelling...",
+        },
+        completeDialog: {
+          title: "Complete interview",
+          description: "This interview will be marked as completed.",
+          notesLabel: "Outcome notes (optional)",
+          notesPlaceholder: "Summary of the interview outcome...",
+          cancel: "Cancel",
+          confirm: "Mark completed",
+          confirming: "Saving...",
+        },
+        toasts: {
+          created: "Interview scheduled successfully.",
+          updated: "Interview updated successfully.",
+          cancelled: "Interview cancelled.",
+          completed: "Interview outcome recorded.",
+        },
+        errors: {
+          notEditable: "This interview can no longer be edited.",
+          unexpected: "Something went wrong. Please try again.",
+        },
+      },
+    },
+    analytics: {
+      title: "Analytics",
+      description: "Review key hiring metrics and job performance.",
+      loadFailed: "Unable to load analytics data.",
+      retry: "Retry",
+      empty: "No data to display.",
+      rangeLabel: "Date range",
+      ranges: {
+        LAST_7_DAYS: "Last 7 days",
+        LAST_30_DAYS: "Last 30 days",
+        LAST_90_DAYS: "Last 90 days",
+        LAST_YEAR: "Last year",
+        CUSTOM: "Custom range",
+      },
+      kpis: {
+        totalJobs: "Total jobs",
+        activeJobs: "Active jobs",
+        totalApplications: "Total applications",
+        totalCandidates: "Total candidates",
+        interviewsScheduled: "Interviews scheduled",
+        hiredCandidates: "Hired candidates",
+        rejectedCandidates: "Rejected candidates",
+        averageTimeToHireDays: "Average time to hire (days)",
+        averageTimeToHireEmpty: "Not enough data",
+      },
+      charts: {
+        trendsTitle: "Application trends",
+        trendsDescription: "Applications received over time",
+        statusDistributionTitle: "Candidate status distribution",
+        funnelTitle: "Hiring funnel",
+        jobPerformanceTitle: "Job performance",
+      },
+      funnelStages: {
+        APPLICATIONS: "Applications",
+        UNDER_REVIEW: "Under review",
+        INTERVIEW_SCHEDULED: "Interview scheduled",
+        INTERVIEW_COMPLETED: "Interview completed",
+        HIRED: "Hired",
+      },
+      jobPerformance: {
+        columns: {
+          title: "Job",
+          applications: "Applications",
+          interviews: "Interviews",
+          hires: "Hires",
+          hireRate: "Hire rate",
+        },
+        empty: "No job performance data yet.",
       },
     },
     verifyEmail: {

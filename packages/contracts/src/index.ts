@@ -16,6 +16,13 @@ export * from "./jobs/create-job.schema";
 export * from "./public-job/public-job.schema";
 export * from "./public-job/apply.schema";
 export * from "./public-job/tracking.schema";
+export * from "./candidates/job-match.schema";
+export * from "./candidates/list.schema";
+export * from "./candidates/details.schema";
+export * from "./candidates/status.schema";
+export * from "./candidates/notes.schema";
+export * from "./candidates/interviews.schema";
+export * from "./analytics/analytics.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),

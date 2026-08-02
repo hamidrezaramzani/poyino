@@ -40,6 +40,33 @@ enum CandidateStatus {
   HIRED
 }
 
+enum InterviewType {
+  HR
+  TECHNICAL
+  MANAGER
+  FINAL
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum ApplicationActivityType {
+  APPLICATION_SUBMITTED
+  RESUME_PROCESSED
+  AI_ANALYSIS_COMPLETED
+  STATUS_CHANGED
+  NOTE_ADDED
+  NOTE_UPDATED
+  NOTE_DELETED
+  INTERVIEW_SCHEDULED
+  INTERVIEW_UPDATED
+  INTERVIEW_CANCELLED
+  INTERVIEW_COMPLETED
+}
+
 model Organization {
   id                      String      @id @default(uuid()) @db.Uuid
   name                    String      @db.VarChar(80)
@@ -75,6 +102,9 @@ model Organization {
   skills                  Skill[]
   jobTemplates            JobTemplate[]
   files                   StoredFile[] @relation("OrganizationFiles")
+  candidateNotes          CandidateNote[]
+  interviews              Interview[]
+  applicationActivities   ApplicationActivityEvent[]
 
   @@unique([email])
   @@map("organizations")
@@ -117,6 +147,9 @@ model User {
   verificationTokens EmailVerificationToken[]
   passwordResetTokens PasswordResetToken[]
   sessions           Session[]
+  candidateNotes     CandidateNote[]
+  interviewsCreated  Interview[]               @relation("InterviewCreatedBy")
+  activityEvents     ApplicationActivityEvent[]
 
   @@map("users")
 }
@@ -184,6 +217,7 @@ model Job {
   organization              Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   candidates                Candidate[]
   applications              Application[]
+  interviews                Interview[]
   skills                    JobSkill[]
   createdAt                 DateTime        @default(now()) @map("created_at")
   updatedAt                 DateTime        @updatedAt @map("updated_at")
@@ -266,6 +300,7 @@ model Candidate {
   organizationId  String          @map("organization_id") @db.Uuid
   organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   applications    Application[]
+  interviews      Interview[]
   appliedAt       DateTime        @default(now()) @map("applied_at")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
@@ -277,23 +312,28 @@ model Candidate {
 }
 
 model Application {
-  id                String                   @id @default(uuid()) @db.Uuid
-  status            CandidateStatus          @default(APPLIED)
-  trackingTokenHash String                   @unique @map("tracking_token_hash") @db.VarChar(64)
-  extractedText     String?                  @map("extracted_text") @db.Text
-  aiAnalysis        Json?                    @map("ai_analysis")
-  resumeFileId      String?                  @map("resume_file_id") @db.Uuid
-  resumeFile        StoredFile?              @relation("ApplicationResume", fields: [resumeFileId], references: [id], onDelete: SetNull)
-  candidateId       String                   @map("candidate_id") @db.Uuid
-  candidate         Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  jobId             String                   @map("job_id") @db.Uuid
-  job               Job                      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  organizationId    String                   @map("organization_id") @db.Uuid
-  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                String                     @id @default(uuid()) @db.Uuid
+  status            CandidateStatus            @default(APPLIED)
+  trackingTokenHash String                     @unique @map("tracking_token_hash") @db.VarChar(64)
+  extractedText     String?                    @map("extracted_text") @db.Text
+  aiAnalysis        Json?                      @map("ai_analysis")
+  jobMatchAnalysis  Json?                      @map("job_match_analysis")
+  yearsExperience   Int?                       @map("years_experience")
+  resumeFileId      String?                    @map("resume_file_id") @db.Uuid
+  resumeFile        StoredFile?                @relation("ApplicationResume", fields: [resumeFileId], references: [id], onDelete: SetNull)
+  candidateId       String                     @map("candidate_id") @db.Uuid
+  candidate         Candidate                  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  jobId             String                     @map("job_id") @db.Uuid
+  job               Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  organizationId    String                     @map("organization_id") @db.Uuid
+  organization      Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   statusEvents      ApplicationStatusEvent[]
-  appliedAt         DateTime                 @default(now()) @map("applied_at")
-  createdAt         DateTime                 @default(now()) @map("created_at")
-  updatedAt         DateTime                 @updatedAt @map("updated_at")
+  activityEvents    ApplicationActivityEvent[]
+  notes             CandidateNote[]
+  interviews        Interview[]
+  appliedAt         DateTime                   @default(now()) @map("applied_at")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
 
   @@unique([jobId, candidateId])
   @@index([organizationId, appliedAt])
@@ -311,4 +351,67 @@ model ApplicationStatusEvent {
 
   @@index([applicationId, createdAt])
   @@map("application_status_events")
+}
+
+model ApplicationActivityEvent {
+  id             String                  @id @default(uuid()) @db.Uuid
+  applicationId  String                  @map("application_id") @db.Uuid
+  application    Application             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  organizationId String                  @map("organization_id") @db.Uuid
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           ApplicationActivityType
+  description    String                  @db.VarChar(500)
+  actorUserId    String?                 @map("actor_user_id") @db.Uuid
+  actorUser      User?                   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  metadata       Json?
+  createdAt      DateTime                @default(now()) @map("created_at")
+
+  @@index([applicationId, createdAt])
+  @@index([organizationId, createdAt])
+  @@map("application_activity_events")
+}
+
+model CandidateNote {
+  id             String       @id @default(uuid()) @db.Uuid
+  applicationId  String       @map("application_id") @db.Uuid
+  application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  authorUserId   String       @map("author_user_id") @db.Uuid
+  authorUser     User         @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+  body           String       @db.VarChar(5000)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([applicationId, createdAt])
+  @@index([organizationId])
+  @@map("candidate_notes")
+}
+
+model Interview {
+  id              String          @id @default(uuid()) @db.Uuid
+  applicationId   String          @map("application_id") @db.Uuid
+  application     Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  organizationId  String          @map("organization_id") @db.Uuid
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  jobId           String          @map("job_id") @db.Uuid
+  job             Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  candidateId     String          @map("candidate_id") @db.Uuid
+  candidate       Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  scheduledAt     DateTime        @map("scheduled_at")
+  type            InterviewType
+  status          InterviewStatus @default(SCHEDULED)
+  location        String?         @db.VarChar(255)
+  meetingUrl      String?         @map("meeting_url") @db.VarChar(500)
+  notes           String?         @db.VarChar(5000)
+  createdByUserId String          @map("created_by_user_id") @db.Uuid
+  createdByUser   User            @relation("InterviewCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([applicationId, scheduledAt])
+  @@index([organizationId, scheduledAt])
+  @@index([jobId])
+  @@index([candidateId])
+  @@map("interviews")
 }

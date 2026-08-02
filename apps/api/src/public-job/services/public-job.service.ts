@@ -42,6 +42,13 @@ import {
   resumeAnalysisSystemPrompt,
   resumeAnalysisZodSchema,
 } from "../ai/analyze-resume";
+import {
+  buildJobMatchPrompt,
+  jobMatchAnalysisZodSchema,
+  jobMatchSchemaHint,
+  jobMatchSystemPrompt,
+  normalizeJobMatchAnalysis,
+} from "../ai/evaluate-job-match";
 
 const RESUME_MIME_TYPES = ["application/pdf"] as const;
 
@@ -388,23 +395,64 @@ export class PublicJobService {
               createdAt: now,
             },
           },
+          activityEvents: {
+            create: [
+              {
+                organizationId: job.organizationId,
+                type: "APPLICATION_SUBMITTED",
+                description: "Application submitted",
+                createdAt: now,
+              },
+              ...(extractedText
+                ? [
+                    {
+                      organizationId: job.organizationId,
+                      type: "RESUME_PROCESSED" as const,
+                      description: "Resume processed",
+                      createdAt: now,
+                    },
+                  ]
+                : []),
+            ],
+          },
         },
       });
 
-      return created;
+      return { application: created, candidateId: candidate.id };
     });
 
     try {
       const extension = resumeFile.extension || "pdf";
       await this.storageService.move(
         resumeFile.id,
-        `resumes/${application.id}/${resumeFile.id}.${extension}`,
+        `resumes/${application.application.id}/${resumeFile.id}.${extension}`,
       );
     } catch (error) {
       this.logger.warn(
-        `Failed to move resume object for application ${application.id}: ${String(error)}`,
+        `Failed to move resume object for application ${application.application.id}: ${String(error)}`,
       );
     }
+
+    void this.evaluateJobMatch({
+      applicationId: application.application.id,
+      candidateId: application.candidateId,
+      organizationId: job.organizationId,
+      jobTitle: job.title,
+      jobDescription: job.description,
+      responsibilities: job.responsibilities,
+      requirements: job.requirements,
+      skills: job.skills.map((item) => item.skill.name),
+      candidateFullName: input.fullName,
+      candidateCurrentPosition: input.currentPosition,
+      candidateSkills: skills,
+      candidateExperience: input.experience,
+      candidateEducation: input.education,
+      extractedText,
+    }).catch((error) => {
+      this.logger.warn(
+        `Job match evaluation failed for application ${application.application.id}: ${String(error)}`,
+      );
+    });
 
     const trackingUrl = `/tracking/${rawToken}`;
     const absoluteTrackingUrl = `${webAppBaseUrl()}${trackingUrl}`;
@@ -426,13 +474,71 @@ export class PublicJobService {
 
     return {
       success: true as const,
-      applicationId: application.id,
+      applicationId: application.application.id,
       trackingToken: rawToken,
       trackingUrl,
       jobTitle: job.title,
       organizationName,
-      submittedAt: application.appliedAt.toISOString(),
+      submittedAt: application.application.appliedAt.toISOString(),
     };
+  }
+
+  private async evaluateJobMatch(input: {
+    applicationId: string;
+    candidateId: string;
+    organizationId: string;
+    jobTitle: string;
+    jobDescription: string;
+    responsibilities: string | null;
+    requirements: string | null;
+    skills: string[];
+    candidateFullName: string;
+    candidateCurrentPosition: string | null;
+    candidateSkills: string[];
+    candidateExperience: string | null;
+    candidateEducation: string | null;
+    extractedText: string | null;
+  }) {
+    const result = await this.aiService.generateStructured({
+      prompt: buildJobMatchPrompt(input),
+      schema: jobMatchAnalysisZodSchema,
+      schemaName: "JobMatchAnalysis",
+      schemaHint: jobMatchSchemaHint,
+      normalize: normalizeJobMatchAnalysis,
+      system: jobMatchSystemPrompt,
+      temperature: 0.2,
+      maxTokens: 2_500,
+    });
+
+    const analysis = result.data;
+    const yearsExperience = analysis.yearsExperience ?? null;
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.application.update({
+        where: { id: input.applicationId },
+        data: {
+          jobMatchAnalysis: analysis,
+          yearsExperience,
+        },
+      });
+
+      await tx.candidate.update({
+        where: { id: input.candidateId },
+        data: {
+          aiScore: analysis.matchScore,
+        },
+      });
+
+      await tx.applicationActivityEvent.create({
+        data: {
+          applicationId: input.applicationId,
+          organizationId: input.organizationId,
+          type: "AI_ANALYSIS_COMPLETED",
+          description: `AI match analysis completed (${analysis.matchScore}%)`,
+          metadata: { matchScore: analysis.matchScore },
+        },
+      });
+    });
   }
 
   async getTracking(token: string) {
@@ -537,6 +643,15 @@ export class PublicJobService {
         publishedAt: true,
         expirationDate: true,
         organizationId: true,
+        skills: {
+          select: {
+            skill: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
         organization: {
           select: {
             id: true,

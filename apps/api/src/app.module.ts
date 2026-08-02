@@ -2,9 +2,11 @@ import { Module } from "@nestjs/common";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { AiModule } from "./ai/ai.module";
+import { AnalyticsModule } from "./analytics/analytics.module";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
+import { CandidatesModule } from "./candidates/candidates.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { JobsModule } from "./jobs/jobs.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -26,6 +28,8 @@ import { StorageModule } from "./storage/storage.module";
     AuthenticationModule,
     DashboardModule,
     JobsModule,
+    CandidatesModule,
+    AnalyticsModule,
     PublicJobModule,
     SettingsModule,
   ],

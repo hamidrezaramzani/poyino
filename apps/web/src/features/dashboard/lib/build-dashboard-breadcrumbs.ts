@@ -27,14 +27,14 @@ export function buildDashboardBreadcrumbs({
     return [{ label: t.dashboard.nav.overview }];
   }
 
-  const [root, second, third] = segments;
+  const [root, second, third, fourth] = segments;
 
   switch (root) {
     case "dashboard":
       return [{ label: t.dashboard.nav.overview }];
 
     case "jobs":
-      return buildJobsBreadcrumbs(second, third, t);
+      return buildJobsBreadcrumbs(second, third, fourth, t);
 
     case "candidates":
       if (second) {
@@ -62,6 +62,7 @@ export function buildDashboardBreadcrumbs({
 function buildJobsBreadcrumbs(
   second: string | undefined,
   third: string | undefined,
+  fourth: string | undefined,
   t: Translation,
 ): DashboardBreadcrumb[] {
   const jobsRoot: DashboardBreadcrumb = {
@@ -92,7 +93,21 @@ function buildJobsBreadcrumbs(
   }
 
   if (third === "candidates") {
-    return [jobsRoot, jobCrumb, { label: t.dashboard.nav.candidates }];
+    const candidatesCrumb: DashboardBreadcrumb = {
+      label: t.dashboard.nav.candidates,
+      to: `/jobs/${second}/candidates`,
+    };
+
+    if (!fourth) {
+      return [jobsRoot, jobCrumb, { label: t.dashboard.nav.candidates }];
+    }
+
+    return [
+      jobsRoot,
+      jobCrumb,
+      candidatesCrumb,
+      { label: t.candidates.details.title },
+    ];
   }
 
   return [jobsRoot, { label: jobLabel }];
