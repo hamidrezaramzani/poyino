@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { useCan } from "../../../shared/permissions/can";
 import { useSession } from "../../../shared/session/session-provider";
 import { logoutUser } from "../services/auth-session.service";
 import {
@@ -32,6 +33,9 @@ export function DashboardSidebar({
   const { t } = useI18n();
   const { user, status, clearSession } = useSession();
   const { logoUrl, darkLogoUrl } = useOrganizationBranding();
+  const canCreateJob = useCan("jobs:create");
+  const canViewReports = useCan("reports:view");
+  const canViewSettings = useCan("organization:view");
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
@@ -185,13 +189,15 @@ export function DashboardSidebar({
                 </button>
                 {!collapsed && jobsOpen ? (
                   <div className="dashboard-nav-children">
-                    <SidebarLink
-                      to="/jobs/create"
-                      label={t.dashboard.nav.createJob}
-                      icon={<PlusIcon size={16} />}
-                      collapsed={false}
-                      onNavigate={onMobileClose}
-                    />
+                    {canCreateJob ? (
+                      <SidebarLink
+                        to="/jobs/create"
+                        label={t.dashboard.nav.createJob}
+                        icon={<PlusIcon size={16} />}
+                        collapsed={false}
+                        onNavigate={onMobileClose}
+                      />
+                    ) : null}
                     <SidebarLink
                       to="/jobs"
                       label={t.dashboard.nav.jobList}
@@ -218,15 +224,34 @@ export function DashboardSidebar({
                 collapsed={collapsed}
                 onNavigate={onMobileClose}
               />
-              <SidebarLink
-                to="/reports"
-                label={t.dashboard.nav.reports}
-                icon={<FileSpreadsheetIcon size={18} />}
-                collapsed={collapsed}
-                onNavigate={onMobileClose}
-              />
-              {collapsed ? (
-                <Tooltip content={t.dashboard.nav.settings}>
+              {canViewReports ? (
+                <SidebarLink
+                  to="/reports"
+                  label={t.dashboard.nav.reports}
+                  icon={<FileSpreadsheetIcon size={18} />}
+                  collapsed={collapsed}
+                  onNavigate={onMobileClose}
+                />
+              ) : null}
+              {canViewSettings ? (
+                collapsed ? (
+                  <Tooltip content={t.dashboard.nav.settings}>
+                    <NavLink
+                      to="/settings/general"
+                      className={() =>
+                        `dashboard-nav-link${
+                          location.pathname.startsWith("/settings")
+                            ? " is-active"
+                            : ""
+                        }`
+                      }
+                      onClick={onMobileClose}
+                      title={t.dashboard.nav.settings}
+                    >
+                      <SettingsIcon size={18} />
+                    </NavLink>
+                  </Tooltip>
+                ) : (
                   <NavLink
                     to="/settings/general"
                     className={() =>
@@ -237,27 +262,12 @@ export function DashboardSidebar({
                       }`
                     }
                     onClick={onMobileClose}
-                    title={t.dashboard.nav.settings}
                   >
                     <SettingsIcon size={18} />
+                    <span>{t.dashboard.nav.settings}</span>
                   </NavLink>
-                </Tooltip>
-              ) : (
-                <NavLink
-                  to="/settings/general"
-                  className={() =>
-                    `dashboard-nav-link${
-                      location.pathname.startsWith("/settings")
-                        ? " is-active"
-                        : ""
-                    }`
-                  }
-                  onClick={onMobileClose}
-                >
-                  <SettingsIcon size={18} />
-                  <span>{t.dashboard.nav.settings}</span>
-                </NavLink>
-              )}
+                )
+              ) : null}
             </>
           )}
         </nav>
@@ -296,17 +306,19 @@ export function DashboardSidebar({
                   >
                     {t.dashboard.userMenu.profile}
                   </button>
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setUserMenuOpen(false);
-                      onMobileClose();
-                      navigate("/settings/general");
-                    }}
-                  >
-                    {t.dashboard.userMenu.settings}
-                  </button>
+                  {canViewSettings ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        onMobileClose();
+                        navigate("/settings/general");
+                      }}
+                    >
+                      {t.dashboard.userMenu.settings}
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     role="menuitem"

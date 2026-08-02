@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
+import { useCan } from "../../../shared/permissions/can";
 import { useJobDetails } from "../hooks/use-job-details";
 import { JobConfirmDialog } from "./job-confirm-dialog";
 
@@ -18,6 +19,10 @@ export function JobDetailsView() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const { push } = useToast();
+  const canUpdate = useCan("jobs:update");
+  const canPublish = useCan("jobs:publish");
+  const canDelete = useCan("jobs:delete");
+  const canViewCandidates = useCan("candidates:view");
   const {
     job,
     status,
@@ -55,7 +60,8 @@ export function JobDetailsView() {
   const publicAbsoluteUrl = job.publicUrl
     ? `${window.location.origin}${job.publicUrl}`
     : null;
-  const canDelete =
+  const canDeleteJob =
+    canDelete &&
     (job.status === "DRAFT" || job.status === "PUBLISHED") &&
     job.statistics.applications === 0;
 
@@ -104,12 +110,12 @@ export function JobDetailsView() {
             ) : null}
           </div>
           <div className="job-details-actions">
-            {job.status === "DRAFT" ? (
+            {canPublish && job.status === "DRAFT" ? (
               <Button type="button" onClick={() => requestAction("publish")}>
                 {t.jobs.details.actions.publish}
               </Button>
             ) : null}
-            {job.status === "PUBLISHED" ? (
+            {canPublish && job.status === "PUBLISHED" ? (
               <Button
                 type="button"
                 variant="secondary"
@@ -118,21 +124,25 @@ export function JobDetailsView() {
                 {t.jobs.details.actions.unpublish}
               </Button>
             ) : null}
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate(`/jobs/${jobId}/edit`)}
-            >
-              {t.jobs.details.actions.edit}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate(`/jobs/${jobId}/candidates`)}
-            >
-              {t.jobs.details.actions.viewCandidates}
-            </Button>
-            {canDelete ? (
+            {canUpdate ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => navigate(`/jobs/${jobId}/edit`)}
+              >
+                {t.jobs.details.actions.edit}
+              </Button>
+            ) : null}
+            {canViewCandidates ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => navigate(`/jobs/${jobId}/candidates`)}
+              >
+                {t.jobs.details.actions.viewCandidates}
+              </Button>
+            ) : null}
+            {canDeleteJob ? (
               <Button
                 type="button"
                 variant="danger"

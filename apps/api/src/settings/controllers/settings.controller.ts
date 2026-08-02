@@ -29,13 +29,15 @@ import {
 } from "@poyino/contracts";
 import type { Response } from "express";
 import { CurrentUser } from "../../authentication/decorators/current-user.decorator";
+import { RequirePermission } from "../../authentication/decorators/require-permission.decorator";
+import { PermissionsGuard } from "../../authentication/guards/permissions.guard";
 import { SessionAuthGuard } from "../../authentication/guards/session-auth.guard";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
 import { SettingsService } from "../services/settings.service";
 
 @Controller("settings")
-@UseGuards(SessionAuthGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class SettingsController {
   constructor(
     @Inject(SettingsService)
@@ -43,6 +45,7 @@ export class SettingsController {
   ) {}
 
   @Get("general")
+  @RequirePermission("organization:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getGeneral(@CurrentUser() user: AuthenticatedUser) {
@@ -50,6 +53,7 @@ export class SettingsController {
   }
 
   @Put("general")
+  @RequirePermission("organization:manage")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateGeneral(
@@ -61,6 +65,7 @@ export class SettingsController {
   }
 
   @Get("profile")
+  @RequirePermission("organization:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getProfile(@CurrentUser() user: AuthenticatedUser) {
@@ -68,6 +73,7 @@ export class SettingsController {
   }
 
   @Put("profile")
+  @RequirePermission("organization:manage")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateProfile(
@@ -86,6 +92,7 @@ export class SettingsController {
   }
 
   @Put("branding")
+  @RequirePermission("organization:manage")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateBranding(
@@ -97,6 +104,7 @@ export class SettingsController {
   }
 
   @Get("notifications")
+  @RequirePermission("organization:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getNotifications(@CurrentUser() user: AuthenticatedUser) {
@@ -104,6 +112,7 @@ export class SettingsController {
   }
 
   @Put("notifications")
+  @RequirePermission("organization:manage")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateNotifications(
@@ -126,6 +135,7 @@ export class SettingsController {
   }
 
   @Post("files")
+  @RequirePermission("organization:manage")
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   uploadFile(

@@ -1,6 +1,8 @@
 import { Inject, Injectable } from "@nestjs/common";
 import type { AnalyticsQuery } from "@poyino/contracts";
 import type { CandidateStatus, Prisma } from "@prisma/client";
+import { departmentScopeFilter } from "../../authentication/lib/department-scope";
+import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
@@ -9,10 +11,18 @@ export class AnalyticsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
-  async getDashboard(organizationId: string, query: AnalyticsQuery) {
+  async getDashboard(user: AuthenticatedUser, query: AnalyticsQuery) {
+    const organizationId = user.organizationId;
+    const scope = departmentScopeFilter(user);
     const appliedAt = resolveRangeFilter(query);
+    const jobScope = scope.departmentId
+      ? { departmentId: scope.departmentId }
+      : {};
     const applicationWhere: Prisma.ApplicationWhereInput = {
       organizationId,
+      ...(scope.departmentId
+        ? { job: { departmentId: scope.departmentId } }
+        : {}),
       ...(query.jobId ? { jobId: query.jobId } : {}),
       ...(appliedAt ? { appliedAt } : {}),
     };
@@ -26,14 +36,17 @@ export class AnalyticsService {
       statusGroups,
       hiredApps,
     ] = await Promise.all([
-      this.prisma.job.count({ where: { organizationId } }),
+      this.prisma.job.count({ where: { organizationId, ...jobScope } }),
       this.prisma.job.count({
-        where: { organizationId, status: "PUBLISHED" },
+        where: { organizationId, status: "PUBLISHED", ...jobScope },
       }),
       this.prisma.application.count({ where: applicationWhere }),
       this.prisma.candidate.count({
         where: {
           organizationId,
+          ...(scope.departmentId
+            ? { job: { departmentId: scope.departmentId } }
+            : {}),
           ...(appliedAt ? { appliedAt } : {}),
         },
       }),
@@ -41,6 +54,9 @@ export class AnalyticsService {
         where: {
           organizationId,
           status: "SCHEDULED",
+          ...(scope.departmentId
+            ? { job: { departmentId: scope.departmentId } }
+            : {}),
           ...(query.jobId ? { jobId: query.jobId } : {}),
           ...(appliedAt ? { scheduledAt: appliedAt } : {}),
         },
@@ -104,10 +120,14 @@ export class AnalyticsService {
     };
   }
 
-  async getFunnel(organizationId: string, query: AnalyticsQuery) {
+  async getFunnel(user: AuthenticatedUser, query: AnalyticsQuery) {
+    const scope = departmentScopeFilter(user);
     const appliedAt = resolveRangeFilter(query);
     const where: Prisma.ApplicationWhereInput = {
-      organizationId,
+      organizationId: user.organizationId,
+      ...(scope.departmentId
+        ? { job: { departmentId: scope.departmentId } }
+        : {}),
       ...(query.jobId ? { jobId: query.jobId } : {}),
       ...(appliedAt ? { appliedAt } : {}),
     };
@@ -165,12 +185,14 @@ export class AnalyticsService {
     };
   }
 
-  async getJobPerformance(organizationId: string, query: AnalyticsQuery) {
+  async getJobPerformance(user: AuthenticatedUser, query: AnalyticsQuery) {
+    const scope = departmentScopeFilter(user);
     const appliedAt = resolveRangeFilter(query);
     const jobs = await this.prisma.job.findMany({
       where: {
-        organizationId,
+        organizationId: user.organizationId,
         status: { not: "DRAFT" },
+        ...scope,
         ...(query.jobId ? { id: query.jobId } : {}),
       },
       select: {
@@ -216,14 +238,18 @@ export class AnalyticsService {
     return { success: true as const, jobs: items };
   }
 
-  async getTrends(organizationId: string, query: AnalyticsQuery) {
+  async getTrends(user: AuthenticatedUser, query: AnalyticsQuery) {
+    const scope = departmentScopeFilter(user);
     const appliedAt = resolveRangeFilter(query) ?? {
       gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     };
 
     const applications = await this.prisma.application.findMany({
       where: {
-        organizationId,
+        organizationId: user.organizationId,
+        ...(scope.departmentId
+          ? { job: { departmentId: scope.departmentId } }
+          : {}),
         ...(query.jobId ? { jobId: query.jobId } : {}),
         appliedAt,
       },

@@ -1,11 +1,13 @@
 import {
   JobErrorCode,
   UpdateJobSchema,
+  type DepartmentSummary,
 } from "@poyino/contracts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
+import { listDepartments } from "../../organization/services/organization.service";
 import {
   areValuesEqual,
   useUnsavedChangesGuard,
@@ -35,6 +37,7 @@ export function useEditJobForm() {
   const [initialValues, setInitialValues] =
     useState<JobFormValues>(emptyJobFormValues);
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
   const [loadStatus, setLoadStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
@@ -50,6 +53,15 @@ export function useEditJobForm() {
     isDirty && !isSubmitting && !didSucceed,
   );
 
+  const departmentOptions = useMemo(
+    () =>
+      departments.map((department) => ({
+        value: department.id,
+        label: department.name,
+      })),
+    [departments],
+  );
+
   const load = useCallback(async () => {
     if (!jobId) {
       setNotFound(true);
@@ -60,7 +72,11 @@ export function useEditJobForm() {
     setLoadStatus("loading");
     setNotFound(false);
     try {
-      const response = await fetchJob(jobId);
+      const [response, departmentItems] = await Promise.all([
+        fetchJob(jobId),
+        listDepartments().catch(() => [] as DepartmentSummary[]),
+      ]);
+      setDepartments(departmentItems);
       const next = jobDetailsToFormValues(response.job);
       setValues(next);
       setInitialValues(next);
@@ -211,6 +227,8 @@ export function useEditJobForm() {
     jobId,
     values,
     errors,
+    departments,
+    departmentOptions,
     loadStatus,
     notFound,
     isSubmitting,

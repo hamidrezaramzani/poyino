@@ -2,12 +2,14 @@ import {
   CreateJobSchema,
   GenerateJobContentSchema,
   JobErrorCode,
+  type DepartmentSummary,
   type JobTemplateSummary,
 } from "@poyino/contracts";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
+import { listDepartments } from "../../organization/services/organization.service";
 import {
   areValuesEqual,
   useUnsavedChangesGuard,
@@ -37,6 +39,7 @@ export function useCreateJobForm() {
   const [initialValues] = useState<CreateJobFormValues>(emptyCreateJobValues);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [templates, setTemplates] = useState<JobTemplateSummary[]>([]);
+  const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
   const [templatesStatus, setTemplatesStatus] = useState<
     "loading" | "success" | "error"
   >("loading");
@@ -52,6 +55,15 @@ export function useCreateJobForm() {
     isDirty && !isSubmitting && !didSucceed,
   );
 
+  const departmentOptions = useMemo(
+    () =>
+      departments.map((department) => ({
+        value: department.id,
+        label: department.name,
+      })),
+    [departments],
+  );
+
   const loadTemplates = useCallback(async () => {
     setTemplatesStatus("loading");
     try {
@@ -64,9 +76,34 @@ export function useCreateJobForm() {
     }
   }, []);
 
+  const loadDepartments = useCallback(async () => {
+    try {
+      const items = await listDepartments();
+      setDepartments(items);
+      setValues((current) => {
+        if (current.departmentId) {
+          return current;
+        }
+        const preferred =
+          items.find((item) => item.isDefault) ?? items[0] ?? null;
+        if (!preferred) {
+          return current;
+        }
+        return {
+          ...current,
+          departmentId: preferred.id,
+          department: preferred.name,
+        };
+      });
+    } catch {
+      setDepartments([]);
+    }
+  }, []);
+
   useEffect(() => {
     void loadTemplates();
-  }, [loadTemplates]);
+    void loadDepartments();
+  }, [loadTemplates, loadDepartments]);
 
   const setFieldValue = useCallback(
     <K extends FieldName>(field: K, value: CreateJobFormValues[K]) => {
@@ -187,29 +224,42 @@ export function useCreateJobForm() {
     try {
       const response = await generateJobContent(parsed.data);
       const content = response.content;
-      setValues((current) => ({
-        ...current,
-        title: content.title,
-        department: content.department ?? "",
-        employmentType: content.employmentType,
-        workplaceType: content.workplaceType,
-        location: content.location ?? "",
-        salaryMin:
-          content.salaryMin != null ? String(content.salaryMin) : current.salaryMin,
-        salaryMax:
-          content.salaryMax != null ? String(content.salaryMax) : current.salaryMax,
-        currency: content.currency || current.currency,
-        salaryVisible: content.salaryVisible ? "visible" : "hidden",
-        description: content.description,
-        responsibilities: content.responsibilities,
-        requirements: content.requirements,
-        benefits: content.benefits,
-        skills: content.skills?.length ? content.skills : current.skills,
-        positions:
-          content.positions != null
-            ? String(content.positions)
-            : current.positions,
-      }));
+      setValues((current) => {
+        const matched = content.department
+          ? departments.find(
+              (item) =>
+                item.name.toLowerCase() === content.department!.toLowerCase(),
+            )
+          : null;
+        return {
+          ...current,
+          title: content.title,
+          department: matched?.name ?? content.department ?? current.department,
+          departmentId: matched?.id ?? current.departmentId,
+          employmentType: content.employmentType,
+          workplaceType: content.workplaceType,
+          location: content.location ?? "",
+          salaryMin:
+            content.salaryMin != null
+              ? String(content.salaryMin)
+              : current.salaryMin,
+          salaryMax:
+            content.salaryMax != null
+              ? String(content.salaryMax)
+              : current.salaryMax,
+          currency: content.currency || current.currency,
+          salaryVisible: content.salaryVisible ? "visible" : "hidden",
+          description: content.description,
+          responsibilities: content.responsibilities,
+          requirements: content.requirements,
+          benefits: content.benefits,
+          skills: content.skills?.length ? content.skills : current.skills,
+          positions:
+            content.positions != null
+              ? String(content.positions)
+              : current.positions,
+        };
+      });
       setErrors((current) => {
         const next = { ...current };
         for (const field of [
@@ -252,7 +302,7 @@ export function useCreateJobForm() {
     } finally {
       setIsGenerating(false);
     }
-  }, [isGenerating, isSubmitting, push, t, values.aiPrompt]);
+  }, [departments, isGenerating, isSubmitting, push, t, values.aiPrompt]);
 
   const submit = useCallback(async () => {
     if (isSubmitting || isGenerating) {
@@ -302,6 +352,8 @@ export function useCreateJobForm() {
     errors,
     templates,
     templatesStatus,
+    departments,
+    departmentOptions,
     isSubmitting,
     isGenerating,
     isDirty,

@@ -13,6 +13,7 @@ import {
   Textarea,
 } from "@poyino/ui";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { useCan } from "../../../shared/permissions/can";
 import {
   CURRENCY_OPTIONS,
   EMPLOYMENT_TYPE_OPTIONS,
@@ -24,6 +25,7 @@ import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 export function CreateJobForm() {
   const { t } = useI18n();
   const form = useCreateJobForm();
+  const canGenerate = useCan("ai:generate");
   const disabled = form.isSubmitting || form.isGenerating;
 
   const employmentOptions = EMPLOYMENT_TYPE_OPTIONS.map((value) => ({
@@ -54,39 +56,41 @@ export function CreateJobForm() {
   return (
     <>
       <div className="create-job-layout">
-        <Card title={t.jobs.create.aiSection}>
-          <FormField
-            label={t.jobs.create.aiPromptLabel}
-            htmlFor="aiPrompt"
-            error={form.errors.aiPrompt}
-          >
-            <Textarea
-              id="aiPrompt"
-              value={form.values.aiPrompt}
-              disabled={disabled}
+        {canGenerate ? (
+          <Card title={t.jobs.create.aiSection}>
+            <FormField
+              label={t.jobs.create.aiPromptLabel}
+              htmlFor="aiPrompt"
               error={form.errors.aiPrompt}
-              placeholder={t.jobs.create.aiPromptPlaceholder}
-              onChange={(event) =>
-                form.setFieldValue("aiPrompt", event.target.value)
-              }
-              onBlur={(event) =>
-                form.validateField("aiPrompt", event.target.value)
-              }
-            />
-          </FormField>
-          <div className="settings-actions">
-            <LoadingButton
-              type="button"
-              variant="secondary"
-              loading={form.isGenerating}
-              loadingLabel={t.jobs.create.aiGenerating}
-              disabled={form.isSubmitting}
-              onClick={() => void form.generate()}
             >
-              {t.jobs.create.aiGenerate}
-            </LoadingButton>
-          </div>
-        </Card>
+              <Textarea
+                id="aiPrompt"
+                value={form.values.aiPrompt}
+                disabled={disabled}
+                error={form.errors.aiPrompt}
+                placeholder={t.jobs.create.aiPromptPlaceholder}
+                onChange={(event) =>
+                  form.setFieldValue("aiPrompt", event.target.value)
+                }
+                onBlur={(event) =>
+                  form.validateField("aiPrompt", event.target.value)
+                }
+              />
+            </FormField>
+            <div className="settings-actions">
+              <LoadingButton
+                type="button"
+                variant="secondary"
+                loading={form.isGenerating}
+                loadingLabel={t.jobs.create.aiGenerating}
+                disabled={form.isSubmitting}
+                onClick={() => void form.generate()}
+              >
+                {t.jobs.create.aiGenerate}
+              </LoadingButton>
+            </div>
+          </Card>
+        ) : null}
 
         <Card
           title={t.jobs.create.title}
@@ -147,21 +151,24 @@ export function CreateJobForm() {
             <div className="create-job-grid">
               <FormField
                 label={t.jobs.create.departmentLabel}
-                htmlFor="department"
-                error={form.errors.department}
+                htmlFor="departmentId"
+                error={form.errors.departmentId ?? form.errors.department}
               >
-                <Input
-                  id="department"
-                  value={form.values.department}
+                <Select
+                  id="departmentId"
+                  value={form.values.departmentId}
                   disabled={disabled}
-                  error={form.errors.department}
-                  placeholder={t.jobs.create.departmentPlaceholder}
-                  onChange={(event) =>
-                    form.setFieldValue("department", event.target.value)
-                  }
-                  onBlur={(event) =>
-                    form.validateField("department", event.target.value)
-                  }
+                  error={form.errors.departmentId ?? form.errors.department}
+                  options={form.departmentOptions}
+                  placeholder={t.jobs.create.selectPlaceholder}
+                  onChange={(event) => {
+                    const departmentId = event.target.value;
+                    const selected = form.departments.find(
+                      (item) => item.id === departmentId,
+                    );
+                    form.setFieldValue("departmentId", departmentId);
+                    form.setFieldValue("department", selected?.name ?? "");
+                  }}
                 />
               </FormField>
 

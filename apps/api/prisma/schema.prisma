@@ -8,7 +8,17 @@ datasource db {
 }
 
 enum UserRole {
+  OWNER
   ADMINISTRATOR
+  RECRUITER
+  HIRING_MANAGER
+  INTERVIEWER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
 }
 
 enum JobStatus {
@@ -117,6 +127,7 @@ model Organization {
   createdAt               DateTime    @default(now()) @map("created_at")
   updatedAt               DateTime    @updatedAt @map("updated_at")
   users                   User[]
+  departments             Department[]
   jobs                    Job[]
   candidates              Candidate[]
   applications            Application[]
@@ -130,6 +141,28 @@ model Organization {
 
   @@unique([email])
   @@map("organizations")
+}
+
+model Department {
+  id             String        @id @default(uuid()) @db.Uuid
+  organizationId String        @map("organization_id") @db.Uuid
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String        @db.VarChar(100)
+  description    String?       @db.VarChar(1000)
+  color          String?       @db.VarChar(7)
+  managerId      String?       @map("manager_id") @db.Uuid
+  manager        User?         @relation("DepartmentManager", fields: [managerId], references: [id], onDelete: SetNull)
+  isDefault      Boolean       @default(false) @map("is_default")
+  archivedAt     DateTime?     @map("archived_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  members        User[]        @relation("UserDepartment")
+  jobs           Job[]
+  jobTemplates   JobTemplate[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId, archivedAt])
+  @@map("departments")
 }
 
 model StoredFile {
@@ -159,11 +192,14 @@ model User {
   id                 String                   @id @default(uuid()) @db.Uuid
   email              String                   @unique @db.VarChar(255)
   passwordHash       String                   @map("password_hash")
-  role               UserRole                 @default(ADMINISTRATOR)
+  role               UserRole                 @default(OWNER)
+  status             UserStatus               @default(ACTIVE)
   isEmailVerified    Boolean                  @default(false) @map("is_email_verified")
   lastLoginAt        DateTime?                @map("last_login_at")
   organizationId     String                   @map("organization_id") @db.Uuid
   organization       Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  departmentId       String                   @map("department_id") @db.Uuid
+  department         Department               @relation("UserDepartment", fields: [departmentId], references: [id], onDelete: Restrict)
   createdAt          DateTime                 @default(now()) @map("created_at")
   updatedAt          DateTime                 @updatedAt @map("updated_at")
   verificationTokens EmailVerificationToken[]
@@ -173,7 +209,9 @@ model User {
   interviewsCreated  Interview[]               @relation("InterviewCreatedBy")
   interviewsAssigned Interview[]               @relation("InterviewRecruiter")
   activityEvents     ApplicationActivityEvent[]
+  managedDepartments Department[]             @relation("DepartmentManager")
 
+  @@index([organizationId, departmentId])
   @@map("users")
 }
 
@@ -220,6 +258,8 @@ model Job {
   id               String          @id @default(uuid()) @db.Uuid
   title            String          @db.VarChar(100)
   department       String?         @db.VarChar(80)
+  departmentId     String          @map("department_id") @db.Uuid
+  departmentRef    Department      @relation(fields: [departmentId], references: [id], onDelete: Restrict)
   employmentType   EmploymentType  @map("employment_type")
   workplaceType    WorkplaceType   @map("workplace_type")
   location         String?         @db.VarChar(120)
@@ -248,6 +288,7 @@ model Job {
 
   @@index([organizationId, createdAt])
   @@index([organizationId, status])
+  @@index([organizationId, departmentId])
   @@index([status, expirationDate])
   @@map("jobs")
 }
@@ -283,6 +324,8 @@ model JobTemplate {
   name             String          @db.VarChar(120)
   title            String          @db.VarChar(100)
   department       String?         @db.VarChar(80)
+  departmentId     String?         @map("department_id") @db.Uuid
+  departmentRef    Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   employmentType   EmploymentType  @map("employment_type")
   workplaceType    WorkplaceType   @map("workplace_type")
   location         String?         @db.VarChar(120)

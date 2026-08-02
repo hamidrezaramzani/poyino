@@ -17,6 +17,8 @@ import {
   type InterviewHiringDecisionInput,
   type UpdateInterviewInput,
   type UpdateInterviewStatusInput,
+  isOrgWideRole,
+  type OrganizationRole,
 } from "@poyino/contracts";
 import type {
   Interview,
@@ -27,6 +29,11 @@ import type {
 } from "@prisma/client";
 import { AiException } from "../../ai/exceptions/ai.exceptions";
 import { AiService } from "../../ai/ai.service";
+import {
+  assertDepartmentAccess,
+  departmentScopeFilter,
+} from "../../authentication/lib/department-scope";
+import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import {
   buildInterviewAiPrompt,
   buildInterviewAiSystemPrompt,
@@ -59,12 +66,12 @@ export class InterviewsService {
   ) {}
 
   async getProcess(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -76,14 +83,14 @@ export class InterviewsService {
   }
 
   async createStage(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     input: CreateInterviewInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -114,7 +121,7 @@ export class InterviewsService {
           internalNotes: input.internalNotes,
           candidateNotes: input.candidateNotes,
           recruiterUserId: input.recruiterUserId ?? null,
-          createdByUserId: userId,
+          createdByUserId: user.id,
         },
         include: { recruiterUser: { select: { id: true, email: true } } },
       });
@@ -149,7 +156,7 @@ export class InterviewsService {
           organizationId,
           type: "INTERVIEW_SCHEDULED",
           description: `Interview scheduled: ${input.name}`,
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { interviewId: created.id },
         },
       });
@@ -165,15 +172,15 @@ export class InterviewsService {
   }
 
   async updateStage(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     interviewId: string,
     input: UpdateInterviewInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -212,7 +219,7 @@ export class InterviewsService {
           organizationId,
           type: "INTERVIEW_UPDATED",
           description: `Interview updated: ${input.name}`,
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { interviewId: interview.id },
         },
       });
@@ -228,14 +235,14 @@ export class InterviewsService {
   }
 
   async cancelStage(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     interviewId: string,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -257,7 +264,7 @@ export class InterviewsService {
           organizationId,
           type: "INTERVIEW_CANCELLED",
           description: `Interview cancelled: ${interview.name}`,
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { interviewId: interview.id },
         },
       });
@@ -269,15 +276,15 @@ export class InterviewsService {
   }
 
   async completeStage(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     interviewId: string,
     input: CompleteInterviewInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -305,7 +312,7 @@ export class InterviewsService {
           organizationId,
           type: "INTERVIEW_COMPLETED",
           description: `Interview completed: ${interview.name}`,
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { interviewId: interview.id, result },
         },
       });
@@ -316,7 +323,7 @@ export class InterviewsService {
         application.id,
         candidateId,
         organizationId,
-        userId,
+        user.id,
         result,
       );
 
@@ -327,13 +334,14 @@ export class InterviewsService {
   }
 
   async updateStageStatus(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     interviewId: string,
     input: UpdateInterviewStatusInput,
   ) {
+    const organizationId = user.organizationId;
     const interview = await this.prisma.interview.findFirst({
       where: { id: interviewId, organizationId },
+      include: { job: { select: { departmentId: true } } },
     });
 
     if (!interview) {
@@ -345,6 +353,8 @@ export class InterviewsService {
         },
       });
     }
+
+    assertDepartmentAccess(user, interview.job.departmentId);
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const data: Prisma.InterviewUpdateInput = {
@@ -374,7 +384,7 @@ export class InterviewsService {
           organizationId,
           type: activity.type,
           description: activity.description(interview.name),
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { interviewId: interview.id, status: input.status },
         },
       });
@@ -386,7 +396,7 @@ export class InterviewsService {
           interview.applicationId,
           interview.candidateId,
           organizationId,
-          userId,
+          user.id,
           (input.result ?? interview.result ?? "PENDING") as InterviewResult,
         );
       } else if (input.status === "IN_PROGRESS") {
@@ -403,14 +413,14 @@ export class InterviewsService {
   }
 
   async hiringDecision(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     input: InterviewHiringDecisionInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -447,7 +457,7 @@ export class InterviewsService {
             input.decision === "HIRE"
               ? "Candidate hired after interview process"
               : "Candidate rejected after interview process",
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { decision: input.decision },
         },
       });
@@ -459,7 +469,9 @@ export class InterviewsService {
     };
   }
 
-  async listCalendar(organizationId: string, query: CalendarInterviewsQuery) {
+  async listCalendar(user: AuthenticatedUser, query: CalendarInterviewsQuery) {
+    const organizationId = user.organizationId;
+    const scope = departmentScopeFilter(user);
     const from = new Date(query.from);
     const to = new Date(query.to);
     if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
@@ -475,6 +487,9 @@ export class InterviewsService {
     const where: Prisma.InterviewWhereInput = {
       organizationId,
       scheduledAt: { gte: from, lte: to },
+      ...(scope.departmentId
+        ? { job: { departmentId: scope.departmentId } }
+        : {}),
     };
     if (query.recruiterUserId) where.recruiterUserId = query.recruiterUserId;
     if (query.jobId) where.jobId = query.jobId;
@@ -540,9 +555,14 @@ export class InterviewsService {
     };
   }
 
-  async listOrgRecruiters(organizationId: string) {
+  async listOrgRecruiters(user: AuthenticatedUser) {
     const users = await this.prisma.user.findMany({
-      where: { organizationId },
+      where: {
+        organizationId: user.organizationId,
+        ...(isOrgWideRole(user.role as OrganizationRole)
+          ? {}
+          : { departmentId: user.departmentId }),
+      },
       select: { id: true, email: true },
       orderBy: { email: "asc" },
     });
@@ -550,11 +570,12 @@ export class InterviewsService {
   }
 
   async generateInterviewAi(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     input: InterviewAiRequest,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.prisma.application.findFirst({
       where: { organizationId, jobId, candidateId },
       include: {
@@ -577,6 +598,8 @@ export class InterviewsService {
         },
       });
     }
+
+    assertDepartmentAccess(user, application.job.departmentId);
 
     const interview = await this.prisma.interview.findFirst({
       where: {
@@ -689,10 +712,11 @@ export class InterviewsService {
   }
 
   async generateInterviewSummary(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.prisma.application.findFirst({
       where: { organizationId, jobId, candidateId },
       include: {
@@ -715,6 +739,8 @@ export class InterviewsService {
         },
       });
     }
+
+    assertDepartmentAccess(user, application.job.departmentId);
 
     const completedInterviews = await this.prisma.interview.findMany({
       where: {
@@ -939,12 +965,19 @@ export class InterviewsService {
   }
 
   private async requireApplication(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
     const application = await this.prisma.application.findFirst({
-      where: { organizationId, jobId, candidateId },
+      where: {
+        organizationId: user.organizationId,
+        jobId,
+        candidateId,
+      },
+      include: {
+        job: { select: { departmentId: true } },
+      },
     });
 
     if (!application) {
@@ -957,6 +990,7 @@ export class InterviewsService {
       });
     }
 
+    assertDepartmentAccess(user, application.job.departmentId);
     return application;
   }
 

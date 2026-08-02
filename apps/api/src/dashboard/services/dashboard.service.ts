@@ -1,4 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { departmentScopeFilter } from "../../authentication/lib/department-scope";
+import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { PrismaService } from "../../prisma/prisma.service";
 
 const RECENT_LIMIT = 10;
@@ -9,7 +11,16 @@ export class DashboardService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
   ) {}
 
-  async getOverview(organizationId: string) {
+  async getOverview(user: AuthenticatedUser) {
+    const organizationId = user.organizationId;
+    const scope = departmentScopeFilter(user);
+    const jobScope = scope.departmentId
+      ? { departmentId: scope.departmentId }
+      : {};
+    const applicationScope = scope.departmentId
+      ? { job: { departmentId: scope.departmentId } }
+      : {};
+
     const [
       totalJobs,
       activeJobs,
@@ -19,19 +30,19 @@ export class DashboardService {
       recentApplications,
     ] = await Promise.all([
       this.prisma.job.count({
-        where: { organizationId },
+        where: { organizationId, ...jobScope },
       }),
       this.prisma.job.count({
-        where: { organizationId, status: "PUBLISHED" },
+        where: { organizationId, status: "PUBLISHED", ...jobScope },
       }),
       this.prisma.application.count({
-        where: { organizationId },
+        where: { organizationId, ...applicationScope },
       }),
       this.prisma.application.count({
-        where: { organizationId, status: "HIRED" },
+        where: { organizationId, status: "HIRED", ...applicationScope },
       }),
       this.prisma.job.findMany({
-        where: { organizationId },
+        where: { organizationId, ...jobScope },
         orderBy: { createdAt: "desc" },
         take: RECENT_LIMIT,
         select: {
@@ -45,7 +56,7 @@ export class DashboardService {
         },
       }),
       this.prisma.application.findMany({
-        where: { organizationId },
+        where: { organizationId, ...applicationScope },
         orderBy: { appliedAt: "desc" },
         take: RECENT_LIMIT,
         select: {

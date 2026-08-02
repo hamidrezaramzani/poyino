@@ -11,12 +11,15 @@ import {
 } from "@poyino/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { useCan } from "../../../shared/permissions/can";
 import { useJobList } from "../hooks/use-job-list";
 
 export function JobListTable() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const list = useJobList();
+  const canCreate = useCan("jobs:create");
+  const canUpdate = useCan("jobs:update");
 
   const columns: Array<TableColumn<JobListItem>> = [
     {
@@ -62,7 +65,9 @@ export function JobListTable() {
       render: (job) => (
         <div className="dashboard-row-actions">
           <Link to={`/jobs/${job.id}`}>{t.jobs.list.actions.details}</Link>
-          <Link to={`/jobs/${job.id}/edit`}>{t.jobs.list.actions.edit}</Link>
+          {canUpdate ? (
+            <Link to={`/jobs/${job.id}/edit`}>{t.jobs.list.actions.edit}</Link>
+          ) : null}
         </div>
       ),
     },
@@ -73,9 +78,11 @@ export function JobListTable() {
       title={t.jobs.list.title}
       description={t.jobs.list.description}
       actions={
-        <Button type="button" onClick={() => navigate("/jobs/create")}>
-          {t.jobs.list.create}
-        </Button>
+        canCreate ? (
+          <Button type="button" onClick={() => navigate("/jobs/create")}>
+            {t.jobs.list.create}
+          </Button>
+        ) : undefined
       }
     >
       {list.status === "loading" ? (
@@ -93,9 +100,11 @@ export function JobListTable() {
         </EmptyState>
       ) : list.jobs.length === 0 ? (
         <EmptyState title={t.jobs.list.empty}>
-          <Button type="button" onClick={() => navigate("/jobs/create")}>
-            {t.jobs.list.create}
-          </Button>
+          {canCreate ? (
+            <Button type="button" onClick={() => navigate("/jobs/create")}>
+              {t.jobs.list.create}
+            </Button>
+          ) : null}
         </EmptyState>
       ) : (
         <>

@@ -114,13 +114,24 @@ export class AuthenticationService {
           },
         });
 
+        const department = await tx.department.create({
+          data: {
+            id: randomUUID(),
+            organizationId: organization.id,
+            name: "General",
+            isDefault: true,
+          },
+        });
+
         const user = await tx.user.create({
           data: {
             email,
             passwordHash,
-            role: "ADMINISTRATOR",
+            role: "OWNER",
+            status: "ACTIVE",
             isEmailVerified: false,
             organizationId: organization.id,
+            departmentId: department.id,
           },
         });
 
@@ -193,6 +204,13 @@ export class AuthenticationService {
       throw emailNotVerifiedException();
     }
 
+    if (user.status === "SUSPENDED") {
+      this.logger.warn(
+        `Login blocked for suspended email=${email} ip=${context.ip}`,
+      );
+      throw accountSuspendedException();
+    }
+
     this.failedLoginAttempts.delete(attemptKey);
 
     const rawToken = randomBytes(32).toString("hex");
@@ -242,9 +260,15 @@ export class AuthenticationService {
       return null;
     }
 
+    if (session.user.status === "SUSPENDED") {
+      return null;
+    }
+
     return {
       id: session.user.id,
       email: session.user.email,
+      role: session.user.role,
+      departmentId: session.user.departmentId,
       organizationId: session.user.organizationId,
       organizationName: session.user.organization.name,
     };
@@ -262,6 +286,8 @@ export class AuthenticationService {
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
         organization: {
           id: user.organizationId,
           name: user.organizationName,
@@ -510,6 +536,16 @@ function emailNotVerifiedException() {
       code: LoginErrorCode.EMAIL_NOT_VERIFIED,
       message:
         "حساب کاربری شما هنوز فعال نشده است. لطفاً ایمیل خود را بررسی کنید.",
+    },
+  });
+}
+
+function accountSuspendedException() {
+  return new ForbiddenException({
+    success: false,
+    error: {
+      code: "ACCOUNT_SUSPENDED",
+      message: "حساب کاربری شما تعلیق شده است.",
     },
   });
 }

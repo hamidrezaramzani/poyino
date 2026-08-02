@@ -19,6 +19,7 @@ import { JobDetailsPage } from "./features/jobs/pages/job-details-page";
 import { JobListPage } from "./features/jobs/pages/job-list-page";
 import { BrandingSettingsPage } from "./features/settings/pages/branding-settings-page";
 import { GeneralSettingsPage } from "./features/settings/pages/general-settings-page";
+import { MembersSettingsPage } from "./features/settings/pages/members-settings-page";
 import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
 import { ProfileSettingsPage } from "./features/settings/pages/profile-settings-page";
 import { SettingsLayoutPage } from "./features/settings/pages/settings-layout-page";
@@ -27,6 +28,7 @@ import { ApplySuccessPage } from "./features/public-job/pages/apply-success-page
 import { PublicJobPage } from "./features/public-job/pages/public-job-page";
 import { TrackingPage } from "./features/public-job/pages/tracking-page";
 import { HomePage } from "./pages/home-page";
+import { PermissionGate } from "./shared/permissions/permission-gate";
 import { ProtectedRoute } from "./shared/session/protected-route";
 
 function AuthenticatedShell() {
@@ -46,10 +48,24 @@ export function App() {
       <Route element={<AuthenticatedShell />}>
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
         <Route path="/jobs" element={<JobListPage />} />
-        <Route path="/jobs/create" element={<CreateJobPage />} />
+        <Route
+          path="/jobs/create"
+          element={
+            <PermissionGate permission="jobs:create" fallback="redirect">
+              <CreateJobPage />
+            </PermissionGate>
+          }
+        />
         <Route path="/jobs/new" element={<Navigate to="/jobs/create" replace />} />
         <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
-        <Route path="/jobs/:jobId/edit" element={<EditJobPage />} />
+        <Route
+          path="/jobs/:jobId/edit"
+          element={
+            <PermissionGate permission="jobs:update" fallback="redirect">
+              <EditJobPage />
+            </PermissionGate>
+          }
+        />
         <Route
           path="/jobs/:jobId/candidates"
           element={<CandidateListPage />}
@@ -64,13 +80,28 @@ export function App() {
         />
         <Route path="/candidates" element={<OrgCandidatesPage />} />
         <Route path="/interviews" element={<InterviewCalendarPage />} />
-        <Route path="/reports" element={<AnalyticsPage />} />
+        <Route
+          path="/reports"
+          element={
+            <PermissionGate permission="reports:view" fallback="redirect">
+              <AnalyticsPage />
+            </PermissionGate>
+          }
+        />
         <Route path="/settings" element={<SettingsLayoutPage />}>
           <Route index element={<Navigate to="general" replace />} />
           <Route path="general" element={<GeneralSettingsPage />} />
           <Route path="profile" element={<ProfileSettingsPage />} />
           <Route path="branding" element={<BrandingSettingsPage />} />
           <Route path="notifications" element={<NotificationSettingsPage />} />
+          <Route
+            path="members"
+            element={
+              <PermissionGate permission="members:view" fallback="redirect">
+                <MembersSettingsPage />
+              </PermissionGate>
+            }
+          />
         </Route>
         <Route path="/profile" element={<Navigate to="/settings/profile" replace />} />
       </Route>

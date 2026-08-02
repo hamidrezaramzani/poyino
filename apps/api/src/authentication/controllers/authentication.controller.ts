@@ -84,6 +84,8 @@ export class AuthenticationController {
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
+        departmentId: user.departmentId,
         organization: {
           id: user.organizationId,
           name: user.organizationName,

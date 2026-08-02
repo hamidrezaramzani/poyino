@@ -231,6 +231,10 @@ export type Translation = {
       retry: string;
     };
   };
+  permissions: {
+    deniedTitle: string;
+    deniedDescription: string;
+  };
   settings: {
     title: string;
     description: string;
@@ -240,11 +244,63 @@ export type Translation = {
       profile: string;
       branding: string;
       notifications: string;
+      members: string;
     };
     save: string;
     saving: string;
     reset: string;
     retry: string;
+    members: {
+      title: string;
+      description: string;
+      add: string;
+      edit: string;
+      save: string;
+      cancel: string;
+      suspend: string;
+      activate: string;
+      empty: string;
+      ownerLabel: string;
+      addTitle: string;
+      addDescription: string;
+      editTitle: string;
+      editDescription: string;
+      passwordLabel: string;
+      addDepartment: string;
+      addDepartmentTitle: string;
+      addDepartmentDescription: string;
+      departmentNameLabel: string;
+      departmentCreateSuccess: string;
+      createSuccess: string;
+      updateSuccess: string;
+      suspendSuccess: string;
+      activateSuccess: string;
+      columns: {
+        email: string;
+        role: string;
+        department: string;
+        status: string;
+        joined: string;
+        actions: string;
+      };
+      roles: {
+        OWNER: string;
+        ADMINISTRATOR: string;
+        RECRUITER: string;
+        HIRING_MANAGER: string;
+        INTERVIEWER: string;
+        VIEWER: string;
+      };
+      statuses: {
+        ACTIVE: string;
+        SUSPENDED: string;
+      };
+      errors: {
+        required: string;
+        emailExists: string;
+        departmentExists: string;
+      };
+    };
     unsaved: {
       title: string;
       description: string;
@@ -1380,6 +1436,11 @@ export const translations: Record<Locale, Translation> = {
         retry: "تلاش مجدد",
       },
     },
+    permissions: {
+      deniedTitle: "دسترسی مجاز نیست",
+      deniedDescription:
+        "شما مجوز لازم برای مشاهده این بخش را ندارید.",
+    },
     settings: {
       title: "تنظیمات",
       description: "اطلاعات سازمان، برندینگ و اعلان‌ها را مدیریت کنید.",
@@ -1389,11 +1450,66 @@ export const translations: Record<Locale, Translation> = {
         profile: "پروفایل",
         branding: "برندینگ",
         notifications: "اعلان‌ها",
+        members: "اعضا",
       },
       save: "ذخیره تغییرات",
       saving: "در حال ذخیره...",
       reset: "بازنشانی",
       retry: "تلاش مجدد",
+      members: {
+        title: "اعضای سازمان",
+        description:
+          "کاربران را اضافه کنید، نقش و دپارتمان آن‌ها را مشخص کنید تا بتوانند وارد شوند.",
+        add: "افزودن عضو",
+        edit: "ویرایش",
+        save: "ذخیره",
+        cancel: "انصراف",
+        suspend: "تعلیق",
+        activate: "فعال‌سازی",
+        empty: "هنوز عضوی اضافه نشده است.",
+        ownerLabel: "مالک",
+        addTitle: "افزودن عضو جدید",
+        addDescription:
+          "ایمیل، رمز عبور، نقش و دپارتمان را مشخص کنید. عضو می‌تواند بلافاصله وارد شود.",
+        editTitle: "ویرایش عضو",
+        editDescription: "نقش یا دپارتمان عضو را تغییر دهید.",
+        passwordLabel: "رمز عبور اولیه",
+        addDepartment: "افزودن دپارتمان",
+        addDepartmentTitle: "دپارتمان جدید",
+        addDepartmentDescription:
+          "یک دپارتمان بسازید تا بتوانید اعضا و شغل‌ها را به آن اختصاص دهید.",
+        departmentNameLabel: "نام دپارتمان",
+        departmentCreateSuccess: "دپارتمان با موفقیت ایجاد شد.",
+        createSuccess: "عضو با موفقیت اضافه شد.",
+        updateSuccess: "اطلاعات عضو به‌روزرسانی شد.",
+        suspendSuccess: "عضو تعلیق شد.",
+        activateSuccess: "عضو دوباره فعال شد.",
+        columns: {
+          email: "ایمیل",
+          role: "نقش",
+          department: "دپارتمان",
+          status: "وضعیت",
+          joined: "تاریخ عضویت",
+          actions: "عملیات",
+        },
+        roles: {
+          OWNER: "مالک",
+          ADMINISTRATOR: "مدیر",
+          RECRUITER: "استخدام‌کننده",
+          HIRING_MANAGER: "مدیر استخدام",
+          INTERVIEWER: "مصاحبه‌گر",
+          VIEWER: "مشاهده‌گر",
+        },
+        statuses: {
+          ACTIVE: "فعال",
+          SUSPENDED: "معلق",
+        },
+        errors: {
+          required: "لطفاً همه فیلدهای ضروری را پر کنید.",
+          emailExists: "کاربری با این ایمیل از قبل وجود دارد.",
+          departmentExists: "دپارتمانی با این نام از قبل وجود دارد.",
+        },
+      },
       unsaved: {
         title: "تغییرات ذخیره‌نشده",
         description: "تغییرات شما ذخیره نشده است. آیا می‌خواهید صفحه را ترک کنید؟",
@@ -2553,6 +2669,10 @@ export const translations: Record<Locale, Translation> = {
         retry: "Retry",
       },
     },
+    permissions: {
+      deniedTitle: "Access denied",
+      deniedDescription: "You do not have permission to view this section.",
+    },
     settings: {
       title: "Settings",
       description: "Manage organization details, branding, and notifications.",
@@ -2562,11 +2682,66 @@ export const translations: Record<Locale, Translation> = {
         profile: "Profile",
         branding: "Branding",
         notifications: "Notifications",
+        members: "Members",
       },
       save: "Save changes",
       saving: "Saving...",
       reset: "Reset",
       retry: "Retry",
+      members: {
+        title: "Organization members",
+        description:
+          "Add users, assign a role and department so they can sign in with the right access.",
+        add: "Add member",
+        edit: "Edit",
+        save: "Save",
+        cancel: "Cancel",
+        suspend: "Suspend",
+        activate: "Activate",
+        empty: "No members have been added yet.",
+        ownerLabel: "Owner",
+        addTitle: "Add member",
+        addDescription:
+          "Set email, temporary password, role, and department. The member can sign in immediately.",
+        editTitle: "Edit member",
+        editDescription: "Update this member’s role or department.",
+        passwordLabel: "Temporary password",
+        addDepartment: "Add department",
+        addDepartmentTitle: "New department",
+        addDepartmentDescription:
+          "Create a department so you can assign members and jobs to it.",
+        departmentNameLabel: "Department name",
+        departmentCreateSuccess: "Department created successfully.",
+        createSuccess: "Member added successfully.",
+        updateSuccess: "Member updated successfully.",
+        suspendSuccess: "Member suspended.",
+        activateSuccess: "Member activated.",
+        columns: {
+          email: "Email",
+          role: "Role",
+          department: "Department",
+          status: "Status",
+          joined: "Joined",
+          actions: "Actions",
+        },
+        roles: {
+          OWNER: "Owner",
+          ADMINISTRATOR: "Administrator",
+          RECRUITER: "Recruiter",
+          HIRING_MANAGER: "Hiring manager",
+          INTERVIEWER: "Interviewer",
+          VIEWER: "Viewer",
+        },
+        statuses: {
+          ACTIVE: "Active",
+          SUSPENDED: "Suspended",
+        },
+        errors: {
+          required: "Please fill in all required fields.",
+          emailExists: "A user with this email already exists.",
+          departmentExists: "A department with this name already exists.",
+        },
+      },
       unsaved: {
         title: "Unsaved changes",
         description: "You have unsaved changes. Do you want to leave this page?",

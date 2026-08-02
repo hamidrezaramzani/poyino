@@ -107,21 +107,24 @@ export function EditJobForm() {
           <div className="create-job-grid">
             <FormField
               label={t.jobs.create.departmentLabel}
-              htmlFor="department"
-              error={form.errors.department}
+              htmlFor="departmentId"
+              error={form.errors.departmentId ?? form.errors.department}
             >
-              <Input
-                id="department"
-                value={form.values.department}
+              <Select
+                id="departmentId"
+                value={form.values.departmentId}
                 disabled={disabled}
-                error={form.errors.department}
-                placeholder={t.jobs.create.departmentPlaceholder}
-                onChange={(event) =>
-                  form.setFieldValue("department", event.target.value)
-                }
-                onBlur={(event) =>
-                  form.validateField("department", event.target.value)
-                }
+                error={form.errors.departmentId ?? form.errors.department}
+                options={form.departmentOptions}
+                placeholder={t.jobs.create.selectPlaceholder}
+                onChange={(event) => {
+                  const departmentId = event.target.value;
+                  const selected = form.departments.find(
+                    (item) => item.id === departmentId,
+                  );
+                  form.setFieldValue("departmentId", departmentId);
+                  form.setFieldValue("department", selected?.name ?? "");
+                }}
               />
             </FormField>
 

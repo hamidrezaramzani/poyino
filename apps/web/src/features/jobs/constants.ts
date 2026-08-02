@@ -32,6 +32,7 @@ export const CURRENCY_OPTIONS = [
 export type JobFormValues = {
   title: string;
   department: string;
+  departmentId: string;
   employmentType: EmploymentType | "";
   workplaceType: WorkplaceType | "";
   location: string;
@@ -56,6 +57,7 @@ export type CreateJobFormValues = JobFormValues & {
 export const emptyJobFormValues: JobFormValues = {
   title: "",
   department: "",
+  departmentId: "",
   employmentType: "",
   workplaceType: "",
   location: "",
@@ -82,6 +84,7 @@ export function jobDetailsToFormValues(job: JobDetails): JobFormValues {
   return {
     title: job.title,
     department: job.department ?? "",
+    departmentId: job.departmentId,
     employmentType: job.employmentType,
     workplaceType: job.workplaceType,
     location: job.location ?? "",
@@ -105,6 +108,7 @@ export function applyTemplateToFormValues(
   CreateJobFormValues,
   | "title"
   | "department"
+  | "departmentId"
   | "employmentType"
   | "workplaceType"
   | "location"
@@ -123,6 +127,7 @@ export function applyTemplateToFormValues(
   return {
     title: template.title,
     department: template.department ?? "",
+    departmentId: template.departmentId ?? "",
     employmentType: template.employmentType,
     workplaceType: template.workplaceType,
     location: template.location ?? "",
@@ -144,6 +149,7 @@ export function toJobPayload(values: JobFormValues) {
   return {
     title: values.title,
     department: values.department,
+    departmentId: values.departmentId || null,
     employmentType: values.employmentType || undefined,
     workplaceType: values.workplaceType || undefined,
     location: values.location,

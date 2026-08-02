@@ -37,6 +37,8 @@ import {
 } from "@poyino/contracts";
 import type { Response } from "express";
 import { CurrentUser } from "../../authentication/decorators/current-user.decorator";
+import { RequirePermission } from "../../authentication/decorators/require-permission.decorator";
+import { PermissionsGuard } from "../../authentication/guards/permissions.guard";
 import { SessionAuthGuard } from "../../authentication/guards/session-auth.guard";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
@@ -44,7 +46,7 @@ import { InterviewsService } from "../../interviews/services/interviews.service"
 import { CandidatesService } from "../services/candidates.service";
 
 @Controller("jobs/:jobId/candidates")
-@UseGuards(SessionAuthGuard)
+@UseGuards(SessionAuthGuard, PermissionsGuard)
 export class CandidatesController {
   constructor(
     @Inject(CandidatesService)
@@ -54,6 +56,7 @@ export class CandidatesController {
   ) {}
 
   @Get()
+  @RequirePermission("candidates:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   list(
@@ -62,14 +65,11 @@ export class CandidatesController {
     @Query(new ZodValidationPipe(ListCandidatesQuerySchema))
     query: ListCandidatesQuery,
   ) {
-    return this.candidatesService.listForJob(
-      user.organizationId,
-      jobId,
-      query,
-    );
+    return this.candidatesService.listForJob(user, jobId, query);
   }
 
   @Get(":candidateId")
+  @RequirePermission("candidates:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getProfile(
@@ -77,14 +77,11 @@ export class CandidatesController {
     @Param("jobId", ParseUUIDPipe) jobId: string,
     @Param("candidateId", ParseUUIDPipe) candidateId: string,
   ) {
-    return this.candidatesService.getProfile(
-      user.organizationId,
-      jobId,
-      candidateId,
-    );
+    return this.candidatesService.getProfile(user, jobId, candidateId);
   }
 
   @Get(":candidateId/resume")
+  @RequirePermission("candidates:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   async downloadResume(
@@ -94,7 +91,7 @@ export class CandidatesController {
     @Res() res: Response,
   ) {
     const file = await this.candidatesService.downloadResume(
-      user.organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -108,6 +105,7 @@ export class CandidatesController {
   }
 
   @Patch(":candidateId/status")
+  @RequirePermission("candidates:update")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateStatus(
@@ -118,8 +116,7 @@ export class CandidatesController {
     body: UpdateCandidateStatusInput,
   ) {
     return this.candidatesService.updateStatus(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       body,
@@ -127,6 +124,7 @@ export class CandidatesController {
   }
 
   @Post(":candidateId/notes")
+  @RequirePermission("interviews:notes")
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   createNote(
@@ -137,8 +135,7 @@ export class CandidatesController {
     body: CreateCandidateNoteInput,
   ) {
     return this.candidatesService.createNote(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       body,
@@ -146,6 +143,7 @@ export class CandidatesController {
   }
 
   @Patch(":candidateId/notes/:noteId")
+  @RequirePermission("interviews:notes")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateNote(
@@ -157,8 +155,7 @@ export class CandidatesController {
     body: UpdateCandidateNoteInput,
   ) {
     return this.candidatesService.updateNote(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       noteId,
@@ -167,6 +164,7 @@ export class CandidatesController {
   }
 
   @Delete(":candidateId/notes/:noteId")
+  @RequirePermission("interviews:notes")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   deleteNote(
@@ -176,8 +174,7 @@ export class CandidatesController {
     @Param("noteId", ParseUUIDPipe) noteId: string,
   ) {
     return this.candidatesService.deleteNote(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       noteId,
@@ -185,6 +182,7 @@ export class CandidatesController {
   }
 
   @Get(":candidateId/interviews")
+  @RequirePermission("interviews:view")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   listInterviews(
@@ -192,14 +190,11 @@ export class CandidatesController {
     @Param("jobId", ParseUUIDPipe) jobId: string,
     @Param("candidateId", ParseUUIDPipe) candidateId: string,
   ) {
-    return this.interviewsService.getProcess(
-      user.organizationId,
-      jobId,
-      candidateId,
-    );
+    return this.interviewsService.getProcess(user, jobId, candidateId);
   }
 
   @Post(":candidateId/interviews")
+  @RequirePermission("interviews:schedule")
   @HttpCode(HttpStatus.CREATED)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   createInterview(
@@ -210,8 +205,7 @@ export class CandidatesController {
     body: CreateInterviewInput,
   ) {
     return this.interviewsService.createStage(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       body,
@@ -219,6 +213,7 @@ export class CandidatesController {
   }
 
   @Patch(":candidateId/interviews/:interviewId")
+  @RequirePermission("interviews:schedule")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   updateInterview(
@@ -230,8 +225,7 @@ export class CandidatesController {
     body: UpdateInterviewInput,
   ) {
     return this.interviewsService.updateStage(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       interviewId,
@@ -240,6 +234,7 @@ export class CandidatesController {
   }
 
   @Patch(":candidateId/interviews/:interviewId/cancel")
+  @RequirePermission("interviews:schedule")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   cancelInterview(
@@ -249,8 +244,7 @@ export class CandidatesController {
     @Param("interviewId", ParseUUIDPipe) interviewId: string,
   ) {
     return this.interviewsService.cancelStage(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       interviewId,
@@ -258,6 +252,7 @@ export class CandidatesController {
   }
 
   @Patch(":candidateId/interviews/:interviewId/complete")
+  @RequirePermission("interviews:complete")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   completeInterview(
@@ -269,8 +264,7 @@ export class CandidatesController {
     body: CompleteInterviewInput,
   ) {
     return this.interviewsService.completeStage(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       interviewId,
@@ -279,6 +273,7 @@ export class CandidatesController {
   }
 
   @Post(":candidateId/interview-ai")
+  @RequirePermission("ai:generate")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   generateInterviewAi(
@@ -289,7 +284,7 @@ export class CandidatesController {
     body: InterviewAiRequest,
   ) {
     return this.interviewsService.generateInterviewAi(
-      user.organizationId,
+      user,
       jobId,
       candidateId,
       body,
@@ -297,6 +292,7 @@ export class CandidatesController {
   }
 
   @Post(":candidateId/interview-summary")
+  @RequirePermission("ai:generate")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   generateInterviewSummary(
@@ -305,13 +301,14 @@ export class CandidatesController {
     @Param("candidateId", ParseUUIDPipe) candidateId: string,
   ) {
     return this.interviewsService.generateInterviewSummary(
-      user.organizationId,
+      user,
       jobId,
       candidateId,
     );
   }
 
   @Post(":candidateId/interviews/decision")
+  @RequirePermission("hiring:decide")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   hiringDecision(
@@ -322,8 +319,7 @@ export class CandidatesController {
     body: InterviewHiringDecisionInput,
   ) {
     return this.interviewsService.hiringDecision(
-      user.organizationId,
-      user.id,
+      user,
       jobId,
       candidateId,
       body,

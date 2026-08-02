@@ -20,6 +20,11 @@ import {
   AiInvalidResponseException,
   AiService,
 } from "../../ai";
+import {
+  assertDepartmentAccess,
+  departmentScopeFilter,
+} from "../../authentication/lib/department-scope";
+import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
   buildJobContentUserPrompt,
@@ -41,7 +46,11 @@ export class JobsService {
     @Inject(AiService) private readonly aiService: AiService,
   ) {}
 
-  async create(organizationId: string, input: CreateJobInput) {
+  async create(user: AuthenticatedUser, input: CreateJobInput) {
+    const organizationId = user.organizationId;
+    const department = await this.resolveDepartment(user, input);
+    assertDepartmentAccess(user, department.id);
+
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       select: { defaultCurrency: true },
@@ -74,7 +83,8 @@ export class JobsService {
         data: {
           organizationId,
           title: input.title,
-          department: input.department,
+          department: department.name,
+          departmentId: department.id,
           employmentType: input.employmentType,
           workplaceType: input.workplaceType,
           location: input.location,
@@ -111,8 +121,12 @@ export class JobsService {
     };
   }
 
-  async list(organizationId: string, query: ListJobsQuery) {
-    const where: Prisma.JobWhereInput = { organizationId };
+  async list(user: AuthenticatedUser, query: ListJobsQuery) {
+    const organizationId = user.organizationId;
+    const where: Prisma.JobWhereInput = {
+      organizationId,
+      ...departmentScopeFilter(user),
+    };
     const orderBy = buildJobListOrderBy(query.sortBy, query.sortOrder);
     const skip = (query.page - 1) * query.pageSize;
 
@@ -132,6 +146,8 @@ export class JobsService {
           title: true,
           status: true,
           department: true,
+          departmentId: true,
+          departmentRef: { select: { name: true } },
           createdAt: true,
           publishedAt: true,
           expirationDate: true,
@@ -155,7 +171,8 @@ export class JobsService {
         isExpired:
           job.status === "PUBLISHED" &&
           isJobExpired(job.expirationDate, timezone),
-        department: job.department,
+        department: job.departmentRef?.name ?? job.department,
+        departmentId: job.departmentId,
         candidateCount: job._count.applications,
         createdAt: job.createdAt.toISOString(),
         publishedAt: job.publishedAt?.toISOString() ?? null,
@@ -171,12 +188,16 @@ export class JobsService {
     };
   }
 
-  async getById(organizationId: string, jobId: string) {
+  async getById(user: AuthenticatedUser, jobId: string) {
+    const organizationId = user.organizationId;
     const job = await this.prisma.job.findFirst({
       where: { id: jobId, organizationId },
       include: {
         organization: {
           select: { slug: true, timezone: true },
+        },
+        departmentRef: {
+          select: { name: true },
         },
         skills: {
           include: {
@@ -208,6 +229,8 @@ export class JobsService {
     if (!job) {
       throw jobNotFound();
     }
+
+    assertDepartmentAccess(user, job.departmentId);
 
     const [applications, newApplications, interviews, hired] =
       await Promise.all([
@@ -241,7 +264,8 @@ export class JobsService {
         title: job.title,
         status: job.status,
         isExpired,
-        department: job.department,
+        department: job.departmentRef?.name ?? job.department,
+        departmentId: job.departmentId,
         employmentType: job.employmentType,
         workplaceType: job.workplaceType,
         location: job.location,
@@ -280,15 +304,21 @@ export class JobsService {
     };
   }
 
-  async update(organizationId: string, jobId: string, input: UpdateJobInput) {
+  async update(user: AuthenticatedUser, jobId: string, input: UpdateJobInput) {
+    const organizationId = user.organizationId;
     const existing = await this.prisma.job.findFirst({
       where: { id: jobId, organizationId },
-      select: { id: true, expirationDate: true },
+      select: { id: true, expirationDate: true, departmentId: true },
     });
 
     if (!existing) {
       throw jobNotFound();
     }
+
+    assertDepartmentAccess(user, existing.departmentId);
+
+    const department = await this.resolveDepartment(user, input);
+    assertDepartmentAccess(user, department.id);
 
     const organization = await this.prisma.organization.findUnique({
       where: { id: organizationId },
@@ -331,7 +361,8 @@ export class JobsService {
         where: { id: jobId },
         data: {
           title: input.title,
-          department: input.department,
+          department: department.name,
+          departmentId: department.id,
           employmentType: input.employmentType,
           workplaceType: input.workplaceType,
           location: input.location,
@@ -362,12 +393,16 @@ export class JobsService {
     };
   }
 
-  async publish(organizationId: string, jobId: string) {
+  async publish(user: AuthenticatedUser, jobId: string) {
+    const organizationId = user.organizationId;
     const job = await this.prisma.job.findFirst({
       where: { id: jobId, organizationId },
       include: {
         organization: {
           select: { slug: true },
+        },
+        departmentRef: {
+          select: { name: true },
         },
         skills: {
           include: {
@@ -383,6 +418,8 @@ export class JobsService {
       throw jobNotFound();
     }
 
+    assertDepartmentAccess(user, job.departmentId);
+
     if (job.status !== "DRAFT") {
       throw new BadRequestException({
         success: false,
@@ -395,7 +432,8 @@ export class JobsService {
 
     const publishInput = {
       title: job.title,
-      department: job.department ?? undefined,
+      department: job.departmentRef?.name ?? job.department ?? undefined,
+      departmentId: job.departmentId,
       employmentType: job.employmentType,
       workplaceType: job.workplaceType,
       location: job.location ?? undefined,
@@ -439,15 +477,17 @@ export class JobsService {
     };
   }
 
-  async unpublish(organizationId: string, jobId: string) {
+  async unpublish(user: AuthenticatedUser, jobId: string) {
     const job = await this.prisma.job.findFirst({
-      where: { id: jobId, organizationId },
-      select: { id: true, status: true },
+      where: { id: jobId, organizationId: user.organizationId },
+      select: { id: true, status: true, departmentId: true },
     });
 
     if (!job) {
       throw jobNotFound();
     }
+
+    assertDepartmentAccess(user, job.departmentId);
 
     if (job.status !== "PUBLISHED") {
       throw new BadRequestException({
@@ -472,12 +512,13 @@ export class JobsService {
     };
   }
 
-  async remove(organizationId: string, jobId: string) {
+  async remove(user: AuthenticatedUser, jobId: string) {
     const job = await this.prisma.job.findFirst({
-      where: { id: jobId, organizationId },
+      where: { id: jobId, organizationId: user.organizationId },
       select: {
         id: true,
         status: true,
+        departmentId: true,
         _count: {
           select: { applications: true },
         },
@@ -487,6 +528,8 @@ export class JobsService {
     if (!job) {
       throw jobNotFound();
     }
+
+    assertDepartmentAccess(user, job.departmentId);
 
     if (job._count.applications > 0) {
       throw new ConflictException({
@@ -514,18 +557,20 @@ export class JobsService {
   }
 
   async updateExpiration(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     input: UpdateJobExpirationInput,
   ) {
     const existing = await this.prisma.job.findFirst({
-      where: { id: jobId, organizationId },
-      select: { id: true, expirationDate: true },
+      where: { id: jobId, organizationId: user.organizationId },
+      select: { id: true, expirationDate: true, departmentId: true },
     });
 
     if (!existing) {
       throw jobNotFound();
     }
+
+    assertDepartmentAccess(user, existing.departmentId);
 
     const nextExpirationDate = input.expirationDate
       ? new Date(`${input.expirationDate}T00:00:00.000Z`)
@@ -560,6 +605,7 @@ export class JobsService {
         name: template.name,
         title: template.title,
         department: template.department,
+        departmentId: template.departmentId,
         employmentType: template.employmentType,
         workplaceType: template.workplaceType,
         location: template.location,
@@ -617,6 +663,68 @@ export class JobsService {
       throw error;
     }
   }
+
+  private async resolveDepartment(
+    user: AuthenticatedUser,
+    input: Pick<CreateJobInput, "departmentId" | "department">,
+  ) {
+    const organizationId = user.organizationId;
+
+    if (input.departmentId) {
+      const department = await this.prisma.department.findFirst({
+        where: {
+          id: input.departmentId,
+          organizationId,
+          archivedAt: null,
+        },
+        select: { id: true, name: true },
+      });
+      if (!department) {
+        throw departmentNotFound();
+      }
+      return department;
+    }
+
+    if (input.department) {
+      const department = await this.prisma.department.findFirst({
+        where: {
+          organizationId,
+          name: input.department,
+          archivedAt: null,
+        },
+        select: { id: true, name: true },
+      });
+      if (!department) {
+        throw departmentNotFound();
+      }
+      return department;
+    }
+
+    const userDepartment = await this.prisma.department.findFirst({
+      where: {
+        id: user.departmentId,
+        organizationId,
+        archivedAt: null,
+      },
+      select: { id: true, name: true },
+    });
+    if (userDepartment) {
+      return userDepartment;
+    }
+
+    const defaultDepartment = await this.prisma.department.findFirst({
+      where: {
+        organizationId,
+        isDefault: true,
+        archivedAt: null,
+      },
+      select: { id: true, name: true },
+    });
+    if (!defaultDepartment) {
+      throw departmentNotFound();
+    }
+    return defaultDepartment;
+  }
 }
 
 function jobNotFound() {
@@ -625,6 +733,16 @@ function jobNotFound() {
     error: {
       code: JobErrorCode.JOB_NOT_FOUND,
       message: "Job not found.",
+    },
+  });
+}
+
+function departmentNotFound() {
+  return new NotFoundException({
+    success: false,
+    error: {
+      code: JobErrorCode.DEPARTMENT_NOT_FOUND,
+      message: "Department not found.",
     },
   });
 }

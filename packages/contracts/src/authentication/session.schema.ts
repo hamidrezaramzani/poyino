@@ -1,8 +1,11 @@
 import { z } from "zod";
+import { OrganizationRoleSchema } from "../organization/permissions";
 
 export const SessionUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
+  role: OrganizationRoleSchema,
+  departmentId: z.string().uuid(),
   organization: z.object({
     id: z.string().uuid(),
     name: z.string(),

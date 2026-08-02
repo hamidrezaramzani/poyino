@@ -16,6 +16,7 @@ import {
 } from "@poyino/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { useCan } from "../../../shared/permissions/can";
 import { useCandidateDetails } from "../hooks/use-candidate-details";
 import { ConfirmDialog } from "./confirm-dialog";
 import { InterviewFormDialog } from "./interview-form-dialog";
@@ -33,6 +34,10 @@ export function CandidateDetailsView() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const details = useCandidateDetails();
+  const canUpdateCandidate = useCan("candidates:update");
+  const canScheduleInterview = useCan("interviews:schedule");
+  const canCompleteInterview = useCan("interviews:complete");
+  const canAddNotes = useCan("interviews:notes");
 
   if (details.status === "loading") {
     return <CandidateDetailsSkeleton />;
@@ -83,22 +88,30 @@ export function CandidateDetailsView() {
             </div>
           </div>
           <div className="candidate-profile-actions">
-            <Select
-              value={candidate.status}
-              disabled={details.statusUpdating}
-              onChange={(event) =>
-                void details.changeStatus(
-                  event.target.value as DashboardCandidateStatus,
-                )
-              }
-              options={STATUSES.map((value) => ({
-                value,
-                label: t.dashboard.candidateStatus[value],
-              }))}
-            />
-            <Button type="button" onClick={details.openCreateInterview}>
-              {t.candidates.details.actions.scheduleInterview}
-            </Button>
+            {canUpdateCandidate ? (
+              <Select
+                value={candidate.status}
+                disabled={details.statusUpdating}
+                onChange={(event) =>
+                  void details.changeStatus(
+                    event.target.value as DashboardCandidateStatus,
+                  )
+                }
+                options={STATUSES.map((value) => ({
+                  value,
+                  label: t.dashboard.candidateStatus[value],
+                }))}
+              />
+            ) : (
+              <Badge>
+                {t.dashboard.candidateStatus[candidate.status]}
+              </Badge>
+            )}
+            {canScheduleInterview ? (
+              <Button type="button" onClick={details.openCreateInterview}>
+                {t.candidates.details.actions.scheduleInterview}
+              </Button>
+            ) : null}
             <Link
               to={`/jobs/${details.jobId}/candidates/${details.candidateId}/interviews`}
               className="candidates-name-link"
@@ -225,9 +238,21 @@ export function CandidateDetailsView() {
               <InterviewCard
                 key={interview.id}
                 interview={interview}
-                onEdit={() => details.openEditInterview(interview)}
-                onCancel={() => details.requestCancelInterview(interview.id)}
-                onComplete={() => details.requestCompleteInterview(interview.id)}
+                onEdit={
+                  canScheduleInterview
+                    ? () => details.openEditInterview(interview)
+                    : undefined
+                }
+                onCancel={
+                  canScheduleInterview
+                    ? () => details.requestCancelInterview(interview.id)
+                    : undefined
+                }
+                onComplete={
+                  canCompleteInterview
+                    ? () => details.requestCompleteInterview(interview.id)
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -235,23 +260,27 @@ export function CandidateDetailsView() {
       </Card>
 
       <Card title={t.candidates.details.notes.title}>
-        <Textarea
-          value={details.noteDraft}
-          onChange={(event) => details.setNoteDraft(event.target.value)}
-          placeholder={t.candidates.details.notes.placeholder}
-          maxLength={5000}
-        />
-        <div className="candidate-notes-add-actions">
-          <LoadingButton
-            type="button"
-            loading={details.addingNote}
-            loadingLabel={t.candidates.details.notes.adding}
-            disabled={!details.noteDraft.trim()}
-            onClick={() => void details.addNote()}
-          >
-            {t.candidates.details.notes.add}
-          </LoadingButton>
-        </div>
+        {canAddNotes ? (
+          <>
+            <Textarea
+              value={details.noteDraft}
+              onChange={(event) => details.setNoteDraft(event.target.value)}
+              placeholder={t.candidates.details.notes.placeholder}
+              maxLength={5000}
+            />
+            <div className="candidate-notes-add-actions">
+              <LoadingButton
+                type="button"
+                loading={details.addingNote}
+                loadingLabel={t.candidates.details.notes.adding}
+                disabled={!details.noteDraft.trim()}
+                onClick={() => void details.addNote()}
+              >
+                {t.candidates.details.notes.add}
+              </LoadingButton>
+            </div>
+          </>
+        ) : null}
         {candidate.notes.length === 0 ? (
           <EmptyState title={t.candidates.details.notes.empty} />
         ) : (
@@ -367,13 +396,14 @@ function InterviewCard({
   onComplete,
 }: {
   interview: Interview;
-  onEdit: () => void;
-  onCancel: () => void;
-  onComplete: () => void;
+  onEdit?: () => void;
+  onCancel?: () => void;
+  onComplete?: () => void;
 }) {
   const { t, locale } = useI18n();
   const editable =
     interview.status === "SCHEDULED" || interview.status === "IN_PROGRESS";
+  const hasActions = Boolean(onEdit || onCancel || onComplete);
 
   return (
     <div className="candidate-interview-card">
@@ -405,17 +435,23 @@ function InterviewCard({
       {interview.internalNotes ? (
         <p className="candidate-interview-card-notes">{interview.internalNotes}</p>
       ) : null}
-      {editable ? (
+      {editable && hasActions ? (
         <div className="dashboard-row-actions">
-          <Button type="button" variant="secondary" onClick={onEdit}>
-            {t.candidates.details.interviews.editAction}
-          </Button>
-          <Button type="button" variant="secondary" onClick={onComplete}>
-            {t.candidates.details.interviews.completeAction}
-          </Button>
-          <Button type="button" variant="danger" onClick={onCancel}>
-            {t.candidates.details.interviews.cancelAction}
-          </Button>
+          {onEdit ? (
+            <Button type="button" variant="secondary" onClick={onEdit}>
+              {t.candidates.details.interviews.editAction}
+            </Button>
+          ) : null}
+          {onComplete ? (
+            <Button type="button" variant="secondary" onClick={onComplete}>
+              {t.candidates.details.interviews.completeAction}
+            </Button>
+          ) : null}
+          {onCancel ? (
+            <Button type="button" variant="danger" onClick={onCancel}>
+              {t.candidates.details.interviews.cancelAction}
+            </Button>
+          ) : null}
         </div>
       ) : null}
     </div>

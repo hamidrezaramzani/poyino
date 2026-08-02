@@ -10,6 +10,7 @@ import { CandidatesModule } from "./candidates/candidates.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { InterviewsModule } from "./interviews/interviews.module";
 import { JobsModule } from "./jobs/jobs.module";
+import { OrganizationModule } from "./organization/organization.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { PublicJobModule } from "./public-job/public-job.module";
 import { SettingsModule } from "./settings/settings.module";
@@ -34,6 +35,7 @@ import { StorageModule } from "./storage/storage.module";
     AnalyticsModule,
     PublicJobModule,
     SettingsModule,
+    OrganizationModule,
   ],
   controllers: [AppController],
   providers: [

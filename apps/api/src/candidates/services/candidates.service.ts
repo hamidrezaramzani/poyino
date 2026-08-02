@@ -14,6 +14,11 @@ import {
   type UpdateCandidateStatusInput,
 } from "@poyino/contracts";
 import type { CandidateStatus, Prisma } from "@prisma/client";
+import {
+  assertDepartmentAccess,
+  departmentScopeFilter,
+} from "../../authentication/lib/department-scope";
+import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { mapInterview } from "../../interviews/services/interviews.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { StorageService } from "../../storage";
@@ -26,11 +31,12 @@ export class CandidatesService {
   ) {}
 
   async listForJob(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     query: ListCandidatesQuery,
   ) {
-    const job = await this.requireJob(organizationId, jobId);
+    const organizationId = user.organizationId;
+    const job = await this.requireJob(user, jobId);
     const where = this.buildJobCandidatesWhere(organizationId, jobId, query);
 
     const [totalItems, applications, statusGroups] = await Promise.all([
@@ -98,9 +104,13 @@ export class CandidatesService {
     };
   }
 
-  async listOrg(organizationId: string, query: ListOrgCandidatesQuery) {
+  async listOrg(user: AuthenticatedUser, query: ListOrgCandidatesQuery) {
+    const scope = departmentScopeFilter(user);
     const where: Prisma.ApplicationWhereInput = {
-      organizationId,
+      organizationId: user.organizationId,
+      ...(scope.departmentId
+        ? { job: { departmentId: scope.departmentId } }
+        : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.search
         ? {
@@ -163,13 +173,14 @@ export class CandidatesService {
   }
 
   async getProfile(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
-    await this.requireJob(organizationId, jobId);
+    const organizationId = user.organizationId;
+    await this.requireJob(user, jobId);
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -291,14 +302,14 @@ export class CandidatesService {
   }
 
   async updateStatus(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     input: UpdateCandidateStatusInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -328,7 +339,7 @@ export class CandidatesService {
           organizationId,
           type: "STATUS_CHANGED",
           description: `Status changed to ${input.status}`,
-          actorUserId: userId,
+          actorUserId: user.id,
           metadata: { status: input.status },
         },
       });
@@ -338,14 +349,14 @@ export class CandidatesService {
   }
 
   async createNote(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     input: CreateCandidateNoteInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -355,7 +366,7 @@ export class CandidatesService {
         data: {
           applicationId: application.id,
           organizationId,
-          authorUserId: userId,
+          authorUserId: user.id,
           body: input.body,
         },
         include: {
@@ -369,7 +380,7 @@ export class CandidatesService {
           organizationId,
           type: "NOTE_ADDED",
           description: "Recruiter note added",
-          actorUserId: userId,
+          actorUserId: user.id,
         },
       });
 
@@ -390,15 +401,15 @@ export class CandidatesService {
   }
 
   async updateNote(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     noteId: string,
     input: UpdateCandidateNoteInput,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -430,7 +441,7 @@ export class CandidatesService {
           organizationId,
           type: "NOTE_UPDATED",
           description: "Recruiter note updated",
-          actorUserId: userId,
+          actorUserId: user.id,
         },
       });
 
@@ -451,14 +462,14 @@ export class CandidatesService {
   }
 
   async deleteNote(
-    organizationId: string,
-    userId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
     noteId: string,
   ) {
+    const organizationId = user.organizationId;
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -483,7 +494,7 @@ export class CandidatesService {
           organizationId,
           type: "NOTE_DELETED",
           description: "Recruiter note deleted",
-          actorUserId: userId,
+          actorUserId: user.id,
         },
       });
     });
@@ -492,12 +503,12 @@ export class CandidatesService {
   }
 
   async downloadResume(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
     const application = await this.requireApplication(
-      organizationId,
+      user,
       jobId,
       candidateId,
     );
@@ -513,7 +524,7 @@ export class CandidatesService {
     }
 
     return this.storageService.downloadByOrganization(
-      organizationId,
+      user.organizationId,
       application.resumeFileId,
     );
   }
@@ -581,10 +592,10 @@ export class CandidatesService {
     ];
   }
 
-  private async requireJob(organizationId: string, jobId: string) {
+  private async requireJob(user: AuthenticatedUser, jobId: string) {
     const job = await this.prisma.job.findFirst({
-      where: { id: jobId, organizationId },
-      select: { id: true, title: true, updatedAt: true },
+      where: { id: jobId, organizationId: user.organizationId },
+      select: { id: true, title: true, updatedAt: true, departmentId: true },
     });
 
     if (!job) {
@@ -597,19 +608,24 @@ export class CandidatesService {
       });
     }
 
+    assertDepartmentAccess(user, job.departmentId);
     return job;
   }
 
   private async requireApplication(
-    organizationId: string,
+    user: AuthenticatedUser,
     jobId: string,
     candidateId: string,
   ) {
     const application = await this.prisma.application.findFirst({
-      where: { organizationId, jobId, candidateId },
+      where: {
+        organizationId: user.organizationId,
+        jobId,
+        candidateId,
+      },
       include: {
         candidate: true,
-        job: { select: { id: true, title: true } },
+        job: { select: { id: true, title: true, departmentId: true } },
       },
     });
 
@@ -623,6 +639,7 @@ export class CandidatesService {
       });
     }
 
+    assertDepartmentAccess(user, application.job.departmentId);
     return application;
   }
 }
