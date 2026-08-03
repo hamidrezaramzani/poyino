@@ -3090,3 +3090,52 @@ a {
   }
 }
 
+.poyino-date-picker .rmdp-container {
+  width: 100%;
+}
+
+.poyino-date-picker .rmdp-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rmdp-wrapper,
+.rmdp-calendar {
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-border);
+  box-shadow: var(--ui-shadow);
+  color: var(--ui-text);
+}
+
+.rmdp-header-values,
+.rmdp-week-day,
+.rmdp-day span,
+.rmdp-arrow,
+.rmdp-time-picker div input {
+  color: var(--ui-text);
+}
+
+.rmdp-day.rmdp-today span {
+  background: color-mix(in srgb, var(--ui-primary) 25%, transparent);
+  color: var(--ui-text);
+}
+
+.rmdp-day.rmdp-selected span:not(.highlight) {
+  background: var(--ui-primary);
+  color: var(--ui-on-primary);
+  box-shadow: none;
+}
+
+.rmdp-day:not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+  background: color-mix(in srgb, var(--ui-primary) 18%, transparent);
+}
+
+.rmdp-arrow-container:hover {
+  background: color-mix(in srgb, var(--ui-primary) 18%, transparent);
+  box-shadow: none;
+}
+
+.rmdp-time-picker {
+  border-top: 1px solid var(--ui-border);
+}
+

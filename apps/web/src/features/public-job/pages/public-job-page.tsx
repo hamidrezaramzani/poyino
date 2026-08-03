@@ -12,6 +12,7 @@ import {
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { safeFormatDate } from "../../../shared/lib/format-date";
 import { usePublicJob } from "../hooks/use-public-job";
 import { PublicJobLayout } from "../layouts/public-job-layout";
 
@@ -283,13 +284,7 @@ function stripHtml(value: string) {
 }
 
 function formatDate(value: string, locale: string) {
-  try {
-    return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-      dateStyle: "medium",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
+  return safeFormatDate(value, locale, { dateStyle: "medium" });
 }
 
 function upsertMeta(

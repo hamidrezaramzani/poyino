@@ -2,11 +2,12 @@ import { appMetadata } from "@poyino/config";
 import { Button } from "@poyino/ui";
 import { Link } from "react-router-dom";
 import { useI18n } from "../shared/i18n/i18n-provider";
+import { formatDate } from "../shared/lib/format-date";
 
 export function HomePage() {
   const { direction, locale, messages, toggleLocale } = useI18n();
   const brandName = locale === "fa" ? "پوینو" : appMetadata.name;
-  const year = new Date().getFullYear();
+  const year = formatDate(new Date(), locale, { year: "numeric" });
 
   return (
     <div className="landing-shell" dir={direction}>

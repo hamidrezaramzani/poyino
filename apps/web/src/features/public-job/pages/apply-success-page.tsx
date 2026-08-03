@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { safeFormatDateTime } from "../../../shared/lib/format-date";
 import type { ApplySuccessState } from "../hooks/use-apply-flow";
 import { PublicJobLayout } from "../layouts/public-job-layout";
 
@@ -111,12 +112,5 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function formatDateTime(value: string, locale: string) {
-  try {
-    return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
+  return safeFormatDateTime(value, locale);
 }

@@ -10,6 +10,7 @@ import {
 } from "@poyino/ui";
 import { useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { useCan } from "../../../shared/permissions/can";
 import { useJobDetails } from "../hooks/use-job-details";
@@ -426,16 +427,4 @@ function formatSalary(job: JobDetails, hiddenLabel: string) {
     return `${job.salaryMin.toLocaleString()}+ ${job.currency}`;
   }
   return `≤ ${job.salaryMax!.toLocaleString()} ${job.currency}`;
-}
-
-function formatDate(value: string, locale: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(date);
 }

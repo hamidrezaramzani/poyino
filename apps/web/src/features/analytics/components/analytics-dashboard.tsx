@@ -23,6 +23,7 @@ import {
   YAxis,
 } from "recharts";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 import { useAnalytics } from "../hooks/use-analytics";
 
 const RANGES: AnalyticsDateRange[] = [
@@ -302,9 +303,8 @@ function formatShortDate(value: string, locale: string) {
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
+  return formatDate(date, locale, {
     month: "short",
     day: "numeric",
-    calendar: locale === "fa" ? "persian" : undefined,
-  }).format(date);
+  });
 }

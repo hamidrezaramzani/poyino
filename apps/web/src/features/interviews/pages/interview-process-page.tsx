@@ -15,17 +15,11 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDateTime } from "../../../shared/lib/format-date";
 import { InterviewFormDialog } from "../../candidates/components/interview-form-dialog";
 import { ConfirmDialog } from "../../candidates/components/confirm-dialog";
 import { useInterviewProcess } from "../hooks/use-interview-process";
 
-function formatDateTime(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    ...(locale === "fa" ? { calendar: "persian" as const } : {}),
-  }).format(new Date(value));
-}
 
 function statusVariant(status: Interview["status"]) {
   if (status === "COMPLETED") return "success" as const;

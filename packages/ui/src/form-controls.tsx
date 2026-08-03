@@ -1,6 +1,5 @@
 import type {
   CSSProperties,
-  InputHTMLAttributes,
   KeyboardEvent,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
@@ -178,39 +177,6 @@ export function Divider({ label }: { label?: string }) {
       <span>{label}</span>
       <span style={{ flex: 1, height: 1, backgroundColor: brand.border }} />
     </div>
-  );
-}
-
-type DatePickerProps = Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  "type" | "onChange" | "value"
-> & {
-  value: string;
-  error?: string;
-  onChange: (value: string) => void;
-};
-
-export function DatePicker({
-  value,
-  error,
-  disabled,
-  style,
-  onChange,
-  ...props
-}: DatePickerProps) {
-  return (
-    <input
-      type="date"
-      value={value}
-      disabled={disabled}
-      aria-invalid={Boolean(error)}
-      onChange={(event) => onChange(event.target.value)}
-      style={{
-        ...baseFieldStyle(Boolean(error), Boolean(disabled)),
-        ...style,
-      }}
-      {...props}
-    />
   );
 }
 

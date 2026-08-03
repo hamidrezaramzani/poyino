@@ -20,9 +20,9 @@ export { Spinner, spinnerKeyframes } from "./spinner";
 export { StatisticCard } from "./statistic-card";
 export { Table, TableSection, Pagination, type TableColumn, type TableSortOrder } from "./table";
 export { Tooltip } from "./tooltip";
+export { DatePicker, DateTimePicker } from "./date-picker";
 export {
   ColorPicker,
-  DatePicker,
   Divider,
   ImagePreview,
   ImageUpload,

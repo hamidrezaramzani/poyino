@@ -11,6 +11,7 @@ import {
 } from "@poyino/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 import { useCan } from "../../../shared/permissions/can";
 import { useJobList } from "../hooks/use-job-list";
 
@@ -145,10 +146,3 @@ function statusVariant(
   return "neutral";
 }
 
-function formatDate(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value));
-}

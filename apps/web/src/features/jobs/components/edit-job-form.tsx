@@ -21,7 +21,7 @@ import { useEditJobForm } from "../hooks/use-edit-job-form";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
 export function EditJobForm() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const form = useEditJobForm();
   const disabled = form.isSubmitting;
 
@@ -413,6 +413,7 @@ export function EditJobForm() {
               <DatePicker
                 id="expirationDate"
                 value={form.values.expirationDate}
+                locale={locale}
                 disabled={disabled}
                 error={form.errors.expirationDate}
                 onChange={(value) => {

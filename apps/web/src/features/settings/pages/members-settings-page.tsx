@@ -15,6 +15,7 @@ import {
   type TableColumn,
 } from "@poyino/ui";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 import { useCan } from "../../../shared/permissions/can";
 import { useMembersSettings } from "../hooks/use-members-settings";
 
@@ -398,12 +399,4 @@ export function MembersSettingsPage() {
       ) : null}
     </>
   );
-}
-
-function formatDate(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value));
 }

@@ -13,5 +13,9 @@
   "peerDependencies": {
     "react": "latest",
     "react-dom": "latest"
+  },
+  "dependencies": {
+    "react-date-object": "^2.1.9",
+    "react-multi-date-picker": "^4.5.2"
   }
 }

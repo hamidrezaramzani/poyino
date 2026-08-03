@@ -5,6 +5,7 @@ import type {
 } from "@poyino/contracts";
 import {
   Button,
+  DateTimePicker,
   Form,
   FormField,
   Input,
@@ -47,7 +48,7 @@ export function InterviewFormDialog({
   onCancel,
   onSubmit,
 }: InterviewFormDialogProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [name, setName] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
   const [type, setType] = useState<InterviewType>("HR");
@@ -150,12 +151,11 @@ export function InterviewFormDialog({
             htmlFor="interview-scheduled-at"
             required
           >
-            <Input
+            <DateTimePicker
               id="interview-scheduled-at"
-              type="datetime-local"
               value={scheduledAt}
-              onChange={(event) => setScheduledAt(event.target.value)}
-              required
+              locale={locale}
+              onChange={setScheduledAt}
             />
           </FormField>
           <FormField

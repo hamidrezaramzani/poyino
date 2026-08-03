@@ -23,7 +23,7 @@ import { useCreateJobForm } from "../hooks/use-create-job-form";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 
 export function CreateJobForm() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const form = useCreateJobForm();
   const canGenerate = useCan("ai:generate");
   const disabled = form.isSubmitting || form.isGenerating;
@@ -457,6 +457,7 @@ export function CreateJobForm() {
                 <DatePicker
                   id="expirationDate"
                   value={form.values.expirationDate}
+                  locale={locale}
                   disabled={disabled}
                   error={form.errors.expirationDate}
                   onChange={(value) => {

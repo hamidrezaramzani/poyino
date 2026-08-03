@@ -16,6 +16,7 @@ import {
 } from "@poyino/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate, formatDateTime } from "../../../shared/lib/format-date";
 import { useCan } from "../../../shared/permissions/can";
 import { useCandidateDetails } from "../hooks/use-candidate-details";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -572,22 +573,3 @@ function interviewStatusVariant(
   return "info";
 }
 
-function formatDate(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    calendar: locale === "fa" ? "persian" : undefined,
-  }).format(new Date(value));
-}
-
-function formatDateTime(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    calendar: locale === "fa" ? "persian" : undefined,
-  }).format(new Date(value));
-}

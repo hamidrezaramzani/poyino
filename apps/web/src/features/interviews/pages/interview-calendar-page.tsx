@@ -12,6 +12,8 @@ import {
   Skeleton,
   SkeletonText,
 } from "@poyino/ui";
+import DateObject from "react-date-object";
+import persian from "react-date-object/calendars/persian";
 import {
   useCallback,
   useEffect,
@@ -22,6 +24,13 @@ import {
 import { Link } from "react-router-dom";
 import { ApiRequestError } from "../../../shared/api/api-client";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import {
+  formatDayLabel,
+  formatDayNumber,
+  formatMonthTitle,
+  formatTime,
+  formatWeekday,
+} from "../../../shared/lib/format-date";
 import { useToast } from "../../../shared/hooks/use-toast";
 import {
   fetchCalendarInterviews,
@@ -45,11 +54,12 @@ function endOfDay(date: Date) {
 }
 
 function startOfWeek(date: Date) {
-  const next = startOfDay(date);
-  const day = next.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  next.setDate(next.getDate() + diff);
-  return next;
+  const next = new DateObject({ date: startOfDay(date), calendar: persian });
+  const weekStart = next.calendar.weekStartDayIndex ?? 6;
+  const current = next.weekDay.index;
+  const diff = (current - weekStart + 7) % 7;
+  next.subtract(diff, "day");
+  return startOfDay(next.toDate());
 }
 
 function endOfWeek(date: Date) {
@@ -60,6 +70,30 @@ function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function addPersianMonths(date: Date, amount: number) {
+  const next = new DateObject({ date, calendar: persian });
+  next.add(amount, "month");
+  return next.toDate();
+}
+
+function startOfPersianMonth(date: Date) {
+  const next = new DateObject({ date, calendar: persian });
+  next.setDay(1);
+  return startOfDay(next.toDate());
+}
+
+function endOfPersianMonth(date: Date) {
+  const next = new DateObject({ date, calendar: persian });
+  next.setDay(next.month.length);
+  return endOfDay(next.toDate());
+}
+
+function samePersianMonth(a: Date, b: Date) {
+  const left = new DateObject({ date: a, calendar: persian });
+  const right = new DateObject({ date: b, calendar: persian });
+  return left.year === right.year && left.month.number === right.month.number;
 }
 
 function sameDay(a: Date, b: Date) {
@@ -85,8 +119,8 @@ function rangeForView(anchor: Date, view: CalendarView) {
     const from = startOfWeek(anchor);
     return { from, to: endOfWeek(anchor) };
   }
-  const monthStart = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
-  const monthEnd = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+  const monthStart = startOfPersianMonth(anchor);
+  const monthEnd = endOfPersianMonth(anchor);
   return {
     from: startOfWeek(monthStart),
     to: endOfWeek(monthEnd),
@@ -106,44 +140,14 @@ function buildDays(from: Date, to: Date) {
 }
 
 function weekdayLabels(locale: string) {
-  const monday = startOfWeek(new Date());
+  const saturday = startOfWeek(new Date());
   return Array.from({ length: 7 }, (_, index) =>
-    new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-      weekday: "short",
-    }).format(addDays(monday, index)),
+    formatWeekday(addDays(saturday, index), locale),
   );
 }
 
 function statusClass(status: InterviewStatus) {
   return `interview-cal-event status-${status.toLowerCase()}`;
-}
-
-function formatTime(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatDayLabel(date: Date, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(date);
-}
-
-function formatMonthTitle(date: Date, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
-}
-
-function formatDayNumber(date: Date, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    day: "numeric",
-  }).format(date);
 }
 
 export function InterviewCalendarPage() {
@@ -215,11 +219,7 @@ export function InterviewCalendarPage() {
     if (view === "day") setAnchor((current) => addDays(current, direction));
     else if (view === "week")
       setAnchor((current) => addDays(current, direction * 7));
-    else
-      setAnchor(
-        (current) =>
-          new Date(current.getFullYear(), current.getMonth() + direction, 1),
-      );
+    else setAnchor((current) => addPersianMonths(current, direction));
   };
 
   const updateStatus = async (nextStatus: InterviewStatus) => {
@@ -244,13 +244,9 @@ export function InterviewCalendarPage() {
 
   const visibleEvents =
     view === "month"
-      ? events.filter((event) => {
-          const date = new Date(event.scheduledAt);
-          return (
-            date.getMonth() === anchor.getMonth() &&
-            date.getFullYear() === anchor.getFullYear()
-          );
-        })
+      ? events.filter((event) =>
+          samePersianMonth(new Date(event.scheduledAt), anchor),
+        )
       : events;
 
   return (
@@ -425,9 +421,7 @@ export function InterviewCalendarPage() {
               {days.map((day) => {
                 const key = dayKey(day);
                 const dayEvents = eventsByDay.get(key) ?? [];
-                const inCurrentMonth =
-                  day.getMonth() === anchor.getMonth() &&
-                  day.getFullYear() === anchor.getFullYear();
+                const inCurrentMonth = samePersianMonth(day, anchor);
                 const isToday = sameDay(day, todayDate);
                 const classes = [
                   "interview-calendar-day",

@@ -1,6 +1,7 @@
 import type { ApplicationStatus, TrackingTimelineEvent } from "@poyino/contracts";
 import { Card } from "@poyino/ui";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { safeFormatDateTime } from "../../../shared/lib/format-date";
 
 type ApplicationTimelineProps = {
   currentStatus: ApplicationStatus;
@@ -66,13 +67,9 @@ export function ApplicationTimeline({
 }
 
 function formatDateTime(value: string, locale: string, timeZone: string) {
-  try {
-    return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone,
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
+  return safeFormatDateTime(value, locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone,
+  });
 }

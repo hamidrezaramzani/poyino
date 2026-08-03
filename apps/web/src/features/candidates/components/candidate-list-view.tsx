@@ -19,6 +19,7 @@ import {
 } from "@poyino/ui";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 import { useCandidateList } from "../hooks/use-candidate-list";
 
 const EXPERIENCE_LEVELS: CandidateExperienceLevel[] = ["JUNIOR", "MID", "SENIOR"];
@@ -282,11 +283,3 @@ function statusVariant(
   return "neutral";
 }
 
-function formatDate(value: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    calendar: locale === "fa" ? "persian" : undefined,
-  }).format(new Date(value));
-}

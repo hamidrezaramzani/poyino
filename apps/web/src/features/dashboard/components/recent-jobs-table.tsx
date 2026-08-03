@@ -13,6 +13,7 @@ import {
 } from "@poyino/ui";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import { formatDate } from "../../../shared/lib/format-date";
 
 type RecentJobsTableProps = {
   jobs: DashboardRecentJob[];
@@ -41,7 +42,7 @@ export function RecentJobsTable({ jobs, loading }: RecentJobsTableProps) {
     {
       key: "publishedAt",
       header: t.dashboard.jobs.columns.publishedAt,
-      render: (job) => formatDate(job.publishedAt, locale),
+      render: (job) => formatNullableDate(job.publishedAt, locale),
     },
     {
       key: "candidateCount",
@@ -102,13 +103,9 @@ function jobStatusVariant(
   return "neutral";
 }
 
-function formatDate(value: string | null, locale: string) {
+function formatNullableDate(value: string | null, locale: string) {
   if (!value) {
     return "—";
   }
-  return new Intl.DateTimeFormat(locale === "fa" ? "fa-IR" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value));
+  return formatDate(value, locale);
 }
