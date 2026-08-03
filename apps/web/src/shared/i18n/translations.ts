@@ -235,6 +235,62 @@ export type Translation = {
     deniedTitle: string;
     deniedDescription: string;
   };
+  notifications: {
+    bellLabel: string;
+    dropdownTitle: string;
+    viewAll: string;
+    markAllRead: string;
+    delete: string;
+    empty: string;
+    emptyDescription: string;
+    trackingEmptyDescription: string;
+    pageTitle: string;
+    pageDescription: string;
+    loadFailed: string;
+    retry: string;
+    loadMore: string;
+    loadingMore: string;
+    trackingTitle: string;
+    preferencesTitle: string;
+    preferencesDescription: string;
+    preferencesLoadFailed: string;
+    resetPreferences: string;
+    mandatoryHint: string;
+    tabs: {
+      all: string;
+      unread: string;
+      read: string;
+    };
+    channels: {
+      inApp: string;
+      email: string;
+    };
+    categories: {
+      CANDIDATES: string;
+      JOBS: string;
+      INTERVIEWS: string;
+      ORGANIZATION: string;
+      SYSTEM: string;
+      AI: string;
+    };
+    categoryHints: {
+      CANDIDATES: string;
+      JOBS: string;
+      INTERVIEWS: string;
+      ORGANIZATION: string;
+      SYSTEM: string;
+      AI: string;
+    };
+    fallbacks: {
+      candidate: string;
+      job: string;
+      interview: string;
+      organization: string;
+      member: string;
+      department: string;
+    };
+    events: Record<string, { title: string; description: string }>;
+  };
   settings: {
     title: string;
     description: string;
@@ -244,6 +300,7 @@ export type Translation = {
       profile: string;
       branding: string;
       notifications: string;
+      preferences: string;
       members: string;
     };
     save: string;
@@ -1441,6 +1498,162 @@ export const translations: Record<Locale, Translation> = {
       deniedDescription:
         "شما مجوز لازم برای مشاهده این بخش را ندارید.",
     },
+    notifications: {
+      bellLabel: "اعلان‌ها",
+      dropdownTitle: "آخرین اعلان‌ها",
+      viewAll: "مشاهده همه",
+      markAllRead: "خواندن همه",
+      delete: "حذف اعلان",
+      empty: "همه چیز به‌روز است.",
+      emptyDescription: "اعلانی برای نمایش وجود ندارد.",
+      trackingEmptyDescription:
+        "به‌محض تغییر وضعیت درخواست، اینجا مطلع می‌شوید.",
+      pageTitle: "مرکز اعلان‌ها",
+      pageDescription: "رویدادهای مهم استخدام را اینجا پیگیری کنید.",
+      loadFailed: "بارگذاری اعلان‌ها ناموفق بود.",
+      retry: "تلاش مجدد",
+      loadMore: "موارد بیشتر",
+      loadingMore: "در حال بارگذاری...",
+      trackingTitle: "به‌روزرسانی‌های درخواست",
+      preferencesTitle: "ترجیحات اعلان",
+      preferencesDescription:
+        "کانال‌های اعلان درون‌برنامه و ایمیل را برای هر دسته تنظیم کنید.",
+      preferencesLoadFailed: "بارگذاری ترجیحات اعلان ناموفق بود.",
+      resetPreferences: "بازنشانی به پیش‌فرض",
+      mandatoryHint: "اعلان‌های سیستمی همیشه فعال می‌مانند.",
+      tabs: {
+        all: "همه",
+        unread: "خوانده‌نشده",
+        read: "خوانده‌شده",
+      },
+      channels: {
+        inApp: "درون‌برنامه",
+        email: "ایمیل",
+      },
+      categories: {
+        CANDIDATES: "کاندیداها",
+        JOBS: "شغل‌ها",
+        INTERVIEWS: "مصاحبه‌ها",
+        ORGANIZATION: "سازمان",
+        SYSTEM: "سیستم",
+        AI: "هوش مصنوعی",
+      },
+      categoryHints: {
+        CANDIDATES: "درخواست‌ها، تغییر وضعیت، استخدام و رد شدن.",
+        JOBS: "انتشار، انقضا و بایگانی شغل‌ها.",
+        INTERVIEWS: "زمان‌بندی، تغییر و لغو مصاحبه.",
+        ORGANIZATION: "اعضا، نقش‌ها و دپارتمان‌ها.",
+        SYSTEM: "نگهداری و هشدارهای امنیتی.",
+        AI: "تحلیل رزومه، محتوای شغل و خلاصه مصاحبه.",
+      },
+      fallbacks: {
+        candidate: "کاندیدا",
+        job: "شغل",
+        interview: "مصاحبه",
+        organization: "سازمان",
+        member: "عضو",
+        department: "دپارتمان",
+      },
+      events: {
+        "candidate.applied": {
+          title: "درخواست جدید دریافت شد",
+          description: "{candidateName} برای {jobTitle} درخواست داد.",
+        },
+        "candidate.status_changed": {
+          title: "وضعیت درخواست به‌روز شد",
+          description:
+            "وضعیت درخواست برای {jobTitle} به {status} تغییر کرد.",
+        },
+        "candidate.hired": {
+          title: "استخدام انجام شد",
+          description: "{candidateName} برای {jobTitle} استخدام شد.",
+        },
+        "candidate.rejected": {
+          title: "رد شدن کاندیدا",
+          description: "{candidateName} برای {jobTitle} رد شد.",
+        },
+        "interview.created": {
+          title: "مصاحبه زمان‌بندی شد",
+          description: "{interviewName} برای {candidateName} زمان‌بندی شد.",
+        },
+        "interview.updated": {
+          title: "مصاحبه به‌روزرسانی شد",
+          description: "{interviewName} به‌روزرسانی شد.",
+        },
+        "interview.cancelled": {
+          title: "مصاحبه لغو شد",
+          description: "{interviewName} لغو شد.",
+        },
+        "interview.completed": {
+          title: "مصاحبه تکمیل شد",
+          description: "{interviewName} برای {candidateName} تکمیل شد.",
+        },
+        "interview.note_added": {
+          title: "یادداشت مصاحبه افزوده شد",
+          description: "یادداشت جدیدی برای مصاحبه {candidateName} ثبت شد.",
+        },
+        "job.created": {
+          title: "شغل جدید ایجاد شد",
+          description: "{jobTitle} ایجاد شد.",
+        },
+        "job.published": {
+          title: "شغل منتشر شد",
+          description: "{jobTitle} منتشر شد.",
+        },
+        "job.unpublished": {
+          title: "انتشار شغل لغو شد",
+          description: "انتشار {jobTitle} لغو شد.",
+        },
+        "job.expired": {
+          title: "شغل منقضی شد",
+          description: "{jobTitle} منقضی شد.",
+        },
+        "organization.member_invited": {
+          title: "دعوت به سازمان",
+          description: "به {organizationName} دعوت شدید.",
+        },
+        "organization.member_joined": {
+          title: "عضو جدید پیوست",
+          description: "{memberEmail} به سازمان پیوست.",
+        },
+        "member.role_changed": {
+          title: "نقش شما تغییر کرد",
+          description: "نقش شما به {role} تغییر کرد.",
+        },
+        "member.department_changed": {
+          title: "دپارتمان شما تغییر کرد",
+          description: "دپارتمان شما به {departmentName} تغییر کرد.",
+        },
+        "department.created": {
+          title: "دپارتمان جدید",
+          description: "{departmentName} ایجاد شد.",
+        },
+        "ai.resume_analysis_completed": {
+          title: "تحلیل رزومه آماده شد",
+          description: "تحلیل هوش مصنوعی برای {candidateName} آماده است.",
+        },
+        "ai.job_generated": {
+          title: "محتوای شغل تولید شد",
+          description: "محتوای شغل با هوش مصنوعی تولید شد.",
+        },
+        "ai.interview_questions_generated": {
+          title: "سؤالات مصاحبه آماده شد",
+          description: "سؤالات {interviewName} آماده است.",
+        },
+        "ai.interview_summary_generated": {
+          title: "خلاصه مصاحبه آماده شد",
+          description: "خلاصه مصاحبه برای {candidateName} آماده است.",
+        },
+        "system.security_alert": {
+          title: "هشدار امنیتی",
+          description: "{message}",
+        },
+        "system.maintenance": {
+          title: "اطلاع نگهداری سیستم",
+          description: "{message}",
+        },
+      },
+    },
     settings: {
       title: "تنظیمات",
       description: "اطلاعات سازمان، برندینگ و اعلان‌ها را مدیریت کنید.",
@@ -1449,7 +1662,8 @@ export const translations: Record<Locale, Translation> = {
         general: "عمومی",
         profile: "پروفایل",
         branding: "برندینگ",
-        notifications: "اعلان‌ها",
+        notifications: "اعلان‌های سازمان",
+        preferences: "ترجیحات من",
         members: "اعضا",
       },
       save: "ذخیره تغییرات",
@@ -2673,6 +2887,161 @@ export const translations: Record<Locale, Translation> = {
       deniedTitle: "Access denied",
       deniedDescription: "You do not have permission to view this section.",
     },
+    notifications: {
+      bellLabel: "Notifications",
+      dropdownTitle: "Latest notifications",
+      viewAll: "View all",
+      markAllRead: "Mark all as read",
+      delete: "Delete notification",
+      empty: "You're all caught up.",
+      emptyDescription: "No notifications found.",
+      trackingEmptyDescription:
+        "You'll see updates here when your application status changes.",
+      pageTitle: "Notification center",
+      pageDescription: "Stay on top of important hiring events.",
+      loadFailed: "Failed to load notifications.",
+      retry: "Retry",
+      loadMore: "Load more",
+      loadingMore: "Loading...",
+      trackingTitle: "Application updates",
+      preferencesTitle: "Notification preferences",
+      preferencesDescription:
+        "Control in-app and email channels for each notification category.",
+      preferencesLoadFailed: "Failed to load notification preferences.",
+      resetPreferences: "Reset to defaults",
+      mandatoryHint: "System notifications always stay enabled.",
+      tabs: {
+        all: "All",
+        unread: "Unread",
+        read: "Read",
+      },
+      channels: {
+        inApp: "In-app",
+        email: "Email",
+      },
+      categories: {
+        CANDIDATES: "Candidates",
+        JOBS: "Jobs",
+        INTERVIEWS: "Interviews",
+        ORGANIZATION: "Organization",
+        SYSTEM: "System",
+        AI: "AI",
+      },
+      categoryHints: {
+        CANDIDATES: "Applications, status changes, hires, and rejections.",
+        JOBS: "Job publish, expiration, and archive events.",
+        INTERVIEWS: "Interview scheduling, updates, and cancellations.",
+        ORGANIZATION: "Members, roles, and departments.",
+        SYSTEM: "Maintenance and security alerts.",
+        AI: "Resume analysis, job content, and interview summaries.",
+      },
+      fallbacks: {
+        candidate: "Candidate",
+        job: "job",
+        interview: "Interview",
+        organization: "organization",
+        member: "A member",
+        department: "Department",
+      },
+      events: {
+        "candidate.applied": {
+          title: "New application received",
+          description: "{candidateName} applied for {jobTitle}.",
+        },
+        "candidate.status_changed": {
+          title: "Application status updated",
+          description: "Application status for {jobTitle} is now {status}.",
+        },
+        "candidate.hired": {
+          title: "Candidate hired",
+          description: "{candidateName} was hired for {jobTitle}.",
+        },
+        "candidate.rejected": {
+          title: "Candidate rejected",
+          description: "{candidateName} was rejected for {jobTitle}.",
+        },
+        "interview.created": {
+          title: "Interview scheduled",
+          description: "{interviewName} was scheduled for {candidateName}.",
+        },
+        "interview.updated": {
+          title: "Interview updated",
+          description: "{interviewName} was updated.",
+        },
+        "interview.cancelled": {
+          title: "Interview cancelled",
+          description: "{interviewName} was cancelled.",
+        },
+        "interview.completed": {
+          title: "Interview completed",
+          description: "{interviewName} for {candidateName} was completed.",
+        },
+        "interview.note_added": {
+          title: "Interview note added",
+          description: "A new note was added for {candidateName}'s interview.",
+        },
+        "job.created": {
+          title: "Job created",
+          description: "{jobTitle} was created.",
+        },
+        "job.published": {
+          title: "Job published",
+          description: "{jobTitle} was published.",
+        },
+        "job.unpublished": {
+          title: "Job unpublished",
+          description: "{jobTitle} was unpublished.",
+        },
+        "job.expired": {
+          title: "Job expired",
+          description: "{jobTitle} has expired.",
+        },
+        "organization.member_invited": {
+          title: "Organization invitation",
+          description: "You were invited to {organizationName}.",
+        },
+        "organization.member_joined": {
+          title: "Member joined",
+          description: "{memberEmail} joined the organization.",
+        },
+        "member.role_changed": {
+          title: "Your role changed",
+          description: "Your role was changed to {role}.",
+        },
+        "member.department_changed": {
+          title: "Your department changed",
+          description: "Your department was changed to {departmentName}.",
+        },
+        "department.created": {
+          title: "Department created",
+          description: "{departmentName} was created.",
+        },
+        "ai.resume_analysis_completed": {
+          title: "Resume analysis ready",
+          description: "AI analysis for {candidateName} is ready.",
+        },
+        "ai.job_generated": {
+          title: "Job content generated",
+          description: "Job content was generated with AI.",
+        },
+        "ai.interview_questions_generated": {
+          title: "Interview questions ready",
+          description: "Questions for {interviewName} are ready.",
+        },
+        "ai.interview_summary_generated": {
+          title: "Interview summary ready",
+          description: "Interview summary for {candidateName} is ready.",
+        },
+        "system.security_alert": {
+          title: "Security alert",
+          description: "{message}",
+        },
+        "system.maintenance": {
+          title: "System maintenance",
+          description: "{message}",
+        },
+      },
+    },
     settings: {
       title: "Settings",
       description: "Manage organization details, branding, and notifications.",
@@ -2681,7 +3050,8 @@ export const translations: Record<Locale, Translation> = {
         general: "General",
         profile: "Profile",
         branding: "Branding",
-        notifications: "Notifications",
+        notifications: "Org emails",
+        preferences: "My preferences",
         members: "Members",
       },
       save: "Save changes",

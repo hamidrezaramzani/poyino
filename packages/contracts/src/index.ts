@@ -26,6 +26,8 @@ export * from "./analytics/analytics.schema";
 export * from "./organization/permissions";
 export * from "./organization/departments.schema";
 export * from "./organization/members.schema";
+export * from "./notifications/notification.schema";
+export * from "./notifications/events";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),

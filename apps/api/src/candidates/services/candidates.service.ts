@@ -6,6 +6,7 @@ import {
 import {
   CandidateErrorCode,
   JobMatchAnalysisSchema,
+  NotificationEventName,
   ResumeAnalysisSchema,
   type CreateCandidateNoteInput,
   type ListCandidatesQuery,
@@ -20,6 +21,8 @@ import {
 } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { mapInterview } from "../../interviews/services/interviews.service";
+import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
+import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { StorageService } from "../../storage";
 
@@ -28,6 +31,10 @@ export class CandidatesService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(StorageService) private readonly storageService: StorageService,
+    @Inject(DomainEventPublisher)
+    private readonly domainEvents: DomainEventPublisher,
+    @Inject(RecipientResolverService)
+    private readonly recipients: RecipientResolverService,
   ) {}
 
   async listForJob(
@@ -344,6 +351,54 @@ export class CandidatesService {
         },
       });
     });
+
+    const metadata = {
+      candidateName: application.candidate.fullName,
+      jobTitle: application.job.title,
+      jobId: application.job.id,
+      candidateId,
+      status: input.status,
+    };
+
+    this.domainEvents.publishNamed(
+      NotificationEventName.CANDIDATE_STATUS_CHANGED,
+      {
+        organizationId,
+        triggeredBy: user.id,
+        resourceType: "application",
+        resourceId: application.id,
+        targetUserIds: [],
+        applicationId: application.id,
+        includeCandidate: true,
+        metadata,
+      },
+    );
+
+    if (input.status === "HIRED" || input.status === "REJECTED") {
+      const targetUserIds =
+        await this.recipients.resolveRecruitersAndHiringManagers(
+          organizationId,
+          {
+            departmentId: application.job.departmentId,
+            excludeUserId: user.id,
+          },
+        );
+      this.domainEvents.publishNamed(
+        input.status === "HIRED"
+          ? NotificationEventName.CANDIDATE_HIRED
+          : NotificationEventName.CANDIDATE_REJECTED,
+        {
+          organizationId,
+          triggeredBy: user.id,
+          resourceType: "application",
+          resourceId: application.id,
+          targetUserIds,
+          applicationId: application.id,
+          includeCandidate: true,
+          metadata,
+        },
+      );
+    }
 
     return { success: true as const, status: input.status };
   }

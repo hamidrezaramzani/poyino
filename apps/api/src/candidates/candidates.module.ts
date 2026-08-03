@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthenticationModule } from "../authentication/authentication.module";
 import { InterviewsModule } from "../interviews/interviews.module";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { PrismaModule } from "../prisma/prisma.module";
 import { StorageModule } from "../storage";
 import { CandidatesController } from "./controllers/candidates.controller";
@@ -8,7 +9,13 @@ import { OrgCandidatesController } from "./controllers/org-candidates.controller
 import { CandidatesService } from "./services/candidates.service";
 
 @Module({
-  imports: [PrismaModule, AuthenticationModule, StorageModule, InterviewsModule],
+  imports: [
+    PrismaModule,
+    AuthenticationModule,
+    StorageModule,
+    InterviewsModule,
+    NotificationsModule,
+  ],
   controllers: [CandidatesController, OrgCandidatesController],
   providers: [CandidatesService],
   exports: [CandidatesService],

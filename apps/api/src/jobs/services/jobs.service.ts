@@ -13,7 +13,11 @@ import type {
   UpdateJobExpirationInput,
   UpdateJobInput,
 } from "@poyino/contracts";
-import { CreateJobSchema, JobErrorCode } from "@poyino/contracts";
+import {
+  CreateJobSchema,
+  JobErrorCode,
+  NotificationEventName,
+} from "@poyino/contracts";
 import type { Prisma } from "@prisma/client";
 import {
   AiException,
@@ -25,6 +29,8 @@ import {
   departmentScopeFilter,
 } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
+import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
+import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
   buildJobContentUserPrompt,
@@ -44,6 +50,10 @@ export class JobsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AiService) private readonly aiService: AiService,
+    @Inject(DomainEventPublisher)
+    private readonly domainEvents: DomainEventPublisher,
+    @Inject(RecipientResolverService)
+    private readonly recipients: RecipientResolverService,
   ) {}
 
   async create(user: AuthenticatedUser, input: CreateJobInput) {
@@ -112,6 +122,29 @@ export class JobsService {
           status: true,
         },
       });
+    });
+
+    const [recruiters, administrators] = await Promise.all([
+      this.recipients.resolveRecruiters(organizationId, {
+        departmentId: department.id,
+        excludeUserId: user.id,
+      }),
+      this.recipients.resolveAdministrators(organizationId, {
+        excludeUserId: user.id,
+      }),
+    ]);
+    const targetUserIds = [...new Set([...recruiters, ...administrators])];
+    this.domainEvents.publishNamed(NotificationEventName.JOB_CREATED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "job",
+      resourceId: job.id,
+      targetUserIds,
+      metadata: {
+        jobTitle: input.title,
+        jobId: job.id,
+        departmentId: department.id,
+      },
     });
 
     return {
@@ -470,6 +503,25 @@ export class JobsService {
       },
     });
 
+    const targetUserIds = await this.recipients.resolveRecruiters(
+      organizationId,
+      {
+        departmentId: job.departmentId,
+        excludeUserId: user.id,
+      },
+    );
+    this.domainEvents.publishNamed(NotificationEventName.JOB_PUBLISHED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "job",
+      resourceId: job.id,
+      targetUserIds,
+      metadata: {
+        jobTitle: job.title,
+        jobId: job.id,
+      },
+    });
+
     return {
       success: true as const,
       status: "PUBLISHED" as const,
@@ -480,7 +532,7 @@ export class JobsService {
   async unpublish(user: AuthenticatedUser, jobId: string) {
     const job = await this.prisma.job.findFirst({
       where: { id: jobId, organizationId: user.organizationId },
-      select: { id: true, status: true, departmentId: true },
+      select: { id: true, title: true, status: true, departmentId: true },
     });
 
     if (!job) {
@@ -503,6 +555,25 @@ export class JobsService {
       where: { id: jobId },
       data: {
         status: "DRAFT",
+      },
+    });
+
+    const targetUserIds = await this.recipients.resolveRecruiters(
+      user.organizationId,
+      {
+        departmentId: job.departmentId,
+        excludeUserId: user.id,
+      },
+    );
+    this.domainEvents.publishNamed(NotificationEventName.JOB_UNPUBLISHED, {
+      organizationId: user.organizationId,
+      triggeredBy: user.id,
+      resourceType: "job",
+      resourceId: job.id,
+      targetUserIds,
+      metadata: {
+        jobTitle: job.title,
+        jobId: job.id,
       },
     });
 
@@ -623,7 +694,7 @@ export class JobsService {
     };
   }
 
-  async generateContent(input: GenerateJobContentInput) {
+  async generateContent(user: AuthenticatedUser, input: GenerateJobContentInput) {
     try {
       const result = await this.aiService.generateStructured({
         system: JOB_CONTENT_SYSTEM_PROMPT,
@@ -633,6 +704,17 @@ export class JobsService {
         schemaHint: JOB_CONTENT_SCHEMA_HINT,
         maxTokens: 2_500,
         normalize: normalizeGeneratedJobContent,
+      });
+
+      this.domainEvents.publishNamed(NotificationEventName.AI_JOB_GENERATED, {
+        organizationId: user.organizationId,
+        triggeredBy: user.id,
+        resourceType: "organization",
+        resourceId: user.organizationId,
+        targetUserIds: [user.id],
+        metadata: {
+          prompt: input.prompt,
+        },
       });
 
       return {

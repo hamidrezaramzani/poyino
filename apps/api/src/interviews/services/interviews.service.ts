@@ -9,6 +9,7 @@ import {
   InterviewAiPreparationSchema,
   InterviewSummarySchema,
   JobMatchAnalysisSchema,
+  NotificationEventName,
   ResumeAnalysisSchema,
   type CalendarInterviewsQuery,
   type CompleteInterviewInput,
@@ -49,6 +50,8 @@ import {
   interviewSummaryZodSchema,
   normalizeInterviewSummary,
 } from "../../candidates/ai/generate-interview-summary";
+import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
+import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 
 const EDITABLE_STATUSES: InterviewStatus[] = ["SCHEDULED", "IN_PROGRESS"];
@@ -63,6 +66,10 @@ export class InterviewsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AiService) private readonly aiService: AiService,
+    @Inject(DomainEventPublisher)
+    private readonly domainEvents: DomainEventPublisher,
+    @Inject(RecipientResolverService)
+    private readonly recipients: RecipientResolverService,
   ) {}
 
   async getProcess(
@@ -164,6 +171,33 @@ export class InterviewsService {
       return created;
     });
 
+    const recruiters = await this.recipients.resolveRecruiters(organizationId, {
+      departmentId: application.job.departmentId,
+      excludeUserId: user.id,
+    });
+    const targetUserIds = [
+      ...new Set([
+        ...recruiters,
+        ...(interview.recruiterUserId ? [interview.recruiterUserId] : []),
+      ]),
+    ];
+    this.domainEvents.publishNamed(NotificationEventName.INTERVIEW_CREATED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "interview",
+      resourceId: interview.id,
+      targetUserIds,
+      applicationId: application.id,
+      includeCandidate: true,
+      metadata: {
+        interviewName: interview.name,
+        candidateName: application.candidate.fullName,
+        jobId,
+        candidateId,
+        jobTitle: application.job.title,
+      },
+    });
+
     return {
       success: true as const,
       interview: mapInterview(interview),
@@ -227,6 +261,33 @@ export class InterviewsService {
       return result;
     });
 
+    const recruiters = await this.recipients.resolveRecruiters(organizationId, {
+      departmentId: application.job.departmentId,
+      excludeUserId: user.id,
+    });
+    const targetUserIds = [
+      ...new Set([
+        ...recruiters,
+        ...(updated.recruiterUserId ? [updated.recruiterUserId] : []),
+      ]),
+    ];
+    this.domainEvents.publishNamed(NotificationEventName.INTERVIEW_UPDATED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "interview",
+      resourceId: updated.id,
+      targetUserIds,
+      applicationId: application.id,
+      includeCandidate: true,
+      metadata: {
+        interviewName: updated.name,
+        candidateName: application.candidate.fullName,
+        jobId,
+        candidateId,
+        jobTitle: application.job.title,
+      },
+    });
+
     return {
       success: true as const,
       interview: mapInterview(updated),
@@ -270,6 +331,33 @@ export class InterviewsService {
       });
 
       return result;
+    });
+
+    const recruiters = await this.recipients.resolveRecruiters(organizationId, {
+      departmentId: application.job.departmentId,
+      excludeUserId: user.id,
+    });
+    const targetUserIds = [
+      ...new Set([
+        ...recruiters,
+        ...(updated.recruiterUserId ? [updated.recruiterUserId] : []),
+      ]),
+    ];
+    this.domainEvents.publishNamed(NotificationEventName.INTERVIEW_CANCELLED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "interview",
+      resourceId: updated.id,
+      targetUserIds,
+      applicationId: application.id,
+      includeCandidate: true,
+      metadata: {
+        interviewName: interview.name,
+        candidateName: application.candidate.fullName,
+        jobId,
+        candidateId,
+        jobTitle: application.job.title,
+      },
     });
 
     return { success: true as const, interview: mapInterview(updated) };
@@ -328,6 +416,28 @@ export class InterviewsService {
       );
 
       return stage;
+    });
+
+    const targetUserIds =
+      await this.recipients.resolveRecruitersAndHiringManagers(organizationId, {
+        departmentId: application.job.departmentId,
+        excludeUserId: user.id,
+      });
+    this.domainEvents.publishNamed(NotificationEventName.INTERVIEW_COMPLETED, {
+      organizationId,
+      triggeredBy: user.id,
+      resourceType: "interview",
+      resourceId: updated.id,
+      targetUserIds,
+      applicationId: application.id,
+      metadata: {
+        interviewName: interview.name,
+        candidateName: application.candidate.fullName,
+        jobId,
+        candidateId,
+        jobTitle: application.job.title,
+        result,
+      },
     });
 
     return { success: true as const, interview: mapInterview(updated) };
@@ -462,6 +572,33 @@ export class InterviewsService {
         },
       });
     });
+
+    const targetUserIds =
+      await this.recipients.resolveRecruitersAndHiringManagers(organizationId, {
+        departmentId: application.job.departmentId,
+        excludeUserId: user.id,
+      });
+    this.domainEvents.publishNamed(
+      input.decision === "HIRE"
+        ? NotificationEventName.CANDIDATE_HIRED
+        : NotificationEventName.CANDIDATE_REJECTED,
+      {
+        organizationId,
+        triggeredBy: user.id,
+        resourceType: "application",
+        resourceId: application.id,
+        targetUserIds,
+        applicationId: application.id,
+        includeCandidate: true,
+        metadata: {
+          candidateName: application.candidate.fullName,
+          jobId,
+          candidateId,
+          jobTitle: application.job.title,
+          decision: input.decision,
+        },
+      },
+    );
 
     return {
       success: true as const,
@@ -687,6 +824,25 @@ export class InterviewsService {
         },
       });
 
+      this.domainEvents.publishNamed(
+        NotificationEventName.AI_INTERVIEW_QUESTIONS_GENERATED,
+        {
+          organizationId,
+          triggeredBy: user.id,
+          resourceType: "interview",
+          resourceId: interview.id,
+          targetUserIds: [user.id],
+          applicationId: application.id,
+          metadata: {
+            interviewName: interview.name,
+            candidateName: application.candidate.fullName,
+            jobId,
+            candidateId,
+            jobTitle: application.job.title,
+          },
+        },
+      );
+
       return {
         success: true as const,
         interviewId: interview.id,
@@ -833,6 +989,32 @@ export class InterviewsService {
         },
       });
 
+      const targetUserIds = await this.recipients.resolveRecruiters(
+        organizationId,
+        {
+          departmentId: application.job.departmentId,
+          excludeUserId: user.id,
+        },
+      );
+      this.domainEvents.publishNamed(
+        NotificationEventName.AI_INTERVIEW_SUMMARY_GENERATED,
+        {
+          organizationId,
+          triggeredBy: user.id,
+          resourceType: "application",
+          resourceId: application.id,
+          targetUserIds,
+          applicationId: application.id,
+          metadata: {
+            candidateName: application.candidate.fullName,
+            jobId,
+            candidateId,
+            jobTitle: application.job.title,
+            completedInterviewCount: completedInterviews.length,
+          },
+        },
+      );
+
       return {
         success: true as const,
         summary: result.data,
@@ -976,7 +1158,8 @@ export class InterviewsService {
         candidateId,
       },
       include: {
-        job: { select: { departmentId: true } },
+        candidate: { select: { id: true, fullName: true } },
+        job: { select: { id: true, title: true, departmentId: true } },
       },
     });
 

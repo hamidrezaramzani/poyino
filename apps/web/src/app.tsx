@@ -17,6 +17,8 @@ import { CreateJobPage } from "./features/jobs/pages/create-job-page";
 import { EditJobPage } from "./features/jobs/pages/edit-job-page";
 import { JobDetailsPage } from "./features/jobs/pages/job-details-page";
 import { JobListPage } from "./features/jobs/pages/job-list-page";
+import { NotificationPreferencesPage } from "./features/notifications/pages/notification-preferences-page";
+import { NotificationsPage } from "./features/notifications/pages/notifications-page";
 import { BrandingSettingsPage } from "./features/settings/pages/branding-settings-page";
 import { GeneralSettingsPage } from "./features/settings/pages/general-settings-page";
 import { MembersSettingsPage } from "./features/settings/pages/members-settings-page";
@@ -47,6 +49,7 @@ export function App() {
       <Route path="/" element={<HomePage />} />
       <Route element={<AuthenticatedShell />}>
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
+        <Route path="/dashboard/notifications" element={<NotificationsPage />} />
         <Route path="/jobs" element={<JobListPage />} />
         <Route
           path="/jobs/create"
@@ -94,6 +97,10 @@ export function App() {
           <Route path="profile" element={<ProfileSettingsPage />} />
           <Route path="branding" element={<BrandingSettingsPage />} />
           <Route path="notifications" element={<NotificationSettingsPage />} />
+          <Route
+            path="notification-preferences"
+            element={<NotificationPreferencesPage />}
+          />
           <Route
             path="members"
             element={

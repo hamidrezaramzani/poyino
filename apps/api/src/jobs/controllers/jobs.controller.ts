@@ -70,11 +70,11 @@ export class JobsController {
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   generate(
-    @CurrentUser() _user: AuthenticatedUser,
+    @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(GenerateJobContentSchema))
     body: GenerateJobContentInput,
   ) {
-    return this.jobsService.generateContent(body);
+    return this.jobsService.generateContent(user, body);
   }
 
   @Get("templates")

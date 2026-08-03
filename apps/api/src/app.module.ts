@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { AiModule } from "./ai/ai.module";
@@ -10,6 +11,7 @@ import { CandidatesModule } from "./candidates/candidates.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { InterviewsModule } from "./interviews/interviews.module";
 import { JobsModule } from "./jobs/jobs.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 import { OrganizationModule } from "./organization/organization.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { PublicJobModule } from "./public-job/public-job.module";
@@ -18,6 +20,10 @@ import { StorageModule } from "./storage/storage.module";
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot({
+      wildcard: false,
+      maxListeners: 20,
+    }),
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,
@@ -28,6 +34,7 @@ import { StorageModule } from "./storage/storage.module";
     StorageModule,
     PrismaModule,
     AuthenticationModule,
+    NotificationsModule,
     DashboardModule,
     JobsModule,
     CandidatesModule,

@@ -8,6 +8,7 @@ import {
 import {
   DepartmentErrorCode,
   MemberErrorCode,
+  NotificationEventName,
   isOrgWideRole,
   type CreateDepartmentInput,
   type CreateMemberInput,
@@ -17,6 +18,8 @@ import {
 import * as bcrypt from "bcryptjs";
 import { randomUUID } from "node:crypto";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
+import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
+import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 
 const BCRYPT_ROUNDS = 12;
@@ -26,6 +29,10 @@ export class OrganizationService {
   constructor(
     @Inject(PrismaService)
     private readonly prisma: PrismaService,
+    @Inject(DomainEventPublisher)
+    private readonly domainEvents: DomainEventPublisher,
+    @Inject(RecipientResolverService)
+    private readonly recipients: RecipientResolverService,
   ) {}
 
   async listDepartments(user: AuthenticatedUser) {
@@ -85,6 +92,22 @@ export class OrganizationService {
         color: true,
         isDefault: true,
         archivedAt: true,
+      },
+    });
+
+    const targetUserIds = await this.recipients.resolveAdministrators(
+      user.organizationId,
+      { excludeUserId: user.id },
+    );
+    this.domainEvents.publishNamed(NotificationEventName.DEPARTMENT_CREATED, {
+      organizationId: user.organizationId,
+      triggeredBy: user.id,
+      resourceType: "department",
+      resourceId: department.id,
+      targetUserIds,
+      metadata: {
+        departmentName: department.name,
+        departmentId: department.id,
       },
     });
 
@@ -160,6 +183,44 @@ export class OrganizationService {
       },
     });
 
+    this.domainEvents.publishNamed(
+      NotificationEventName.ORGANIZATION_MEMBER_INVITED,
+      {
+        organizationId: user.organizationId,
+        triggeredBy: user.id,
+        resourceType: "member",
+        resourceId: member.id,
+        targetUserIds: [member.id],
+        metadata: {
+          memberEmail: member.email,
+          memberId: member.id,
+          role: member.role,
+          departmentId: member.departmentId,
+        },
+      },
+    );
+
+    const adminTargetUserIds = await this.recipients.resolveAdministrators(
+      user.organizationId,
+      { excludeUserId: user.id },
+    );
+    this.domainEvents.publishNamed(
+      NotificationEventName.ORGANIZATION_MEMBER_JOINED,
+      {
+        organizationId: user.organizationId,
+        triggeredBy: user.id,
+        resourceType: "member",
+        resourceId: member.id,
+        targetUserIds: adminTargetUserIds,
+        metadata: {
+          memberEmail: member.email,
+          memberId: member.id,
+          role: member.role,
+          departmentId: member.departmentId,
+        },
+      },
+    );
+
     return {
       success: true as const,
       member: mapMember(member),
@@ -225,6 +286,40 @@ export class OrganizationService {
         department: { select: { name: true } },
       },
     });
+
+    if (input.role && input.role !== member.role) {
+      this.domainEvents.publishNamed(NotificationEventName.MEMBER_ROLE_CHANGED, {
+        organizationId: user.organizationId,
+        triggeredBy: user.id,
+        resourceType: "member",
+        resourceId: member.id,
+        targetUserIds: [member.id],
+        metadata: {
+          memberId: member.id,
+          previousRole: member.role,
+          role: updated.role,
+        },
+      });
+    }
+
+    if (input.departmentId && input.departmentId !== member.departmentId) {
+      this.domainEvents.publishNamed(
+        NotificationEventName.MEMBER_DEPARTMENT_CHANGED,
+        {
+          organizationId: user.organizationId,
+          triggeredBy: user.id,
+          resourceType: "member",
+          resourceId: member.id,
+          targetUserIds: [member.id],
+          metadata: {
+            memberId: member.id,
+            previousDepartmentId: member.departmentId,
+            departmentId: updated.departmentId,
+            departmentName: updated.department.name,
+          },
+        },
+      );
+    }
 
     return {
       success: true as const,

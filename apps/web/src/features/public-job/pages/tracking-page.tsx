@@ -1,5 +1,6 @@
 import { Button, Card, EmptyState, Skeleton, SkeletonText } from "@poyino/ui";
 import { useParams } from "react-router-dom";
+import { TrackingNotificationsPanel } from "../../notifications/components/tracking-notifications-panel";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { ApplicationStatusCard } from "../components/application-status-card";
 import { ApplicationTimeline } from "../components/application-timeline";
@@ -41,7 +42,7 @@ export function TrackingPage() {
         </Card>
       ) : null}
 
-      {status === "ready" && tracking ? (
+      {status === "ready" && tracking && token ? (
         <div className="job-details-layout">
           <Card>
             <div className="job-details-header">
@@ -59,6 +60,8 @@ export function TrackingPage() {
             updatedAt={tracking.updatedAt}
             timezone={tracking.timezone}
           />
+
+          <TrackingNotificationsPanel token={token} />
 
           <ApplicationTimeline
             currentStatus={tracking.status}

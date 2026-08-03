@@ -10,6 +10,7 @@ import {
 import {
   ApplyErrorCode,
   MAX_RESUME_UPLOAD_BYTES,
+  NotificationEventName,
   PublicJobErrorCode,
   TrackingErrorCode,
   type AnalyzeResumeInput,
@@ -29,6 +30,9 @@ import {
   formatDateOnly,
   isJobExpired,
 } from "../../jobs/utils/job-expiration";
+import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
+import { NotificationsService } from "../../notifications/services/notifications.service";
+import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
   StorageObjectNotFoundException,
@@ -61,6 +65,12 @@ export class PublicJobService {
     @Inject(AiService) private readonly aiService: AiService,
     @Inject(EMAIL_SERVICE) private readonly emailService: EmailService,
     @Inject(StorageService) private readonly storageService: StorageService,
+    @Inject(DomainEventPublisher)
+    private readonly domainEvents: DomainEventPublisher,
+    @Inject(RecipientResolverService)
+    private readonly recipients: RecipientResolverService,
+    @Inject(NotificationsService)
+    private readonly notifications: NotificationsService,
   ) {}
 
   async getPublicJob(orgSlug: string, jobId: string) {
@@ -437,6 +447,8 @@ export class PublicJobService {
       applicationId: application.application.id,
       candidateId: application.candidateId,
       organizationId: job.organizationId,
+      departmentId: job.departmentId,
+      jobId: job.id,
       jobTitle: job.title,
       jobDescription: job.description,
       responsibilities: job.responsibilities,
@@ -472,6 +484,26 @@ export class PublicJobService {
         );
       });
 
+    const targetUserIds =
+      await this.recipients.resolveRecruitersAndHiringManagers(
+        job.organizationId,
+        { departmentId: job.departmentId },
+      );
+    this.domainEvents.publishNamed(NotificationEventName.CANDIDATE_APPLIED, {
+      organizationId: job.organizationId,
+      triggeredBy: null,
+      resourceType: "application",
+      resourceId: application.application.id,
+      targetUserIds,
+      applicationId: application.application.id,
+      metadata: {
+        candidateName: input.fullName,
+        jobTitle: job.title,
+        jobId: job.id,
+        candidateId: application.candidateId,
+      },
+    });
+
     return {
       success: true as const,
       applicationId: application.application.id,
@@ -487,6 +519,8 @@ export class PublicJobService {
     applicationId: string;
     candidateId: string;
     organizationId: string;
+    departmentId: string;
+    jobId: string;
     jobTitle: string;
     jobDescription: string;
     responsibilities: string | null;
@@ -539,6 +573,47 @@ export class PublicJobService {
         },
       });
     });
+
+    const targetUserIds =
+      await this.recipients.resolveRecruitersAndHiringManagers(
+        input.organizationId,
+        { departmentId: input.departmentId },
+      );
+    this.domainEvents.publishNamed(
+      NotificationEventName.AI_RESUME_ANALYSIS_COMPLETED,
+      {
+        organizationId: input.organizationId,
+        triggeredBy: null,
+        resourceType: "application",
+        resourceId: input.applicationId,
+        targetUserIds,
+        applicationId: input.applicationId,
+        metadata: {
+          candidateName: input.candidateFullName,
+          jobTitle: input.jobTitle,
+          jobId: input.jobId,
+          candidateId: input.candidateId,
+          matchScore: analysis.matchScore,
+        },
+      },
+    );
+  }
+
+  async getTrackingNotifications(token: string) {
+    if (!token || token.length < 32) {
+      throw trackingNotFound();
+    }
+
+    const application = await this.prisma.application.findUnique({
+      where: { trackingTokenHash: hashToken(token) },
+      select: { id: true },
+    });
+
+    if (!application) {
+      throw trackingNotFound();
+    }
+
+    return this.notifications.listForApplication(application.id);
   }
 
   async getTracking(token: string) {
@@ -655,6 +730,7 @@ export class PublicJobService {
         id: true,
         title: true,
         department: true,
+        departmentId: true,
         employmentType: true,
         workplaceType: true,
         location: true,

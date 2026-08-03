@@ -15,6 +15,8 @@ const SETTINGS_TABS = new Set([
   "profile",
   "branding",
   "notifications",
+  "notification-preferences",
+  "members",
 ]);
 
 export function buildDashboardBreadcrumbs({
@@ -31,6 +33,12 @@ export function buildDashboardBreadcrumbs({
 
   switch (root) {
     case "dashboard":
+      if (second === "notifications") {
+        return [
+          { label: t.dashboard.nav.overview, to: "/dashboard" },
+          { label: t.notifications.pageTitle },
+        ];
+      }
       return [{ label: t.dashboard.nav.overview }];
 
     case "jobs":
@@ -137,8 +145,10 @@ function buildSettingsBreadcrumbs(
     return [{ label: t.dashboard.nav.settings }];
   }
 
-  return [
-    settingsRoot,
-    { label: t.settings.tabs[tab as keyof typeof t.settings.tabs] },
-  ];
+  const tabLabel =
+    tab === "notification-preferences"
+      ? t.settings.tabs.preferences
+      : t.settings.tabs[tab as keyof typeof t.settings.tabs];
+
+  return [settingsRoot, { label: tabLabel }];
 }

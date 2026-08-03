@@ -12,6 +12,10 @@ export function SettingsLayoutPage() {
     { to: "/settings/profile", key: "profile" as const },
     { to: "/settings/branding", key: "branding" as const },
     { to: "/settings/notifications", key: "notifications" as const },
+    {
+      to: "/settings/notification-preferences",
+      key: "preferences" as const,
+    },
     ...(canViewMembers
       ? [{ to: "/settings/members", key: "members" as const }]
       : []),

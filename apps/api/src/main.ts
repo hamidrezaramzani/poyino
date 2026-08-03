@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import { IoAdapter } from "@nestjs/platform-socket.io";
 import { MAX_RESUME_UPLOAD_BYTES } from "@poyino/contracts";
 import { AppModule } from "./app.module";
 import { ApiExceptionFilter } from "./common/filters/api-exception.filter";
@@ -21,6 +22,7 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 3000);
   const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
 
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.useBodyParser("json", { limit: JSON_BODY_LIMIT_BYTES });
   app.useBodyParser("urlencoded", {
     limit: JSON_BODY_LIMIT_BYTES,

@@ -37,6 +37,13 @@ export class PublicJobController {
     return this.publicJobService.getTracking(token);
   }
 
+  @Get("tracking/:token/notifications")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  getTrackingNotifications(@Param("token") token: string) {
+    return this.publicJobService.getTrackingNotifications(token);
+  }
+
   @Get(":orgSlug/logo")
   @HttpCode(HttpStatus.OK)
   @Throttle({ default: { limit: 120, ttl: 60_000 } })
