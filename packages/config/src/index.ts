@@ -10,3 +10,9 @@ export const appMetadata = {
   name: "Poyino",
   tagline: "AI-powered recruitment platform.",
 } as const;
+
+export const appStageDefaults = {
+  stage: "beta" as const,
+  betaNoticeVersion: "1",
+  productVersion: "0.1.0-beta",
+} as const;

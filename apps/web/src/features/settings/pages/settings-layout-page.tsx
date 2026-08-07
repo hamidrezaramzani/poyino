@@ -1,12 +1,15 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useAppConfig } from "../../../shared/config/app-config-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useCan } from "../../../shared/permissions/can";
 import { PermissionGate } from "../../../shared/permissions/permission-gate";
 
 export function SettingsLayoutPage() {
   const { t } = useI18n();
+  const { isBeta } = useAppConfig();
   const canViewMembers = useCan("members:view");
   const canManageCredits = useCan("credits:manage");
+  const canViewFeedback = useCan("feedback:view");
 
   const tabs = [
     { to: "/settings/general", key: "general" as const },
@@ -22,6 +25,9 @@ export function SettingsLayoutPage() {
       : []),
     ...(canManageCredits
       ? [{ to: "/settings/ai-credits", key: "aiCredits" as const }]
+      : []),
+    ...(canViewFeedback && isBeta
+      ? [{ to: "/settings/feedback", key: "feedback" as const }]
       : []),
   ];
 

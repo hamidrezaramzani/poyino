@@ -296,7 +296,7 @@ export function Form({ children, onSubmit, style }: FormProps) {
 }
 
 type AlertProps = PropsWithChildren<{
-  variant?: "error" | "info" | "success";
+  variant?: "error" | "info" | "success" | "warning";
   title?: string;
 }>;
 
@@ -306,11 +306,22 @@ export function Alert({ children, variant = "info", title }: AlertProps) {
       ? { bg: brand.dangerBg, color: brand.danger, border: brand.dangerBorder }
       : variant === "success"
         ? { bg: brand.successBg, color: brand.success, border: brand.successBorder }
-        : { bg: brand.surfaceMuted, color: brand.text, border: brand.border };
+        : variant === "warning"
+          ? {
+              bg: brand.warningBg,
+              color: brand.warning,
+              border: brand.warningBorder,
+            }
+          : {
+              bg: brand.infoBg,
+              color: brand.text,
+              border: brand.infoBorder,
+            };
 
   return (
     <div
-      role="alert"
+      role="status"
+      aria-live="polite"
       style={{
         backgroundColor: palette.bg,
         color: palette.color,

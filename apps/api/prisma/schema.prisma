@@ -254,6 +254,7 @@ model Organization {
   aiCredits               OrganizationAiCredits?
   aiCreditTransactions    AiCreditTransaction[]
   supportTickets          SupportTicket[]
+  betaFeedbackResponses   BetaFeedbackResponse[]
 
   @@unique([email])
   @@map("organizations")
@@ -336,6 +337,7 @@ model User {
   supportTicketsAssigned  SupportTicket[]          @relation("SupportTicketAssignedTo")
   supportMessages         SupportMessage[]
   supportAuditEvents      SupportAuditEvent[]
+  betaFeedbackResponses   BetaFeedbackResponse[]
 
   @@index([organizationId, departmentId])
   @@index([platformRole])
@@ -856,4 +858,24 @@ model SupportAuditEvent {
   @@index([ticketId, createdAt])
   @@index([actorUserId])
   @@map("support_audit_events")
+}
+
+/// Flexible product-validation survey responses (versioned via surveyKey + surveyVersion).
+model BetaFeedbackResponse {
+  id                String       @id @default(uuid()) @db.Uuid
+  organizationId    String       @map("organization_id") @db.Uuid
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  submittedByUserId String       @map("submitted_by_user_id") @db.Uuid
+  submittedByUser   User         @relation(fields: [submittedByUserId], references: [id], onDelete: Cascade)
+  surveyKey         String       @map("survey_key") @db.VarChar(64)
+  surveyVersion     String       @map("survey_version") @db.VarChar(32)
+  productVersion    String?      @map("product_version") @db.VarChar(64)
+  answers           Json
+  submittedAt       DateTime     @default(now()) @map("submitted_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@unique([organizationId, surveyKey])
+  @@index([surveyKey, surveyVersion, submittedAt])
+  @@index([submittedAt])
+  @@map("beta_feedback_responses")
 }

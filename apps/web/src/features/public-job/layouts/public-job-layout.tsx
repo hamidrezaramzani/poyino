@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
+import { BetaNotice } from "../../beta/components/beta-notice";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 
 export function PublicJobLayout({ children }: PropsWithChildren) {
@@ -20,6 +21,7 @@ export function PublicJobLayout({ children }: PropsWithChildren) {
         </button>
       </header>
       <main className="public-job-shell-main">{children}</main>
+      <BetaNotice variant="footer" />
     </div>
   );
 }

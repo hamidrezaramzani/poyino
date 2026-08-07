@@ -2,6 +2,7 @@ import { Avatar, Skeleton, Tooltip } from "@poyino/ui";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
+import { useAppConfig } from "../../../shared/config/app-config-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useCan } from "../../../shared/permissions/can";
 import { useIsPlatformAdmin } from "../../../shared/permissions/use-platform-admin";
@@ -14,6 +15,7 @@ import {
   LayoutDashboardIcon,
   LifeBuoyIcon,
   ListIcon,
+  MessageSquareIcon,
   PanelLeftIcon,
   PlusIcon,
   SettingsIcon,
@@ -39,6 +41,8 @@ export function DashboardSidebar({
   const canViewReports = useCan("reports:view");
   const canViewSettings = useCan("organization:view");
   const canViewSupport = useCan("support:view");
+  const canViewFeedback = useCan("feedback:view");
+  const { isBeta } = useAppConfig();
   const isPlatformAdmin = useIsPlatformAdmin();
   const location = useLocation();
   const navigate = useNavigate();
@@ -237,11 +241,29 @@ export function DashboardSidebar({
                   onNavigate={onMobileClose}
                 />
               ) : null}
+              {canViewFeedback && isBeta ? (
+                <SidebarLink
+                  to="/dashboard/feedback"
+                  label={t.dashboard.nav.feedback}
+                  icon={<MessageSquareIcon size={18} />}
+                  collapsed={collapsed}
+                  onNavigate={onMobileClose}
+                />
+              ) : null}
               {isPlatformAdmin ? (
                 <SidebarLink
                   to="/admin/support"
                   label={t.dashboard.nav.supportTickets}
                   icon={<LifeBuoyIcon size={18} />}
+                  collapsed={collapsed}
+                  onNavigate={onMobileClose}
+                />
+              ) : null}
+              {isPlatformAdmin && isBeta ? (
+                <SidebarLink
+                  to="/admin/feedback"
+                  label={t.dashboard.nav.adminFeedback}
+                  icon={<MessageSquareIcon size={18} />}
                   collapsed={collapsed}
                   onNavigate={onMobileClose}
                 />

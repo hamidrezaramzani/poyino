@@ -30,6 +30,8 @@ export * from "./notifications/notification.schema";
 export * from "./notifications/events";
 export * from "./credits/ai-credits.schema";
 export * from "./support/support.schema";
+export * from "./app/app-config.schema";
+export * from "./feedback/beta-feedback.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),

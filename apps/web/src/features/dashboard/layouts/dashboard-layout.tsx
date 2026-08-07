@@ -1,4 +1,5 @@
 import { useState, type PropsWithChildren } from "react";
+import { BetaNotice } from "../../beta/components/beta-notice";
 import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useSession } from "../../../shared/session/session-provider";
@@ -36,6 +37,7 @@ export function DashboardLayout({ children }: PropsWithChildren) {
         ) : null}
 
         <div className="dashboard-main-column">
+          <BetaNotice variant="dashboard" />
           <header className="dashboard-header">
             <div className="dashboard-header-start">
               <button

@@ -1,6 +1,7 @@
 import { appMetadata } from "@poyino/config";
 import { Button } from "@poyino/ui";
 import { Link } from "react-router-dom";
+import { BetaNotice } from "../features/beta/components/beta-notice";
 import { useI18n } from "../shared/i18n/i18n-provider";
 import { formatDate } from "../shared/lib/format-date";
 
@@ -12,6 +13,8 @@ export function HomePage() {
   return (
     <div className="landing-shell" dir={direction}>
       <div className="landing-glow" aria-hidden />
+
+      <BetaNotice variant="landing" />
 
       <header className="landing-topbar">
         <a className="landing-brand" href="#top">

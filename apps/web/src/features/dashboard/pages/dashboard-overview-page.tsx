@@ -4,6 +4,7 @@ import { RecentCandidatesTable } from "../components/recent-candidates-table";
 import { RecentJobsTable } from "../components/recent-jobs-table";
 import { StatisticsSection } from "../components/statistics-section";
 import { SupportStatsSection } from "../components/support-stats-section";
+import { FeedbackPromptCard } from "../../feedback/components/feedback-prompt-card";
 import { useDashboardOverview } from "../hooks/use-dashboard-overview";
 
 export function DashboardOverviewPage() {
@@ -16,6 +17,7 @@ export function DashboardOverviewPage() {
 
   return (
     <div className="dashboard-overview">
+      <FeedbackPromptCard />
       <StatisticsSection
         statistics={data?.statistics ?? null}
         loading={loading}

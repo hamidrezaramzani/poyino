@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
+import { BetaNotice } from "../../beta/components/beta-notice";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 
 export function AuthLayout({ children }: PropsWithChildren) {
@@ -8,6 +9,7 @@ export function AuthLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="auth-shell" dir={direction}>
+      <BetaNotice variant="auth" />
       <header className="auth-header">
         <Link to="/" className="auth-brand">
           <span className="auth-brand-mark" aria-hidden>

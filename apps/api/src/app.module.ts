@@ -20,6 +20,7 @@ import { ResumeTextExtractionModule } from "./resume-text-extraction";
 import { SettingsModule } from "./settings/settings.module";
 import { StorageModule } from "./storage/storage.module";
 import { SupportModule } from "./support/support.module";
+import { FeedbackModule } from "./feedback/feedback.module";
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { SupportModule } from "./support/support.module";
     NotificationsModule,
     CreditsModule,
     SupportModule,
+    FeedbackModule,
     DashboardModule,
     JobsModule,
     CandidatesModule,

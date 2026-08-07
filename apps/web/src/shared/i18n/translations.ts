@@ -151,6 +151,8 @@ export type Translation = {
       interviews: string;
       support: string;
       supportTickets: string;
+      feedback: string;
+      adminFeedback: string;
       reports: string;
       settings: string;
     };
@@ -352,6 +354,105 @@ export type Translation = {
       minutes: string;
     };
   };
+  beta: {
+    dismiss: string;
+    landingEyebrow: string;
+    landingTitle: string;
+    landingBody: string;
+    landingDetail: string;
+    landingDataNote: string;
+    authTitle: string;
+    authBody: string;
+    dashboardTitle: string;
+    dashboardBody: string;
+    footer: string;
+  };
+  feedback: {
+    title: string;
+    description: string;
+    openSurvey: string;
+    updateSurvey: string;
+    estimatedTime: string;
+    progressLabel: string;
+    previous: string;
+    next: string;
+    submit: string;
+    submitting: string;
+    thankYouTitle: string;
+    thankYouBody: string;
+    backToDashboard: string;
+    notEligibleTitle: string;
+    notEligibleBody: string;
+    loadFailed: string;
+    submitFailed: string;
+    retry: string;
+    promptTitle: string;
+    promptBody: string;
+    promptCta: string;
+    promptDismiss: string;
+    settingsTab: string;
+    adminTitle: string;
+    adminDescription: string;
+    adminEmptyTitle: string;
+    adminEmptyDescription: string;
+    searchPlaceholder: string;
+    viewDetails: string;
+    backToList: string;
+    analyticsTitle: string;
+    averageSatisfaction: string;
+    averageRecommendation: string;
+    willingnessToPay: string;
+    completionRate: string;
+    totalResponses: string;
+    mostValuable: string;
+    topMissing: string;
+    topProblems: string;
+    commonKeywords: string;
+    recentFeedback: string;
+    organization: string;
+    submittedAt: string;
+    submittedBy: string;
+    productVersion: string;
+    questions: {
+      satisfaction: string;
+      timeReduction: string;
+      mostValuableFeature: string;
+      needsImprovement: string;
+      aiRecommendationsHelp: string;
+      confusingAspects: string;
+      missingFeature: string;
+      disappointmentIfGone: string;
+      willingnessToPay: string;
+      additionalComments: string;
+    };
+    options: {
+      timeReduction: {
+        YES: string;
+        SOMEWHAT: string;
+        NO: string;
+      };
+      valuableFeature: {
+        AI_JOB_CREATION: string;
+        RESUME_ANALYSIS: string;
+        CANDIDATE_RANKING: string;
+        INTERVIEW_MANAGEMENT: string;
+        ORGANIZATION_MANAGEMENT: string;
+        OTHER: string;
+      };
+      aiHelp: {
+        ALWAYS: string;
+        SOMETIMES: string;
+        RARELY: string;
+        NEVER: string;
+      };
+      willingnessToPay: {
+        DEFINITELY: string;
+        PROBABLY: string;
+        MAYBE: string;
+        NO: string;
+      };
+    };
+  };
   notifications: {
     bellLabel: string;
     dropdownTitle: string;
@@ -420,6 +521,7 @@ export type Translation = {
       preferences: string;
       members: string;
       aiCredits: string;
+      feedback: string;
     };
     save: string;
     saving: string;
@@ -1606,6 +1708,8 @@ export const translations: Record<Locale, Translation> = {
         interviews: "مصاحبه‌ها",
         support: "پشتیبانی",
         supportTickets: "تیکت‌های پشتیبانی",
+        feedback: "بازخورد بتا",
+        adminFeedback: "بازخوردها",
         reports: "تحلیل‌ها",
         settings: "تنظیمات",
       },
@@ -1817,6 +1921,115 @@ export const translations: Record<Locale, Translation> = {
         minutes: "دقیقه",
       },
     },
+    beta: {
+      dismiss: "متوجه شدم",
+      landingEyebrow: "نسخه بتا",
+      landingTitle: "پوینو هم‌اکنون در نسخه عمومی بتا قرار دارد.",
+      landingBody:
+        "پلتفرم به‌طور فعال در حال بهبود است و بازخورد شما مستقیماً به شکل‌گیری محصول نهایی کمک می‌کند.",
+      landingDetail:
+        "قابلیت‌ها ممکن است تغییر کنند، اشکالاتی وجود داشته باشد و وقفه‌های موقت در سرویس رخ دهد.",
+      landingDataNote:
+        "لطفاً از این نسخه بتا به‌عنوان تنها محل نگهداری داده‌های مهم سازمانی استفاده نکنید.",
+      authTitle: "شما در حال استفاده از نسخه بتای پوینو هستید.",
+      authBody:
+        "برخی قابلیت‌ها ممکن است در طول توسعه تغییر کنند و ناپایداری گاه‌به‌گاه انتظار می‌رود.",
+      dashboardTitle: "شما در حال استفاده از نسخه بتای پوینو هستید.",
+      dashboardBody:
+        "برخی قابلیت‌ها ممکن است در طول توسعه تغییر کنند و ناپایداری گاه‌به‌گاه انتظار می‌رود.",
+      footer: "این پلتفرم استخدام هم‌اکنون در نسخه بتا اجرا می‌شود.",
+    },
+    feedback: {
+      title: "بازخورد بتا",
+      description:
+        "با پاسخ به یک نظرسنجی کوتاه، به اولویت‌بندی توسعه محصول کمک کنید.",
+      openSurvey: "شروع نظرسنجی",
+      updateSurvey: "به‌روزرسانی بازخورد",
+      estimatedTime: "حدود ۲ دقیقه",
+      progressLabel: "سؤال {current} از {total}",
+      previous: "قبلی",
+      next: "بعدی",
+      submit: "ارسال",
+      submitting: "در حال ارسال...",
+      thankYouTitle: "سپاسگزاریم!",
+      thankYouBody: "بازخورد شما مستقیماً بر آینده پوینو تأثیر می‌گذارد.",
+      backToDashboard: "بازگشت به داشبورد",
+      notEligibleTitle: "هنوز آماده نیست",
+      notEligibleBody:
+        "پس از مدتی استفاده فعال یا ایجاد حداقل یک فرصت شغلی، می‌توانید نظرسنجی را تکمیل کنید.",
+      loadFailed: "بارگذاری وضعیت بازخورد ناموفق بود.",
+      submitFailed: "ارسال بازخورد ناموفق بود.",
+      retry: "تلاش مجدد",
+      promptTitle: "نظر شما برای ما مهم است",
+      promptBody:
+        "چند سؤال کوتاه درباره تجربه شما از نسخه بتا — حدود ۲ دقیقه زمان می‌برد.",
+      promptCta: "شرکت در نظرسنجی",
+      promptDismiss: "بعداً",
+      settingsTab: "بازخورد",
+      adminTitle: "بازخورد بتا",
+      adminDescription: "پاسخ‌های سازمان‌ها را بررسی و تحلیل کنید.",
+      adminEmptyTitle: "هنوز بازخوردی ثبت نشده است",
+      adminEmptyDescription: "پاسخ‌های نظرسنجی بتا اینجا نمایش داده می‌شوند.",
+      searchPlaceholder: "جستجوی سازمان یا ایمیل...",
+      viewDetails: "مشاهده جزئیات",
+      backToList: "بازگشت به فهرست",
+      analyticsTitle: "تحلیل بازخورد",
+      averageSatisfaction: "میانگین رضایت",
+      averageRecommendation: "میانگین توصیه / ناامیدی از حذف",
+      willingnessToPay: "تمایل به پرداخت",
+      completionRate: "نرخ تکمیل",
+      totalResponses: "کل پاسخ‌ها",
+      mostValuable: "ارزشمندترین قابلیت",
+      topMissing: "قابلیت‌های پرتقاضا",
+      topProblems: "موضوعات بهبود",
+      commonKeywords: "کلیدواژه‌های پرتکرار",
+      recentFeedback: "بازخوردهای اخیر",
+      organization: "سازمان",
+      submittedAt: "زمان ارسال",
+      submittedBy: "ارسال‌کننده",
+      productVersion: "نسخه محصول",
+      questions: {
+        satisfaction: "چقدر از پوینو رضایت دارید؟",
+        timeReduction: "آیا پوینو زمان صرف‌شده برای جذب نیرو را کاهش داده است؟",
+        mostValuableFeature: "کدام قابلیت بیشترین ارزش را داشته است؟",
+        needsImprovement: "کدام قابلیت بیشترین نیاز به بهبود را دارد؟",
+        aiRecommendationsHelp:
+          "آیا پیشنهادهای هوش مصنوعی به تصمیم‌گیری استخدام کمک کرده‌اند؟",
+        confusingAspects: "آیا هنگام استفاده از پلتفرم چیزی گیج‌کننده بود؟",
+        missingFeature: "بیش از همه کدام قابلیت را کم دارید؟",
+        disappointmentIfGone:
+          "اگر پوینو فردا از دسترس خارج شود، چقدر ناامید می‌شوید؟",
+        willingnessToPay: "آیا پس از بتا حاضرید برای این محصول هزینه کنید؟",
+        additionalComments: "نظرات تکمیلی",
+      },
+      options: {
+        timeReduction: {
+          YES: "بله",
+          SOMEWHAT: "تا حدودی",
+          NO: "خیر",
+        },
+        valuableFeature: {
+          AI_JOB_CREATION: "ایجاد شغل با هوش مصنوعی",
+          RESUME_ANALYSIS: "تحلیل رزومه",
+          CANDIDATE_RANKING: "رتبه‌بندی متقاضیان",
+          INTERVIEW_MANAGEMENT: "مدیریت مصاحبه",
+          ORGANIZATION_MANAGEMENT: "مدیریت سازمان",
+          OTHER: "سایر",
+        },
+        aiHelp: {
+          ALWAYS: "همیشه",
+          SOMETIMES: "گاهی",
+          RARELY: "به‌ندرت",
+          NEVER: "هرگز",
+        },
+        willingnessToPay: {
+          DEFINITELY: "قطعاً",
+          PROBABLY: "احتمالاً",
+          MAYBE: "شاید",
+          NO: "خیر",
+        },
+      },
+    },
     notifications: {
       bellLabel: "اعلان‌ها",
       dropdownTitle: "آخرین اعلان‌ها",
@@ -1989,6 +2202,7 @@ export const translations: Record<Locale, Translation> = {
         preferences: "ترجیحات من",
         members: "اعضا",
         aiCredits: "اعتبار هوش مصنوعی",
+        feedback: "بازخورد",
       },
       save: "ذخیره تغییرات",
       saving: "در حال ذخیره...",
@@ -2823,7 +3037,7 @@ export const translations: Record<Locale, Translation> = {
         trendsTitle: "روند درخواست‌ها",
         trendsDescription: "تعداد درخواست‌های دریافتی در طول زمان",
         statusDistributionTitle: "توزیع وضعیت متقاضیان",
-        funnelTitle: "قیف استخدام",
+        funnelTitle: "وضعیت استخدام",
         jobPerformanceTitle: "عملکرد فرصت‌های شغلی",
       },
       funnelStages: {
@@ -3204,6 +3418,8 @@ export const translations: Record<Locale, Translation> = {
         interviews: "Interviews",
         support: "Support",
         supportTickets: "Support Tickets",
+        feedback: "Beta feedback",
+        adminFeedback: "Feedback",
         reports: "Analytics",
         settings: "Settings",
       },
@@ -3414,6 +3630,115 @@ export const translations: Record<Locale, Translation> = {
         minutes: "min",
       },
     },
+    beta: {
+      dismiss: "Got it",
+      landingEyebrow: "Beta version",
+      landingTitle: "Poyino is currently in public Beta.",
+      landingBody:
+        "The platform is actively being improved and your feedback directly helps shape the final product.",
+      landingDetail:
+        "Features may change, bugs may exist, and temporary service interruptions may occur.",
+      landingDataNote:
+        "Please avoid relying on this Beta as the sole storage location for important organizational data.",
+      authTitle: "You are using the Beta version of Poyino.",
+      authBody:
+        "Some features may change during development and occasional instability is expected.",
+      dashboardTitle: "You are using the Beta version of Poyino.",
+      dashboardBody:
+        "Some features may change during development and occasional instability is expected.",
+      footer: "This recruitment platform is currently running in Beta.",
+    },
+    feedback: {
+      title: "Beta feedback",
+      description:
+        "Answer a short product survey to help prioritize future development.",
+      openSurvey: "Start survey",
+      updateSurvey: "Update feedback",
+      estimatedTime: "About 2 minutes",
+      progressLabel: "Question {current} of {total}",
+      previous: "Previous",
+      next: "Next",
+      submit: "Submit",
+      submitting: "Submitting...",
+      thankYouTitle: "Thank you!",
+      thankYouBody: "Your feedback will directly influence the future of Poyino.",
+      backToDashboard: "Back to dashboard",
+      notEligibleTitle: "Not available yet",
+      notEligibleBody:
+        "Once your organization has been active for a while or has created at least one job, you can complete the survey.",
+      loadFailed: "Failed to load feedback status.",
+      submitFailed: "Failed to submit feedback.",
+      retry: "Retry",
+      promptTitle: "We value your input",
+      promptBody:
+        "A few short questions about your Beta experience — about 2 minutes.",
+      promptCta: "Take the survey",
+      promptDismiss: "Later",
+      settingsTab: "Feedback",
+      adminTitle: "Beta feedback",
+      adminDescription: "Review and analyze organization survey responses.",
+      adminEmptyTitle: "No feedback yet",
+      adminEmptyDescription: "Beta survey responses will appear here.",
+      searchPlaceholder: "Search organization or email...",
+      viewDetails: "View details",
+      backToList: "Back to list",
+      analyticsTitle: "Feedback analytics",
+      averageSatisfaction: "Average satisfaction",
+      averageRecommendation: "Average disappointment if gone",
+      willingnessToPay: "Willingness to pay",
+      completionRate: "Completion rate",
+      totalResponses: "Total responses",
+      mostValuable: "Most valuable feature",
+      topMissing: "Most requested features",
+      topProblems: "Improvement themes",
+      commonKeywords: "Common keywords",
+      recentFeedback: "Recent feedback",
+      organization: "Organization",
+      submittedAt: "Submitted at",
+      submittedBy: "Submitted by",
+      productVersion: "Product version",
+      questions: {
+        satisfaction: "How satisfied are you with Poyino?",
+        timeReduction: "Has Poyino reduced the time spent on recruitment?",
+        mostValuableFeature: "Which feature has been the most valuable?",
+        needsImprovement: "Which feature needs the most improvement?",
+        aiRecommendationsHelp:
+          "Did AI recommendations help you make hiring decisions?",
+        confusingAspects: "Was anything confusing while using the platform?",
+        missingFeature: "What feature are you missing the most?",
+        disappointmentIfGone:
+          "If Poyino disappeared tomorrow, how disappointed would you be?",
+        willingnessToPay: "Would you pay for this product after Beta?",
+        additionalComments: "Any additional comments?",
+      },
+      options: {
+        timeReduction: {
+          YES: "Yes",
+          SOMEWHAT: "Somewhat",
+          NO: "No",
+        },
+        valuableFeature: {
+          AI_JOB_CREATION: "AI Job Creation",
+          RESUME_ANALYSIS: "Resume Analysis",
+          CANDIDATE_RANKING: "Candidate Ranking",
+          INTERVIEW_MANAGEMENT: "Interview Management",
+          ORGANIZATION_MANAGEMENT: "Organization Management",
+          OTHER: "Other",
+        },
+        aiHelp: {
+          ALWAYS: "Always",
+          SOMETIMES: "Sometimes",
+          RARELY: "Rarely",
+          NEVER: "Never",
+        },
+        willingnessToPay: {
+          DEFINITELY: "Definitely",
+          PROBABLY: "Probably",
+          MAYBE: "Maybe",
+          NO: "No",
+        },
+      },
+    },
     notifications: {
       bellLabel: "Notifications",
       dropdownTitle: "Latest notifications",
@@ -3585,6 +3910,7 @@ export const translations: Record<Locale, Translation> = {
         preferences: "My preferences",
         members: "Members",
         aiCredits: "AI Credits",
+        feedback: "Feedback",
       },
       save: "Save changes",
       saving: "Saving...",

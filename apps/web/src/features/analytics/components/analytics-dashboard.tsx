@@ -1,4 +1,4 @@
-import type { AnalyticsDateRange, DashboardCandidateStatus, JobPerformanceItem } from "@poyino/contracts";
+import type { AnalyticsDateRange, JobPerformanceItem } from "@poyino/contracts";
 import {
   Button,
   Card,
@@ -12,11 +12,8 @@ import {
 } from "@poyino/ui";
 import {
   CartesianGrid,
-  Cell,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -25,6 +22,7 @@ import {
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { formatDate } from "../../../shared/lib/format-date";
 import { useAnalytics } from "../hooks/use-analytics";
+import { StatusDistributionChart } from "./status-distribution-chart";
 
 const RANGES: AnalyticsDateRange[] = [
   "LAST_7_DAYS",
@@ -32,15 +30,6 @@ const RANGES: AnalyticsDateRange[] = [
   "LAST_90_DAYS",
   "LAST_YEAR",
 ];
-
-const STATUS_COLORS: Record<DashboardCandidateStatus, string> = {
-  APPLIED: "#93a0b0",
-  REVIEWING: "#e8c07a",
-  INTERVIEW_SCHEDULED: "#8ea2ff",
-  INTERVIEW_PASSED: "#78c0e0",
-  HIRED: "#7dcea0",
-  REJECTED: "#f2a3a0",
-};
 
 export function AnalyticsDashboard() {
   const { t, locale } = useI18n();
@@ -187,48 +176,7 @@ export function AnalyticsDashboard() {
           {analytics.statusDistribution.length === 0 ? (
             <EmptyState title={t.analytics.empty} />
           ) : (
-            <div className="analytics-chart-container">
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie
-                    data={analytics.statusDistribution}
-                    dataKey="count"
-                    nameKey="status"
-                    innerRadius={55}
-                    outerRadius={90}
-                    paddingAngle={2}
-                    label={(props: unknown) => {
-                      const { status, count } = props as {
-                        status?: DashboardCandidateStatus;
-                        count?: number;
-                      };
-                      return `${t.dashboard.candidateStatus[status ?? "APPLIED"]} (${count ?? 0})`;
-                    }}
-                  >
-                    {analytics.statusDistribution.map((entry) => (
-                      <Cell key={entry.status} fill={STATUS_COLORS[entry.status]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value, _name, item) => {
-                      const payload = (
-                        item as { payload?: { status?: DashboardCandidateStatus } }
-                      )?.payload;
-                      return [
-                        value,
-                        t.dashboard.candidateStatus[payload?.status ?? "APPLIED"],
-                      ] as [number, string];
-                    }}
-                    contentStyle={{
-                      backgroundColor: "var(--ui-surface)",
-                      border: "1px solid var(--ui-border)",
-                      borderRadius: "0.5rem",
-                      color: "var(--ui-text)",
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <StatusDistributionChart data={analytics.statusDistribution} />
           )}
         </Card>
 

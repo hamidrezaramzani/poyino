@@ -35,6 +35,10 @@ import { AdminSupportTicketDetailsPage } from "./features/support/pages/admin-su
 import { CreateSupportTicketPage } from "./features/support/pages/create-support-ticket-page";
 import { SupportInboxPage } from "./features/support/pages/support-inbox-page";
 import { SupportTicketDetailsPage } from "./features/support/pages/support-ticket-details-page";
+import { AdminFeedbackDetailsPage } from "./features/feedback/pages/admin-feedback-details-page";
+import { AdminFeedbackPage } from "./features/feedback/pages/admin-feedback-page";
+import { FeedbackSettingsPage } from "./features/feedback/pages/feedback-settings-page";
+import { FeedbackSurveyPage } from "./features/feedback/pages/feedback-survey-page";
 import { HomePage } from "./pages/home-page";
 import { PermissionGate } from "./shared/permissions/permission-gate";
 import { PlatformAdminGate } from "./shared/permissions/platform-admin-gate";
@@ -94,6 +98,30 @@ export function App() {
           element={
             <PlatformAdminGate fallback="redirect">
               <AdminSupportTicketDetailsPage />
+            </PlatformAdminGate>
+          }
+        />
+        <Route
+          path="/dashboard/feedback"
+          element={
+            <PermissionGate permission="feedback:view" fallback="redirect">
+              <FeedbackSurveyPage />
+            </PermissionGate>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <PlatformAdminGate fallback="redirect">
+              <AdminFeedbackPage />
+            </PlatformAdminGate>
+          }
+        />
+        <Route
+          path="/admin/feedback/:responseId"
+          element={
+            <PlatformAdminGate fallback="redirect">
+              <AdminFeedbackDetailsPage />
             </PlatformAdminGate>
           }
         />
@@ -161,6 +189,14 @@ export function App() {
             element={
               <PermissionGate permission="credits:manage" fallback="redirect">
                 <AiCreditsSettingsPage />
+              </PermissionGate>
+            }
+          />
+          <Route
+            path="feedback"
+            element={
+              <PermissionGate permission="feedback:view" fallback="redirect">
+                <FeedbackSettingsPage />
               </PermissionGate>
             }
           />
