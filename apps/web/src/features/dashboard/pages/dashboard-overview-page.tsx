@@ -1,3 +1,4 @@
+import { AiCreditsSection } from "../components/ai-credits-section";
 import { DashboardErrorState } from "../components/dashboard-error-state";
 import { RecentCandidatesTable } from "../components/recent-candidates-table";
 import { RecentJobsTable } from "../components/recent-jobs-table";
@@ -16,6 +17,10 @@ export function DashboardOverviewPage() {
     <div className="dashboard-overview">
       <StatisticsSection
         statistics={data?.statistics ?? null}
+        loading={loading}
+      />
+      <AiCreditsSection
+        aiCredits={data?.aiCredits ?? null}
         loading={loading}
       />
       <RecentJobsTable jobs={data?.recentJobs ?? []} loading={loading} />

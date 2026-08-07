@@ -29,6 +29,7 @@ import {
   departmentScopeFilter,
 } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
+import { CreditsService } from "../../credits/services/credits.service";
 import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
 import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -50,6 +51,7 @@ export class JobsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AiService) private readonly aiService: AiService,
+    @Inject(CreditsService) private readonly credits: CreditsService,
     @Inject(DomainEventPublisher)
     private readonly domainEvents: DomainEventPublisher,
     @Inject(RecipientResolverService)
@@ -696,15 +698,23 @@ export class JobsService {
 
   async generateContent(user: AuthenticatedUser, input: GenerateJobContentInput) {
     try {
-      const result = await this.aiService.generateStructured({
-        system: JOB_CONTENT_SYSTEM_PROMPT,
-        prompt: buildJobContentUserPrompt(input.prompt),
-        schema: GeneratedJobContentSchema,
-        schemaName: "GeneratedJobContent",
-        schemaHint: JOB_CONTENT_SCHEMA_HINT,
-        maxTokens: 2_500,
-        normalize: normalizeGeneratedJobContent,
-      });
+      const result = await this.credits.runWithCredits(
+        {
+          organizationId: user.organizationId,
+          feature: "GENERATE_JOB",
+          userId: user.id,
+        },
+        () =>
+          this.aiService.generateStructured({
+            system: JOB_CONTENT_SYSTEM_PROMPT,
+            prompt: buildJobContentUserPrompt(input.prompt),
+            schema: GeneratedJobContentSchema,
+            schemaName: "GeneratedJobContent",
+            schemaHint: JOB_CONTENT_SCHEMA_HINT,
+            maxTokens: 2_500,
+            normalize: normalizeGeneratedJobContent,
+          }),
+      );
 
       this.domainEvents.publishNamed(NotificationEventName.AI_JOB_GENERATED, {
         organizationId: user.organizationId,

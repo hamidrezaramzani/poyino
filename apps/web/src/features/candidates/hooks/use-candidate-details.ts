@@ -21,6 +21,7 @@ import {
   deleteCandidateNote,
   fetchCandidateProfile,
   getResumeDownloadUrl,
+  rerunCandidateAiAnalysis,
   updateCandidateNote,
   updateCandidateStatus,
   updateInterview,
@@ -66,6 +67,7 @@ export function useCandidateDetails() {
     useState<string | null>(null);
   const [completeNotes, setCompleteNotes] = useState("");
   const [interviewActionLoading, setInterviewActionLoading] = useState(false);
+  const [aiRerunLoading, setAiRerunLoading] = useState(false);
 
   const load = useCallback(async () => {
     if (!jobId || !candidateId) {
@@ -118,6 +120,87 @@ export function useCandidateDetails() {
       // Keep previously loaded data; the next explicit action will surface errors.
     }
   }, [candidateId, jobId]);
+
+  // While AI ranking is still running, silently refresh until it completes.
+  useEffect(() => {
+    if (status !== "success" || candidate?.aiAnalysisStatus !== "PENDING") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void refresh();
+    }, 4_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [candidate?.aiAnalysisStatus, refresh, status]);
+
+  const rerunAiAnalysis = useCallback(async () => {
+    if (!jobId || !candidateId || aiRerunLoading) {
+      return;
+    }
+    setAiRerunLoading(true);
+    setCandidate((current) =>
+      current
+        ? {
+            ...current,
+            aiAnalysisStatus: "PENDING",
+            aiScore: null,
+            jobMatchAnalysis: null,
+          }
+        : current,
+    );
+    try {
+      const response = await rerunCandidateAiAnalysis(jobId, candidateId);
+      setCandidate((current) =>
+        current
+          ? {
+              ...current,
+              aiScore: response.aiScore,
+              yearsExperience: response.yearsExperience,
+              jobMatchAnalysis: response.jobMatchAnalysis,
+              aiAnalysisStatus: response.aiAnalysisStatus,
+            }
+          : current,
+      );
+      push(t.candidates.details.ai.rerunSuccess, "success");
+      void refresh();
+    } catch (error) {
+      setCandidate((current) =>
+        current
+          ? {
+              ...current,
+              aiAnalysisStatus: "UNAVAILABLE",
+            }
+          : current,
+      );
+      if (
+        error instanceof ApiRequestError &&
+        error.code === CandidateErrorCode.INSUFFICIENT_CREDITS
+      ) {
+        push(t.credits.insufficientError, "error");
+      } else {
+        push(
+          error instanceof ApiRequestError
+            ? error.message || t.candidates.details.ai.rerunFailed
+            : t.candidates.details.ai.rerunFailed,
+          "error",
+        );
+      }
+    } finally {
+      setAiRerunLoading(false);
+    }
+  }, [
+    aiRerunLoading,
+    candidateId,
+    jobId,
+    push,
+    refresh,
+    t.candidates.details.ai.rerunFailed,
+    t.candidates.details.ai.rerunSuccess,
+    t.credits.insufficientError,
+  ]);
 
   const changeStatus = useCallback(
     async (nextStatus: DashboardCandidateStatus) => {
@@ -484,5 +567,7 @@ export function useCandidateDetails() {
     dismissCompleteInterview,
     confirmCompleteInterview,
     interviewActionLoading,
+    aiRerunLoading,
+    rerunAiAnalysis,
   };
 }

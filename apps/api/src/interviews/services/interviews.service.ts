@@ -41,6 +41,7 @@ import {
   departmentScopeFilter,
 } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
+import { CreditsService } from "../../credits/services/credits.service";
 import {
   buildInterviewAiPrompt,
   buildInterviewAiSystemPrompt,
@@ -94,6 +95,7 @@ export class InterviewsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AiService) private readonly aiService: AiService,
+    @Inject(CreditsService) private readonly credits: CreditsService,
     @Inject(DomainEventPublisher)
     private readonly domainEvents: DomainEventPublisher,
     @Inject(RecipientResolverService)
@@ -1082,42 +1084,55 @@ export class InterviewsService {
         recruiterPrompt: input.prompt,
       });
 
-      const result = await this.aiService.generateStructured({
-        prompt: buildInterviewAiPrompt({
-          language: application.job.organization.language || "fa",
-          recruiterPrompt: input.prompt,
-          interviewName: interview.name,
-          interviewType: interview.type,
-          jobTitle: application.job.title,
-          department: application.job.department,
-          employmentType: application.job.employmentType,
-          workplaceType: application.job.workplaceType,
-          jobDescription: application.job.description,
-          responsibilities: application.job.responsibilities,
-          requirements: application.job.requirements,
-          requiredSkills,
-          candidateFullName: application.candidate.fullName,
-          candidateCurrentPosition: application.candidate.currentPosition,
-          candidateSkills: skills,
-          candidateExperience: application.candidate.experience,
-          candidateEducation: application.candidate.education,
-          resumeSummary: jobMatch.success
-            ? jobMatch.data.executiveSummary
-            : resumeAnalysis.success
-              ? resumeAnalysis.data.experience.slice(0, 1000) || null
-              : null,
-          matchScore: jobMatch.success ? jobMatch.data.matchScore : null,
-          missingSkills: jobMatch.success ? jobMatch.data.missingSkills : [],
-          extractedText: application.extractedText,
-        }),
-        schema: interviewAiPreparationZodSchema,
-        schemaName: "InterviewAiPreparation",
-        schemaHint: interviewAiSchemaHint,
-        normalize: normalizeInterviewAiPreparation,
-        system: buildInterviewAiSystemPrompt(outputLanguage),
-        temperature: 0.2,
-        maxTokens: 3_500,
-      });
+      const result = await this.credits.runWithCredits(
+        {
+          organizationId,
+          feature: "INTERVIEW_QUESTIONS",
+          userId: user.id,
+          metadata: {
+            interviewId: interview.id,
+            jobId,
+            candidateId,
+          },
+        },
+        () =>
+          this.aiService.generateStructured({
+            prompt: buildInterviewAiPrompt({
+              language: application.job.organization.language || "fa",
+              recruiterPrompt: input.prompt,
+              interviewName: interview.name,
+              interviewType: interview.type,
+              jobTitle: application.job.title,
+              department: application.job.department,
+              employmentType: application.job.employmentType,
+              workplaceType: application.job.workplaceType,
+              jobDescription: application.job.description,
+              responsibilities: application.job.responsibilities,
+              requirements: application.job.requirements,
+              requiredSkills,
+              candidateFullName: application.candidate.fullName,
+              candidateCurrentPosition: application.candidate.currentPosition,
+              candidateSkills: skills,
+              candidateExperience: application.candidate.experience,
+              candidateEducation: application.candidate.education,
+              resumeSummary: jobMatch.success
+                ? jobMatch.data.executiveSummary
+                : resumeAnalysis.success
+                  ? resumeAnalysis.data.experience.slice(0, 1000) || null
+                  : null,
+              matchScore: jobMatch.success ? jobMatch.data.matchScore : null,
+              missingSkills: jobMatch.success ? jobMatch.data.missingSkills : [],
+              extractedText: application.extractedText,
+            }),
+            schema: interviewAiPreparationZodSchema,
+            schemaName: "InterviewAiPreparation",
+            schemaHint: interviewAiSchemaHint,
+            normalize: normalizeInterviewAiPreparation,
+            system: buildInterviewAiSystemPrompt(outputLanguage),
+            temperature: 0.2,
+            maxTokens: 3_500,
+          }),
+      );
 
       const generatedAt = new Date();
       const promptValue = input.prompt?.trim() || null;
@@ -1255,35 +1270,48 @@ export class InterviewsService {
     });
 
     try {
-      const result = await this.aiService.generateStructured({
-        prompt: buildInterviewSummaryPrompt({
-          language: application.job.organization.language || "fa",
-          jobTitle: application.job.title,
-          jobDescription: application.job.description,
-          responsibilities: application.job.responsibilities,
-          requirements: application.job.requirements,
-          requiredSkills,
-          candidateFullName: application.candidate.fullName,
-          candidateCurrentPosition: application.candidate.currentPosition,
-          candidateSkills: skills,
-          candidateExperience: application.candidate.experience,
-          candidateEducation: application.candidate.education,
-          resumeSummary: jobMatch.success
-            ? jobMatch.data.executiveSummary
-            : resumeAnalysis.success
-              ? resumeAnalysis.data.experience.slice(0, 1000) || null
-              : null,
-          matchScore: jobMatch.success ? jobMatch.data.matchScore : null,
-          completedInterviews: completedInterviewPayload,
-        }),
-        schema: interviewSummaryZodSchema,
-        schemaName: "InterviewSummary",
-        schemaHint: interviewSummarySchemaHint,
-        normalize: normalizeInterviewSummary,
-        system: buildInterviewSummarySystemPrompt(outputLanguage),
-        temperature: 0.2,
-        maxTokens: 3_000,
-      });
+      const result = await this.credits.runWithCredits(
+        {
+          organizationId,
+          feature: "INTERVIEW_SUMMARY",
+          userId: user.id,
+          metadata: {
+            jobId,
+            candidateId,
+            completedInterviewCount: completedInterviews.length,
+          },
+        },
+        () =>
+          this.aiService.generateStructured({
+            prompt: buildInterviewSummaryPrompt({
+              language: application.job.organization.language || "fa",
+              jobTitle: application.job.title,
+              jobDescription: application.job.description,
+              responsibilities: application.job.responsibilities,
+              requirements: application.job.requirements,
+              requiredSkills,
+              candidateFullName: application.candidate.fullName,
+              candidateCurrentPosition: application.candidate.currentPosition,
+              candidateSkills: skills,
+              candidateExperience: application.candidate.experience,
+              candidateEducation: application.candidate.education,
+              resumeSummary: jobMatch.success
+                ? jobMatch.data.executiveSummary
+                : resumeAnalysis.success
+                  ? resumeAnalysis.data.experience.slice(0, 1000) || null
+                  : null,
+              matchScore: jobMatch.success ? jobMatch.data.matchScore : null,
+              completedInterviews: completedInterviewPayload,
+            }),
+            schema: interviewSummaryZodSchema,
+            schemaName: "InterviewSummary",
+            schemaHint: interviewSummarySchemaHint,
+            normalize: normalizeInterviewSummary,
+            system: buildInterviewSummarySystemPrompt(outputLanguage),
+            temperature: 0.2,
+            maxTokens: 3_000,
+          }),
+      );
 
       const generatedAt = new Date();
       const process = await this.ensureProcess(application);

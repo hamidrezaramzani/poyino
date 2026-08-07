@@ -65,7 +65,11 @@ export const AnalyzeResumeSoftFailureSchema = z.object({
   success: z.literal(true),
   analysis: z.null(),
   extractedTextLength: z.number().int().nonnegative(),
-  warningCode: z.enum(["EXTRACTION_FAILED", "ANALYSIS_FAILED"]),
+  warningCode: z.enum([
+    "EXTRACTION_FAILED",
+    "ANALYSIS_FAILED",
+    "INSUFFICIENT_CREDITS",
+  ]),
 });
 
 export type AnalyzeResumeSoftFailure = z.infer<

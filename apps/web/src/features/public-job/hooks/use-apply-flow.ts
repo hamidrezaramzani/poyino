@@ -163,7 +163,9 @@ export function useApplyFlow(orgSlug: string | undefined, jobId: string | undefi
         setAnalysisWarning(
           analyzed.warningCode === "EXTRACTION_FAILED"
             ? t.publicJob.apply.errors.extractionFailed
-            : t.publicJob.apply.errors.analysisFailed,
+            : analyzed.warningCode === "INSUFFICIENT_CREDITS"
+              ? t.publicJob.apply.errors.insufficientCredits
+              : t.publicJob.apply.errors.analysisFailed,
         );
         if (analyzed.warningCode === "EXTRACTION_FAILED") {
           setStep("upload");

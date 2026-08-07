@@ -12,6 +12,8 @@ import {
   Select,
   Textarea,
 } from "@poyino/ui";
+import { AiCreditsEmptyState } from "../../credits/components/ai-credits-empty-state";
+import { useAiCredits } from "../../credits/hooks/use-ai-credits";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useCan } from "../../../shared/permissions/can";
 import {
@@ -26,7 +28,15 @@ export function CreateJobForm() {
   const { t, locale } = useI18n();
   const form = useCreateJobForm();
   const canGenerate = useCan("ai:generate");
+  const credits = useAiCredits();
+  const canAffordGenerate = credits.canAfford("GENERATE_JOB");
   const disabled = form.isSubmitting || form.isGenerating;
+
+  // Keep local affordability in sync after generation.
+  const onGenerate = async () => {
+    await form.generate();
+    void credits.refresh();
+  };
 
   const employmentOptions = EMPLOYMENT_TYPE_OPTIONS.map((value) => ({
     value,
@@ -58,37 +68,43 @@ export function CreateJobForm() {
       <div className="create-job-layout">
         {canGenerate ? (
           <Card title={t.jobs.create.aiSection}>
-            <FormField
-              label={t.jobs.create.aiPromptLabel}
-              htmlFor="aiPrompt"
-              error={form.errors.aiPrompt}
-            >
-              <Textarea
-                id="aiPrompt"
-                value={form.values.aiPrompt}
-                disabled={disabled}
-                error={form.errors.aiPrompt}
-                placeholder={t.jobs.create.aiPromptPlaceholder}
-                onChange={(event) =>
-                  form.setFieldValue("aiPrompt", event.target.value)
-                }
-                onBlur={(event) =>
-                  form.validateField("aiPrompt", event.target.value)
-                }
-              />
-            </FormField>
-            <div className="settings-actions">
-              <LoadingButton
-                type="button"
-                variant="secondary"
-                loading={form.isGenerating}
-                loadingLabel={t.jobs.create.aiGenerating}
-                disabled={form.isSubmitting}
-                onClick={() => void form.generate()}
-              >
-                {t.jobs.create.aiGenerate}
-              </LoadingButton>
-            </div>
+            {!canAffordGenerate ? (
+              <AiCreditsEmptyState />
+            ) : (
+              <>
+                <FormField
+                  label={t.jobs.create.aiPromptLabel}
+                  htmlFor="aiPrompt"
+                  error={form.errors.aiPrompt}
+                >
+                  <Textarea
+                    id="aiPrompt"
+                    value={form.values.aiPrompt}
+                    disabled={disabled}
+                    error={form.errors.aiPrompt}
+                    placeholder={t.jobs.create.aiPromptPlaceholder}
+                    onChange={(event) =>
+                      form.setFieldValue("aiPrompt", event.target.value)
+                    }
+                    onBlur={(event) =>
+                      form.validateField("aiPrompt", event.target.value)
+                    }
+                  />
+                </FormField>
+                <div className="settings-actions">
+                  <LoadingButton
+                    type="button"
+                    variant="secondary"
+                    loading={form.isGenerating}
+                    loadingLabel={t.jobs.create.aiGenerating}
+                    disabled={form.isSubmitting}
+                    onClick={() => void onGenerate()}
+                  >
+                    {t.jobs.create.aiGenerate}
+                  </LoadingButton>
+                </div>
+              </>
+            )}
           </Card>
         ) : null}
 

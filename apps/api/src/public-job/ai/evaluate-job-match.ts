@@ -23,12 +23,12 @@ function asTrimmedString(value: unknown): string {
   return String(value).trim();
 }
 
-function asStringArray(value: unknown, max: number): string[] {
+function asStringArray(value: unknown, max: number, maxLength: number): string[] {
   if (!Array.isArray(value)) {
     if (typeof value === "string" && value.trim()) {
       return value
         .split(/\n|;/)
-        .map((item) => item.trim())
+        .map((item) => asTrimmedString(item).slice(0, maxLength))
         .filter(Boolean)
         .slice(0, max);
     }
@@ -36,7 +36,16 @@ function asStringArray(value: unknown, max: number): string[] {
   }
 
   return value
-    .map((item) => asTrimmedString(item))
+    .map((item) => {
+      // Models sometimes return { name: "React" } or nested objects.
+      if (item && typeof item === "object") {
+        const record = item as Record<string, unknown>;
+        return asTrimmedString(
+          record.name ?? record.skill ?? record.title ?? record.label ?? item,
+        ).slice(0, maxLength);
+      }
+      return asTrimmedString(item).slice(0, maxLength);
+    })
     .filter(Boolean)
     .slice(0, max);
 }
@@ -81,18 +90,21 @@ export function normalizeJobMatchAnalysis(raw: unknown): unknown {
     executiveSummary: asTrimmedString(
       record.executiveSummary ?? record.summary ?? record.overview,
     ).slice(0, 2000),
-    strengths: asStringArray(record.strengths ?? record.pros, 20),
+    strengths: asStringArray(record.strengths ?? record.pros, 20, 500),
     weaknesses: asStringArray(
       record.weaknesses ?? record.cons ?? record.gaps,
       20,
+      500,
     ),
     missingSkills: asStringArray(
       record.missingSkills ?? record.requiredMissingSkills,
       30,
+      200,
     ),
     interviewQuestions: asStringArray(
       record.interviewQuestions ?? record.questions,
       10,
+      500,
     ),
     yearsExperience: asYears(
       record.yearsExperience ?? record.experienceYears ?? record.years,
@@ -128,7 +140,7 @@ export function buildJobMatchPrompt(input: JobMatchPromptInput) {
     "matchScore must be an integer 0-100 representing overall fit.",
     "executiveSummary should be 2-4 sentences covering background, strongest skills, and overall impression.",
     "strengths and weaknesses should be concrete bullet points.",
-    "missingSkills should list important job skills not evidenced in the resume.",
+    "missingSkills must be short skill names only (max ~80 characters each), not full sentences.",
     "interviewQuestions should be up to 10 relevant questions for recruiters.",
     "yearsExperience should estimate total professional years as an integer, or null if unknown.",
     "",

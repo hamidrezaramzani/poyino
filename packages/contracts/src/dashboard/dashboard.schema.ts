@@ -54,9 +54,18 @@ export type DashboardRecentCandidate = z.infer<
   typeof DashboardRecentCandidateSchema
 >;
 
+export const DashboardAiCreditsSchema = z.object({
+  remaining: z.number().int().nonnegative(),
+  low: z.boolean(),
+  lowThreshold: z.number().int().nonnegative(),
+});
+
+export type DashboardAiCredits = z.infer<typeof DashboardAiCreditsSchema>;
+
 export const DashboardSuccessSchema = z.object({
   success: z.literal(true),
   statistics: DashboardStatisticsSchema,
+  aiCredits: DashboardAiCreditsSchema,
   recentJobs: z.array(DashboardRecentJobSchema).max(10),
   recentCandidates: z.array(DashboardRecentCandidateSchema).max(10),
 });

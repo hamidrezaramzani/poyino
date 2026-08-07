@@ -146,6 +146,25 @@ enum NotificationDeliveryStatus {
   FAILED
 }
 
+enum AiCreditFeature {
+  GENERATE_JOB
+  RESUME_ANALYSIS
+  RESUME_AUTOFILL
+  CANDIDATE_RANKING
+  INTERVIEW_QUESTIONS
+  INTERVIEW_SUMMARY
+}
+
+enum AiCreditTransactionType {
+  GRANT
+  CONSUME
+  REFUND
+  ADJUSTMENT
+  BONUS
+  PURCHASE
+  EXPIRATION
+}
+
 model Organization {
   id                      String      @id @default(uuid()) @db.Uuid
   name                    String      @db.VarChar(80)
@@ -188,6 +207,8 @@ model Organization {
   applicationActivities   ApplicationActivityEvent[]
   notifications           Notification[]
   notificationDeliveries  NotificationDelivery[]
+  aiCredits               OrganizationAiCredits?
+  aiCreditTransactions    AiCreditTransaction[]
 
   @@unique([email])
   @@map("organizations")
@@ -263,6 +284,7 @@ model User {
   notifications           Notification[]
   notificationPreferences NotificationPreference[]
   notificationDeliveries  NotificationDelivery[]
+  aiCreditTransactions    AiCreditTransaction[]
 
   @@index([organizationId, departmentId])
   @@map("users")
@@ -661,4 +683,43 @@ model InterviewStatusEvent {
 
   @@index([interviewId, createdAt])
   @@map("interview_status_events")
+}
+
+model OrganizationAiCredits {
+  id               String       @id @default(uuid()) @db.Uuid
+  organizationId   String       @unique @map("organization_id") @db.Uuid
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  balance          Int          @default(0)
+  lifetimeGranted  Int          @default(0) @map("lifetime_granted")
+  lifetimeConsumed Int          @default(0) @map("lifetime_consumed")
+  /// Reserved for future monthly subscription renewals.
+  renewsAt         DateTime?    @map("renews_at")
+  /// Reserved for future credit expiration.
+  expiresAt        DateTime?    @map("expires_at")
+  /// Reserved for future plan codes (e.g. beta, pro, unlimited).
+  planCode         String?      @map("plan_code") @db.VarChar(64)
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  @@map("organization_ai_credits")
+}
+
+model AiCreditTransaction {
+  id             String                  @id @default(uuid()) @db.Uuid
+  organizationId String                  @map("organization_id") @db.Uuid
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?                 @map("user_id") @db.Uuid
+  user           User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type           AiCreditTransactionType
+  feature        AiCreditFeature?
+  /// Always positive; direction is determined by `type`.
+  amount         Int
+  balanceAfter   Int                     @map("balance_after")
+  metadata       Json?
+  createdAt      DateTime                @default(now()) @map("created_at")
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, feature, type])
+  @@index([userId])
+  @@map("ai_credit_transactions")
 }

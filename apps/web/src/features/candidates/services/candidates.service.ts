@@ -11,6 +11,7 @@ import type {
   ListCandidatesSuccess,
   ListOrgCandidatesQuery,
   ListOrgCandidatesSuccess,
+  RerunCandidateAiAnalysisSuccess,
   UpdateCandidateNoteInput,
   UpdateCandidateStatusInput,
   UpdateCandidateStatusSuccess,
@@ -51,6 +52,16 @@ export async function fetchCandidateProfile(
 ) {
   return apiRequest<GetCandidateProfileSuccess>(
     `/jobs/${jobId}/candidates/${candidateId}`,
+  );
+}
+
+export async function rerunCandidateAiAnalysis(
+  jobId: string,
+  candidateId: string,
+) {
+  return apiRequest<RerunCandidateAiAnalysisSuccess>(
+    `/jobs/${jobId}/candidates/${candidateId}/ai-analysis`,
+    { method: "POST" },
   );
 }
 

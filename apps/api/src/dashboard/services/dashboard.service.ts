@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { AI_CREDITS_LOW_THRESHOLD } from "@poyino/contracts";
 import { departmentScopeFilter } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -28,6 +29,7 @@ export class DashboardService {
       totalHired,
       recentJobs,
       recentApplications,
+      aiCreditsRow,
     ] = await Promise.all([
       this.prisma.job.count({
         where: { organizationId, ...jobScope },
@@ -78,7 +80,13 @@ export class DashboardService {
           },
         },
       }),
+      this.prisma.organizationAiCredits.findUnique({
+        where: { organizationId },
+        select: { balance: true },
+      }),
     ]);
+
+    const remaining = aiCreditsRow?.balance ?? 0;
 
     return {
       success: true as const,
@@ -87,6 +95,11 @@ export class DashboardService {
         activeJobs,
         totalCandidates,
         totalHired,
+      },
+      aiCredits: {
+        remaining,
+        low: remaining > 0 && remaining <= AI_CREDITS_LOW_THRESHOLD,
+        lowThreshold: AI_CREDITS_LOW_THRESHOLD,
       },
       recentJobs: recentJobs.map((job) => ({
         id: job.id,

@@ -286,7 +286,9 @@ export function useCreateJobForm() {
       });
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        if (error.code === JobErrorCode.TOO_MANY_REQUESTS) {
+        if (error.code === JobErrorCode.INSUFFICIENT_CREDITS) {
+          push(t.credits.insufficientError, "error");
+        } else if (error.code === JobErrorCode.TOO_MANY_REQUESTS) {
           push(t.jobs.create.errors.tooManyRequests, "error");
         } else if (error.details?.prompt?.[0]) {
           setErrors((current) => ({

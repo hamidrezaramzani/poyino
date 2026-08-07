@@ -28,6 +28,7 @@ export * from "./organization/departments.schema";
 export * from "./organization/members.schema";
 export * from "./notifications/notification.schema";
 export * from "./notifications/events";
+export * from "./credits/ai-credits.schema";
 
 export const organizationSchema = z.object({
   id: z.string().uuid().optional(),

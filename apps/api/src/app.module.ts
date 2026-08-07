@@ -8,6 +8,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { CandidatesModule } from "./candidates/candidates.module";
+import { CreditsModule } from "./credits/credits.module";
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { InterviewsModule } from "./interviews/interviews.module";
 import { JobsModule } from "./jobs/jobs.module";
@@ -37,6 +38,7 @@ import { StorageModule } from "./storage/storage.module";
     PrismaModule,
     AuthenticationModule,
     NotificationsModule,
+    CreditsModule,
     DashboardModule,
     JobsModule,
     CandidatesModule,

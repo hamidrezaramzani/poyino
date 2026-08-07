@@ -6,6 +6,7 @@ import { PermissionGate } from "../../../shared/permissions/permission-gate";
 export function SettingsLayoutPage() {
   const { t } = useI18n();
   const canViewMembers = useCan("members:view");
+  const canManageCredits = useCan("credits:manage");
 
   const tabs = [
     { to: "/settings/general", key: "general" as const },
@@ -18,6 +19,9 @@ export function SettingsLayoutPage() {
     },
     ...(canViewMembers
       ? [{ to: "/settings/members", key: "members" as const }]
+      : []),
+    ...(canManageCredits
+      ? [{ to: "/settings/ai-credits", key: "aiCredits" as const }]
       : []),
   ];
 

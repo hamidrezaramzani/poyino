@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { formatDateTime } from "../../../shared/lib/format-date";
+import { AiCreditsEmptyState } from "../../credits/components/ai-credits-empty-state";
+import { useAiCredits } from "../../credits/hooks/use-ai-credits";
 import { InterviewFormDialog } from "../../candidates/components/interview-form-dialog";
 import { ConfirmDialog } from "../../candidates/components/confirm-dialog";
 import { useInterviewProcess } from "../hooks/use-interview-process";
@@ -43,6 +45,9 @@ function statusVariant(status: Interview["status"]) {
 export function InterviewProcessPage() {
   const { t, locale } = useI18n();
   const details = useInterviewProcess();
+  const credits = useAiCredits();
+  const canAffordQuestions = credits.canAfford("INTERVIEW_QUESTIONS");
+  const canAffordSummary = credits.canAfford("INTERVIEW_SUMMARY");
 
   if (details.status === "loading") {
     return (
@@ -139,6 +144,8 @@ export function InterviewProcessPage() {
       >
         {process.stages.length === 0 ? (
           <EmptyState title={t.candidates.interviewsModule.process.empty} />
+        ) : !canAffordQuestions ? (
+          <AiCreditsEmptyState />
         ) : (
           <>
             <FormField
@@ -262,6 +269,8 @@ export function InterviewProcessPage() {
           <EmptyState
             title={t.candidates.interviewsModule.summary.emptyCompleted}
           />
+        ) : !canAffordSummary ? (
+          <AiCreditsEmptyState />
         ) : (
           <>
             <LoadingButton

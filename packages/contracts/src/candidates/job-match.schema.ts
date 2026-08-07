@@ -5,7 +5,7 @@ export const JobMatchAnalysisSchema = z.object({
   executiveSummary: z.string().trim().max(2000).default(""),
   strengths: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
   weaknesses: z.array(z.string().trim().min(1).max(500)).max(20).default([]),
-  missingSkills: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
+  missingSkills: z.array(z.string().trim().min(1).max(200)).max(30).default([]),
   interviewQuestions: z
     .array(z.string().trim().min(1).max(500))
     .max(10)

@@ -394,6 +394,20 @@ export const EVENT_CATALOG: Record<string, EventCatalogEntry> = {
     },
     resolveActionUrl: interviewActionUrl,
   },
+  [NotificationEventName.BILLING_AI_CREDIT_LOW]: {
+    category: "AI",
+    priority: "HIGH",
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "اعتبار هوش مصنوعی کم است" : "AI credits running low",
+    resolveDescription: (m, locale) => {
+      const remaining =
+        typeof m.remaining === "number" ? String(m.remaining) : "0";
+      return locale === "fa"
+        ? `تنها ${remaining} اعتبار هوش مصنوعی باقی مانده است.`
+        : `Only ${remaining} AI credits remaining.`;
+    },
+    resolveActionUrl: () => "/settings/ai-credits",
+  },
   [NotificationEventName.SYSTEM_SECURITY_ALERT]: {
     category: "SYSTEM",
     priority: "CRITICAL",

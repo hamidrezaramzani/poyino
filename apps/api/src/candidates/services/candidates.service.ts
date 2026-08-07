@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import {
@@ -15,22 +17,36 @@ import {
   type UpdateCandidateStatusInput,
 } from "@poyino/contracts";
 import type { CandidateStatus, Prisma } from "@prisma/client";
+import { AiInvalidResponseException } from "../../ai/exceptions/ai.exceptions";
+import { AiService } from "../../ai/ai.service";
 import {
   assertDepartmentAccess,
   departmentScopeFilter,
 } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
+import { CreditsService } from "../../credits/services/credits.service";
 import { mapInterview } from "../../interviews/services/interviews.service";
 import { DomainEventPublisher } from "../../notifications/services/domain-event.publisher";
 import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
+import {
+  buildJobMatchPrompt,
+  jobMatchAnalysisZodSchema,
+  jobMatchSchemaHint,
+  jobMatchSystemPrompt,
+  normalizeJobMatchAnalysis,
+} from "../../public-job/ai/evaluate-job-match";
 import { StorageService } from "../../storage";
 
 @Injectable()
 export class CandidatesService {
+  private readonly logger = new Logger(CandidatesService.name);
+
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(StorageService) private readonly storageService: StorageService,
+    @Inject(AiService) private readonly aiService: AiService,
+    @Inject(CreditsService) private readonly credits: CreditsService,
     @Inject(DomainEventPublisher)
     private readonly domainEvents: DomainEventPublisher,
     @Inject(RecipientResolverService)
@@ -286,6 +302,10 @@ export class CandidatesService {
               : null,
         resumeAnalysis,
         jobMatchAnalysis,
+        aiAnalysisStatus: resolveAiAnalysisStatus({
+          hasJobMatch: Boolean(jobMatchAnalysis),
+          appliedAt: application.appliedAt,
+        }),
         notes: notes.map((note) => ({
           id: note.id,
           body: note.body,
@@ -584,6 +604,197 @@ export class CandidatesService {
     );
   }
 
+  async rerunAiAnalysis(
+    user: AuthenticatedUser,
+    jobId: string,
+    candidateId: string,
+  ) {
+    const organizationId = user.organizationId;
+    const application = await this.prisma.application.findFirst({
+      where: { organizationId, jobId, candidateId },
+      include: {
+        candidate: true,
+        job: {
+          include: {
+            skills: { include: { skill: true } },
+          },
+        },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: CandidateErrorCode.CANDIDATE_NOT_FOUND,
+          message: "Candidate not found.",
+        },
+      });
+    }
+
+    assertDepartmentAccess(user, application.job.departmentId);
+
+    const skills = parseSkills(application.candidate.skills);
+    const requiredSkills = application.job.skills.map((row) => row.skill.name);
+
+    try {
+      const result = await this.credits.runWithCredits(
+        {
+          organizationId,
+          feature: "CANDIDATE_RANKING",
+          userId: user.id,
+          metadata: {
+            applicationId: application.id,
+            jobId,
+            candidateId,
+            source: "manual_rerun",
+          },
+        },
+        async () => {
+          try {
+            return await this.aiService.generateStructured({
+              prompt: buildJobMatchPrompt({
+                jobTitle: application.job.title,
+                jobDescription: application.job.description,
+                responsibilities: application.job.responsibilities,
+                requirements: application.job.requirements,
+                skills: requiredSkills,
+                candidateFullName: application.candidate.fullName,
+                candidateCurrentPosition: application.candidate.currentPosition,
+                candidateSkills: skills,
+                candidateExperience: application.candidate.experience,
+                candidateEducation: application.candidate.education,
+                extractedText: application.extractedText,
+              }),
+              schema: jobMatchAnalysisZodSchema,
+              schemaName: "JobMatchAnalysis",
+              schemaHint: jobMatchSchemaHint,
+              normalize: normalizeJobMatchAnalysis,
+              system: jobMatchSystemPrompt,
+              temperature: 0.2,
+              maxTokens: 2_500,
+            });
+          } catch (error) {
+            if (!(error instanceof AiInvalidResponseException)) {
+              throw error;
+            }
+            this.logger.warn(
+              `Manual job match schema validation failed for application ${application.id}; retrying once`,
+            );
+            return this.aiService.generateStructured({
+              prompt: buildJobMatchPrompt({
+                jobTitle: application.job.title,
+                jobDescription: application.job.description,
+                responsibilities: application.job.responsibilities,
+                requirements: application.job.requirements,
+                skills: requiredSkills,
+                candidateFullName: application.candidate.fullName,
+                candidateCurrentPosition: application.candidate.currentPosition,
+                candidateSkills: skills,
+                candidateExperience: application.candidate.experience,
+                candidateEducation: application.candidate.education,
+                extractedText: application.extractedText,
+              }),
+              schema: jobMatchAnalysisZodSchema,
+              schemaName: "JobMatchAnalysis",
+              schemaHint: jobMatchSchemaHint,
+              normalize: normalizeJobMatchAnalysis,
+              system: jobMatchSystemPrompt,
+              temperature: 0.1,
+              maxTokens: 2_500,
+            });
+          }
+        },
+      );
+
+      const analysis = result.data;
+      const yearsExperience = analysis.yearsExperience ?? null;
+
+      await this.prisma.$transaction(async (tx) => {
+        await tx.application.update({
+          where: { id: application.id },
+          data: {
+            jobMatchAnalysis: analysis,
+            yearsExperience,
+          },
+        });
+        await tx.candidate.update({
+          where: { id: candidateId },
+          data: { aiScore: analysis.matchScore },
+        });
+        await tx.applicationActivityEvent.create({
+          data: {
+            applicationId: application.id,
+            organizationId,
+            type: "AI_ANALYSIS_COMPLETED",
+            description: `AI match analysis completed (${analysis.matchScore}%)`,
+            actorUserId: user.id,
+            metadata: {
+              matchScore: analysis.matchScore,
+              source: "manual_rerun",
+            },
+          },
+        });
+      });
+
+      const targetUserIds =
+        await this.recipients.resolveRecruitersAndHiringManagers(
+          organizationId,
+          { departmentId: application.job.departmentId },
+        );
+      this.domainEvents.publishNamed(
+        NotificationEventName.AI_RESUME_ANALYSIS_COMPLETED,
+        {
+          organizationId,
+          triggeredBy: user.id,
+          resourceType: "application",
+          resourceId: application.id,
+          targetUserIds,
+          applicationId: application.id,
+          metadata: {
+            candidateName: application.candidate.fullName,
+            jobTitle: application.job.title,
+            jobId,
+            candidateId,
+            matchScore: analysis.matchScore,
+          },
+        },
+      );
+
+      return {
+        success: true as const,
+        aiScore: analysis.matchScore,
+        yearsExperience,
+        jobMatchAnalysis: analysis,
+        aiAnalysisStatus: "COMPLETED" as const,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        const response = error.getResponse();
+        if (
+          response &&
+          typeof response === "object" &&
+          "error" in response &&
+          (response as { error?: { code?: string } }).error?.code ===
+            "INSUFFICIENT_CREDITS"
+        ) {
+          throw error;
+        }
+      }
+
+      this.logger.warn(
+        `Manual AI analysis failed for application ${application.id}: ${String(error)}`,
+      );
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: CandidateErrorCode.AI_ANALYSIS_FAILED,
+          message: "Unable to generate AI analysis. Please try again.",
+        },
+      });
+    }
+  }
+
   private buildJobCandidatesWhere(
     organizationId: string,
     jobId: string,
@@ -646,6 +857,7 @@ export class CandidatesService {
       { appliedAt: "desc" },
     ];
   }
+
 
   private async requireJob(user: AuthenticatedUser, jobId: string) {
     const job = await this.prisma.job.findFirst({
@@ -748,6 +960,23 @@ function parseResumeAnalysis(value: unknown) {
 function parseJobMatchAnalysis(value: unknown) {
   const parsed = JobMatchAnalysisSchema.safeParse(value);
   return parsed.success ? parsed.data : null;
+}
+
+/** Keep PENDING while ranking may still be running (can take up to ~2 minutes). */
+const AI_ANALYSIS_PENDING_WINDOW_MS = 5 * 60 * 1000;
+
+function resolveAiAnalysisStatus(input: {
+  hasJobMatch: boolean;
+  appliedAt: Date;
+}): "PENDING" | "COMPLETED" | "UNAVAILABLE" {
+  if (input.hasJobMatch) {
+    return "COMPLETED";
+  }
+  const ageMs = Date.now() - input.appliedAt.getTime();
+  if (ageMs >= 0 && ageMs < AI_ANALYSIS_PENDING_WINDOW_MS) {
+    return "PENDING";
+  }
+  return "UNAVAILABLE";
 }
 
 function resolveDateFilter(query: ListCandidatesQuery) {

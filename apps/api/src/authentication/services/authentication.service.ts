@@ -16,6 +16,7 @@ import {
   ForgotPasswordErrorCode,
   ResetPasswordErrorCode,
   SessionErrorCode,
+  AI_CREDITS_INITIAL_GRANT,
   type ForgotPasswordInput,
   type LoginInput,
   type RegisterInput,
@@ -132,6 +133,30 @@ export class AuthenticationService {
             isEmailVerified: false,
             organizationId: organization.id,
             departmentId: department.id,
+          },
+        });
+
+        await tx.organizationAiCredits.create({
+          data: {
+            id: randomUUID(),
+            organizationId: organization.id,
+            balance: AI_CREDITS_INITIAL_GRANT,
+            lifetimeGranted: AI_CREDITS_INITIAL_GRANT,
+            lifetimeConsumed: 0,
+            planCode: "beta",
+          },
+        });
+
+        await tx.aiCreditTransaction.create({
+          data: {
+            id: randomUUID(),
+            organizationId: organization.id,
+            userId: user.id,
+            type: "GRANT",
+            feature: null,
+            amount: AI_CREDITS_INITIAL_GRANT,
+            balanceAfter: AI_CREDITS_INITIAL_GRANT,
+            metadata: { reason: "beta_initial_grant" },
           },
         });
 

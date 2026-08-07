@@ -7,6 +7,7 @@ import type {
   InterviewResult,
   InterviewSummary,
 } from "@poyino/contracts";
+import { CandidateErrorCode } from "@poyino/contracts";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ApiRequestError } from "../../../shared/api/api-client";
@@ -293,14 +294,20 @@ export function useInterviewProcess() {
           ),
         };
       });
-    } catch {
+    } catch (error) {
       setAiError(true);
+      if (
+        error instanceof ApiRequestError &&
+        error.code === CandidateErrorCode.INSUFFICIENT_CREDITS
+      ) {
+        push(t.credits.insufficientError, "error");
+      }
     } finally {
       timers.forEach((id) => window.clearTimeout(id));
       setAiLoading(false);
       setAiStep(0);
     }
-  }, [aiLoading, aiPrompt, candidateId, jobId, selectedInterviewId]);
+  }, [aiLoading, aiPrompt, candidateId, jobId, push, selectedInterviewId, t.credits.insufficientError]);
 
   const runSummary = useCallback(async () => {
     if (!jobId || !candidateId || summaryLoading) return;
@@ -321,9 +328,12 @@ export function useInterviewProcess() {
     } catch (error) {
       setSummaryError(true);
       push(
-        error instanceof ApiRequestError
-          ? error.message || t.candidates.interviewsModule.summary.failed
-          : t.candidates.interviewsModule.summary.failed,
+        error instanceof ApiRequestError &&
+          error.code === CandidateErrorCode.INSUFFICIENT_CREDITS
+          ? t.credits.insufficientError
+          : error instanceof ApiRequestError
+            ? error.message || t.candidates.interviewsModule.summary.failed
+            : t.candidates.interviewsModule.summary.failed,
         "error",
       );
     } finally {
@@ -335,6 +345,7 @@ export function useInterviewProcess() {
     push,
     summaryLoading,
     t.candidates.interviewsModule.summary.failed,
+    t.credits.insufficientError,
   ]);
 
   return {

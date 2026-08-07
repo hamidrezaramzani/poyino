@@ -21,7 +21,9 @@ import {
   type SubmitApplicationInput,
   type UploadResumeInput,
 } from "@poyino/contracts";
+import { AiInvalidResponseException } from "../../ai/exceptions/ai.exceptions";
 import { AiService } from "../../ai/ai.service";
+import { CreditsService } from "../../credits/services/credits.service";
 import {
   EMAIL_SERVICE,
   type EmailService,
@@ -68,6 +70,7 @@ export class PublicJobService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AiService) private readonly aiService: AiService,
+    @Inject(CreditsService) private readonly credits: CreditsService,
     @Inject(EMAIL_SERVICE) private readonly emailService: EmailService,
     @Inject(StorageService) private readonly storageService: StorageService,
     @Inject(ResumeTextExtractionService)
@@ -271,20 +274,38 @@ export class PublicJobService {
     }
 
     try {
-      const result = await this.aiService.generateStructured({
-        prompt: buildResumeAnalysisPrompt(extractedText),
-        schema: resumeAnalysisZodSchema,
-        schemaName: "ResumeAnalysis",
-        schemaHint: resumeAnalysisSchemaHint,
-        normalize: normalizeResumeAnalysis,
-        system: resumeAnalysisSystemPrompt,
-        temperature: 0.2,
-        maxTokens: 2_000,
-      });
+      const credited = await this.credits.tryRunWithCredits(
+        {
+          organizationId: job.organizationId,
+          feature: "RESUME_ANALYSIS",
+          userId: null,
+          metadata: { jobId: job.id, fileId: input.fileId },
+        },
+        () =>
+          this.aiService.generateStructured({
+            prompt: buildResumeAnalysisPrompt(extractedText),
+            schema: resumeAnalysisZodSchema,
+            schemaName: "ResumeAnalysis",
+            schemaHint: resumeAnalysisSchemaHint,
+            normalize: normalizeResumeAnalysis,
+            system: resumeAnalysisSystemPrompt,
+            temperature: 0.2,
+            maxTokens: 2_000,
+          }),
+      );
+
+      if (!credited.ok) {
+        return {
+          success: true as const,
+          analysis: null,
+          extractedTextLength: extractedText.length,
+          warningCode: "INSUFFICIENT_CREDITS",
+        };
+      }
 
       return {
         success: true as const,
-        analysis: result.data,
+        analysis: credited.result.data,
         extractedTextLength: extractedText.length,
       };
     } catch (error) {
@@ -545,18 +566,59 @@ export class PublicJobService {
     candidateEducation: string | null;
     extractedText: string | null;
   }) {
-    const result = await this.aiService.generateStructured({
-      prompt: buildJobMatchPrompt(input),
-      schema: jobMatchAnalysisZodSchema,
-      schemaName: "JobMatchAnalysis",
-      schemaHint: jobMatchSchemaHint,
-      normalize: normalizeJobMatchAnalysis,
-      system: jobMatchSystemPrompt,
-      temperature: 0.2,
-      maxTokens: 2_500,
-    });
+    const runMatch = async () => {
+      try {
+        return await this.aiService.generateStructured({
+          prompt: buildJobMatchPrompt(input),
+          schema: jobMatchAnalysisZodSchema,
+          schemaName: "JobMatchAnalysis",
+          schemaHint: jobMatchSchemaHint,
+          normalize: normalizeJobMatchAnalysis,
+          system: jobMatchSystemPrompt,
+          temperature: 0.2,
+          maxTokens: 2_500,
+        });
+      } catch (error) {
+        if (!(error instanceof AiInvalidResponseException)) {
+          throw error;
+        }
+        this.logger.warn(
+          `Job match schema validation failed for application ${input.applicationId}; retrying once`,
+        );
+        return this.aiService.generateStructured({
+          prompt: buildJobMatchPrompt(input),
+          schema: jobMatchAnalysisZodSchema,
+          schemaName: "JobMatchAnalysis",
+          schemaHint: jobMatchSchemaHint,
+          normalize: normalizeJobMatchAnalysis,
+          system: jobMatchSystemPrompt,
+          temperature: 0.1,
+          maxTokens: 2_500,
+        });
+      }
+    };
 
-    const analysis = result.data;
+    const credited = await this.credits.tryRunWithCredits(
+      {
+        organizationId: input.organizationId,
+        feature: "CANDIDATE_RANKING",
+        userId: null,
+        metadata: {
+          applicationId: input.applicationId,
+          jobId: input.jobId,
+        },
+      },
+      runMatch,
+    );
+
+    if (!credited.ok) {
+      this.logger.warn(
+        `Skipping job match evaluation for application ${input.applicationId}: insufficient AI credits`,
+      );
+      return;
+    }
+
+    const analysis = credited.result.data;
     const yearsExperience = analysis.yearsExperience ?? null;
 
     await this.prisma.$transaction(async (tx) => {

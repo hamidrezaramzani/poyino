@@ -29,6 +29,7 @@ export const NotificationEventName = {
   AI_JOB_GENERATED: "ai.job_generated",
   AI_INTERVIEW_QUESTIONS_GENERATED: "ai.interview_questions_generated",
   AI_INTERVIEW_SUMMARY_GENERATED: "ai.interview_summary_generated",
+  BILLING_AI_CREDIT_LOW: "billing.ai_credit_low",
   SYSTEM_MAINTENANCE: "system.maintenance",
   SYSTEM_SECURITY_ALERT: "system.security_alert",
 } as const;

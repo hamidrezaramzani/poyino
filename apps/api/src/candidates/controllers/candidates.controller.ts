@@ -80,6 +80,18 @@ export class CandidatesController {
     return this.candidatesService.getProfile(user, jobId, candidateId);
   }
 
+  @Post(":candidateId/ai-analysis")
+  @RequirePermission("ai:generate")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  rerunAiAnalysis(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("jobId", ParseUUIDPipe) jobId: string,
+    @Param("candidateId", ParseUUIDPipe) candidateId: string,
+  ) {
+    return this.candidatesService.rerunAiAnalysis(user, jobId, candidateId);
+  }
+
   @Get(":candidateId/resume")
   @RequirePermission("candidates:view")
   @HttpCode(HttpStatus.OK)

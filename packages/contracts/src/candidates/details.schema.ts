@@ -70,6 +70,7 @@ export const CandidateProfileSchema = z.object({
     .nullable(),
   resumeAnalysis: ResumeAnalysisSchema.nullable(),
   jobMatchAnalysis: JobMatchAnalysisSchema.nullable(),
+  aiAnalysisStatus: z.enum(["PENDING", "COMPLETED", "UNAVAILABLE"]),
   notes: z.array(CandidateNoteSchema),
   timeline: z.array(CandidateActivityEventSchema),
   interviews: z.array(InterviewSchema),
@@ -91,4 +92,16 @@ export const GetCandidateProfileSuccessSchema = z.object({
 
 export type GetCandidateProfileSuccess = z.infer<
   typeof GetCandidateProfileSuccessSchema
+>;
+
+export const RerunCandidateAiAnalysisSuccessSchema = z.object({
+  success: z.literal(true),
+  aiScore: z.number().int().min(0).max(100),
+  yearsExperience: z.number().int().min(0).max(60).nullable(),
+  jobMatchAnalysis: JobMatchAnalysisSchema,
+  aiAnalysisStatus: z.literal("COMPLETED"),
+});
+
+export type RerunCandidateAiAnalysisSuccess = z.infer<
+  typeof RerunCandidateAiAnalysisSuccessSchema
 >;

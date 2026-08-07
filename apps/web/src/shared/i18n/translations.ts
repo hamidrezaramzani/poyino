@@ -235,6 +235,46 @@ export type Translation = {
     deniedTitle: string;
     deniedDescription: string;
   };
+  credits: {
+    loading: string;
+    remaining: string;
+    lowRemaining: string;
+    exhaustedBadge: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    insufficientError: string;
+    dashboardTitle: string;
+    viewUsage: string;
+    settingsTitle: string;
+    settingsDescription: string;
+    lowWarning: string;
+    loadFailed: string;
+    breakdownTitle: string;
+    breakdownEmpty: string;
+    historyTitle: string;
+    historyEmpty: string;
+    creditsUsed: string;
+    prevPage: string;
+    nextPage: string;
+    systemUser: string;
+    columns: {
+      createdAt: string;
+      type: string;
+      feature: string;
+      amount: string;
+      balanceAfter: string;
+      user: string;
+    };
+    features: {
+      GENERATE_JOB: string;
+      RESUME_ANALYSIS: string;
+      RESUME_AUTOFILL: string;
+      CANDIDATE_RANKING: string;
+      INTERVIEW_QUESTIONS: string;
+      INTERVIEW_SUMMARY: string;
+    };
+    types: Record<string, string>;
+  };
   notifications: {
     bellLabel: string;
     dropdownTitle: string;
@@ -302,6 +342,7 @@ export type Translation = {
       notifications: string;
       preferences: string;
       members: string;
+      aiCredits: string;
     };
     save: string;
     saving: string;
@@ -780,6 +821,8 @@ export type Translation = {
       statusUpdated: string;
       actions: {
         scheduleInterview: string;
+        rerunAiAnalysis: string;
+        rerunAiAnalyzing: string;
         downloadResume: string;
         moveStage: string;
         reject: string;
@@ -796,6 +839,10 @@ export type Translation = {
       ai: {
         title: string;
         empty: string;
+        analyzing: string;
+        analyzingHint: string;
+        rerunSuccess: string;
+        rerunFailed: string;
         matchScore: string;
         summary: string;
         strengths: string;
@@ -1199,6 +1246,7 @@ export type Translation = {
         uploadFailed: string;
         extractionFailed: string;
         analysisFailed: string;
+        insufficientCredits: string;
         fullNameRequired: string;
         emailRequired: string;
         emailInvalid: string;
@@ -1566,6 +1614,55 @@ export const translations: Record<Locale, Translation> = {
       deniedDescription:
         "شما مجوز لازم برای مشاهده این بخش را ندارید.",
     },
+    credits: {
+      loading: "در حال بارگذاری اعتبار...",
+      remaining: "{count} اعتبار باقی‌مانده",
+      lowRemaining: "تنها {count} اعتبار هوش مصنوعی باقی مانده",
+      exhaustedBadge: "اعتبار هوش مصنوعی تمام شده",
+      emptyTitle: "اعتبار بتا هوش مصنوعی تمام شده است.",
+      emptyDescription: "امکان ارسال درخواست هوش مصنوعی جدید وجود ندارد.",
+      insufficientError: "سازمان شما اعتبار هوش مصنوعی باقی‌مانده ندارد.",
+      dashboardTitle: "اعتبار هوش مصنوعی",
+      viewUsage: "مشاهده تاریخچه مصرف",
+      settingsTitle: "اعتبار هوش مصنوعی",
+      settingsDescription:
+        "مانده اعتبار بتا، تاریخچه مصرف و جزئیات استفاده را ببینید.",
+      lowWarning: "تنها {count} اعتبار هوش مصنوعی باقی مانده است.",
+      loadFailed: "بارگذاری اعتبارها ناموفق بود.",
+      breakdownTitle: "جزئیات مصرف",
+      breakdownEmpty: "هنوز مصرفی ثبت نشده است.",
+      historyTitle: "تاریخچه مصرف",
+      historyEmpty: "هنوز تراکنشی ثبت نشده است.",
+      creditsUsed: "{count} اعتبار",
+      prevPage: "قبلی",
+      nextPage: "بعدی",
+      systemUser: "سیستم",
+      columns: {
+        createdAt: "زمان",
+        type: "نوع",
+        feature: "قابلیت",
+        amount: "مقدار",
+        balanceAfter: "مانده",
+        user: "کاربر",
+      },
+      features: {
+        GENERATE_JOB: "تولید شرح شغل",
+        RESUME_ANALYSIS: "تحلیل رزومه",
+        RESUME_AUTOFILL: "تکمیل خودکار رزومه",
+        CANDIDATE_RANKING: "رتبه‌بندی کاندیدا",
+        INTERVIEW_QUESTIONS: "سوالات مصاحبه",
+        INTERVIEW_SUMMARY: "خلاصه مصاحبه",
+      },
+      types: {
+        GRANT: "اعطای اعتبار",
+        CONSUME: "مصرف",
+        REFUND: "بازگشت",
+        ADJUSTMENT: "تعدیل",
+        BONUS: "پاداش",
+        PURCHASE: "خرید",
+        EXPIRATION: "انقضا",
+      },
+    },
     notifications: {
       bellLabel: "اعلان‌ها",
       dropdownTitle: "آخرین اعلان‌ها",
@@ -1720,6 +1817,10 @@ export const translations: Record<Locale, Translation> = {
           title: "اطلاع نگهداری سیستم",
           description: "{message}",
         },
+        "billing.ai_credit_low": {
+          title: "اعتبار هوش مصنوعی کم است",
+          description: "تنها {remaining} اعتبار هوش مصنوعی باقی مانده است.",
+        },
       },
     },
     settings: {
@@ -1733,6 +1834,7 @@ export const translations: Record<Locale, Translation> = {
         notifications: "اعلان‌های سازمان",
         preferences: "ترجیحات من",
         members: "اعضا",
+        aiCredits: "اعتبار هوش مصنوعی",
       },
       save: "ذخیره تغییرات",
       saving: "در حال ذخیره...",
@@ -2229,6 +2331,8 @@ export const translations: Record<Locale, Translation> = {
         statusUpdated: "وضعیت متقاضی به‌روزرسانی شد.",
         actions: {
           scheduleInterview: "زمان‌بندی مصاحبه",
+          rerunAiAnalysis: "تحلیل مجدد با هوش مصنوعی",
+          rerunAiAnalyzing: "در حال تحلیل...",
           downloadResume: "دانلود رزومه",
           moveStage: "تغییر مرحله",
           reject: "رد کردن",
@@ -2245,6 +2349,10 @@ export const translations: Record<Locale, Translation> = {
         ai: {
           title: "تحلیل هوش مصنوعی",
           empty: "تحلیل هوش مصنوعی برای این متقاضی در دسترس نیست.",
+          analyzing: "در حال تحلیل...",
+          analyzingHint: "امتیاز و تحلیل تطبیق به‌زودی آماده می‌شود.",
+          rerunSuccess: "تحلیل هوش مصنوعی با موفقیت انجام شد.",
+          rerunFailed: "امکان انجام تحلیل هوش مصنوعی وجود ندارد.",
           matchScore: "امتیاز تطبیق",
           summary: "خلاصه اجرایی",
           strengths: "نقاط قوت",
@@ -2655,6 +2763,8 @@ export const translations: Record<Locale, Translation> = {
             "خواندن رزومه ممکن نشد. لطفاً فایل دیگری بارگذاری کنید.",
           analysisFailed:
             "تحلیل رزومه ممکن نشد. لطفاً فرم را به صورت دستی تکمیل کنید.",
+          insufficientCredits:
+            "تحلیل هوشمند در حال حاضر در دسترس نیست. لطفاً فرم را به صورت دستی تکمیل کنید.",
           fullNameRequired: "نام و نام خانوادگی الزامی است.",
           emailRequired: "ایمیل الزامی است.",
           emailInvalid: "ایمیل معتبر نیست.",
@@ -3024,6 +3134,55 @@ export const translations: Record<Locale, Translation> = {
       deniedTitle: "Access denied",
       deniedDescription: "You do not have permission to view this section.",
     },
+    credits: {
+      loading: "Loading credits...",
+      remaining: "{count} Credits Remaining",
+      lowRemaining: "Only {count} AI Credits Remaining",
+      exhaustedBadge: "No AI credits left",
+      emptyTitle: "You have used all Beta AI credits.",
+      emptyDescription: "No further AI requests can be made.",
+      insufficientError: "Your organization has no AI credits remaining.",
+      dashboardTitle: "AI Credits",
+      viewUsage: "View usage history",
+      settingsTitle: "AI Credits",
+      settingsDescription:
+        "Track your Beta AI credit balance, usage history, and consumption breakdown.",
+      lowWarning: "Only {count} AI credits remaining.",
+      loadFailed: "Failed to load AI credits.",
+      breakdownTitle: "Consumption breakdown",
+      breakdownEmpty: "No AI usage yet.",
+      historyTitle: "Usage history",
+      historyEmpty: "No credit transactions yet.",
+      creditsUsed: "{count} Credits",
+      prevPage: "Previous",
+      nextPage: "Next",
+      systemUser: "System",
+      columns: {
+        createdAt: "When",
+        type: "Type",
+        feature: "Feature",
+        amount: "Amount",
+        balanceAfter: "Remaining",
+        user: "User",
+      },
+      features: {
+        GENERATE_JOB: "Generate Job Description",
+        RESUME_ANALYSIS: "Resume Analysis",
+        RESUME_AUTOFILL: "Resume Auto-fill",
+        CANDIDATE_RANKING: "AI Candidate Ranking",
+        INTERVIEW_QUESTIONS: "Interview Question Generation",
+        INTERVIEW_SUMMARY: "Interview Summary",
+      },
+      types: {
+        GRANT: "Grant",
+        CONSUME: "Consume",
+        REFUND: "Refund",
+        ADJUSTMENT: "Adjustment",
+        BONUS: "Bonus",
+        PURCHASE: "Purchase",
+        EXPIRATION: "Expiration",
+      },
+    },
     notifications: {
       bellLabel: "Notifications",
       dropdownTitle: "Latest notifications",
@@ -3177,6 +3336,10 @@ export const translations: Record<Locale, Translation> = {
           title: "System maintenance",
           description: "{message}",
         },
+        "billing.ai_credit_low": {
+          title: "AI credits running low",
+          description: "Only {remaining} AI credits remaining.",
+        },
       },
     },
     settings: {
@@ -3190,6 +3353,7 @@ export const translations: Record<Locale, Translation> = {
         notifications: "Org emails",
         preferences: "My preferences",
         members: "Members",
+        aiCredits: "AI Credits",
       },
       save: "Save changes",
       saving: "Saving...",
@@ -3688,6 +3852,8 @@ export const translations: Record<Locale, Translation> = {
         statusUpdated: "Candidate status updated.",
         actions: {
           scheduleInterview: "Schedule interview",
+          rerunAiAnalysis: "Re-run AI analysis",
+          rerunAiAnalyzing: "Analyzing...",
           downloadResume: "Download resume",
           moveStage: "Move stage",
           reject: "Reject",
@@ -3704,6 +3870,10 @@ export const translations: Record<Locale, Translation> = {
         ai: {
           title: "AI analysis",
           empty: "AI analysis is not available for this candidate.",
+          analyzing: "Analyzing...",
+          analyzingHint: "Match score and AI analysis will appear shortly.",
+          rerunSuccess: "AI analysis completed successfully.",
+          rerunFailed: "Unable to generate AI analysis.",
           matchScore: "Match score",
           summary: "Executive summary",
           strengths: "Strengths",
@@ -4115,6 +4285,8 @@ export const translations: Record<Locale, Translation> = {
             "Unable to read your resume. Please upload another file.",
           analysisFailed:
             "Unable to analyze your resume. Please complete the application manually.",
+          insufficientCredits:
+            "AI analysis is currently unavailable. Please complete the application manually.",
           fullNameRequired: "Full name is required.",
           emailRequired: "Email is required.",
           emailInvalid: "Email is invalid.",

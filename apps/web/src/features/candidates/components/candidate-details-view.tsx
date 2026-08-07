@@ -13,6 +13,7 @@ import {
   LoadingButton,
   Select,
   Skeleton,
+  SkeletonText,
   Textarea,
 } from "@poyino/ui";
 import { useState } from "react";
@@ -118,6 +119,7 @@ export function CandidateDetailsView() {
   const details = useCandidateDetails();
   const canUpdateCandidate = useCan("candidates:update");
   const canScheduleInterview = useCan("interviews:schedule");
+  const canGenerateAi = useCan("ai:generate");
   const canCompleteInterview = useCan("interviews:complete");
   const canAddNotes = useCan("interviews:notes");
 
@@ -152,6 +154,10 @@ export function CandidateDetailsView() {
   const { candidate, job, jobId } = details;
   const match = candidate.jobMatchAnalysis;
   const score = candidate.aiScore ?? match?.matchScore ?? null;
+  const aiPending =
+    candidate.aiAnalysisStatus === "PENDING" || details.aiRerunLoading;
+  const canRerunAi =
+    canGenerateAi && !match && !aiPending && !details.aiRerunLoading;
   const recommendation = recommendationFromScore(score);
   const interviewsChronological = [...candidate.interviews].sort(
     (a, b) =>
@@ -223,6 +229,17 @@ export function CandidateDetailsView() {
               {t.candidates.details.actions.scheduleInterview}
             </Button>
           ) : null}
+          {canRerunAi ? (
+            <LoadingButton
+              type="button"
+              variant="secondary"
+              loading={details.aiRerunLoading}
+              loadingLabel={t.candidates.details.actions.rerunAiAnalyzing}
+              onClick={() => void details.rerunAiAnalysis()}
+            >
+              {t.candidates.details.actions.rerunAiAnalysis}
+            </LoadingButton>
+          ) : null}
           {canUpdateCandidate && candidate.status !== "REJECTED" ? (
             <Button
               type="button"
@@ -272,24 +289,46 @@ export function CandidateDetailsView() {
             <p className="candidate-ats-metric-label">
               {t.candidates.details.ai.matchScore}
             </p>
-            <p className="candidate-ats-metric-value">
-              {score == null ? t.candidates.details.emptyValue : `${score}%`}
-            </p>
-            <p className="candidate-ats-metric-hint">
-              {t.candidates.details.ai.recommendations[recommendation]}
-            </p>
+            {aiPending ? (
+              <div className="candidate-ats-metric-skeleton" aria-busy="true">
+                <Skeleton height="2.25rem" width="45%" />
+                <Skeleton
+                  height="0.9rem"
+                  width="70%"
+                  style={{ marginTop: "0.65rem" }}
+                />
+                <p className="candidate-ats-metric-hint">
+                  {t.candidates.details.ai.analyzing}
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="candidate-ats-metric-value">
+                  {score == null
+                    ? t.candidates.details.emptyValue
+                    : `${score}%`}
+                </p>
+                <p className="candidate-ats-metric-hint">
+                  {t.candidates.details.ai.recommendations[recommendation]}
+                </p>
+              </>
+            )}
           </article>
           <MetricCard
             label={t.candidates.details.dashboard.experience}
             value={
-              candidate.yearsExperience == null
-                ? t.candidates.details.emptyValue
-                : String(candidate.yearsExperience)
+              aiPending && candidate.yearsExperience == null
+                ? null
+                : candidate.yearsExperience == null
+                  ? t.candidates.details.emptyValue
+                  : String(candidate.yearsExperience)
             }
+            loading={aiPending && candidate.yearsExperience == null}
           />
           <MetricCard
             label={t.candidates.details.dashboard.matchedSkills}
             value={String(matchedSkillCount)}
+            loading={aiPending}
           />
           <MetricCard
             label={t.candidates.details.dashboard.interviewCount}
@@ -314,8 +353,28 @@ export function CandidateDetailsView() {
 
       {/* Section 3 — AI Summary */}
       <Card title={t.candidates.details.ai.title}>
-        {!match ? (
-          <EmptyState title={t.candidates.details.ai.empty} />
+        {aiPending ? (
+          <AiAnalysisSkeleton hint={t.candidates.details.ai.analyzingHint} />
+        ) : !match ? (
+          <EmptyState
+            title={t.candidates.details.ai.empty}
+            description={
+              canGenerateAi
+                ? t.candidates.details.ai.analyzingHint
+                : undefined
+            }
+          >
+            {canGenerateAi ? (
+              <LoadingButton
+                type="button"
+                loading={details.aiRerunLoading}
+                loadingLabel={t.candidates.details.actions.rerunAiAnalyzing}
+                onClick={() => void details.rerunAiAnalysis()}
+              >
+                {t.candidates.details.actions.rerunAiAnalysis}
+              </LoadingButton>
+            ) : null}
+          </EmptyState>
         ) : (
           <AiSummaryPanel
             match={match}
@@ -708,13 +767,62 @@ function AiSummaryPanel({
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function AiAnalysisSkeleton({ hint }: { hint: string }) {
+  return (
+    <div className="candidate-ai-summary candidate-ai-summary-skeleton" aria-busy="true">
+      <div className="candidate-ats-recommendation">
+        <Skeleton height="1.6rem" width="8rem" borderRadius="999px" />
+        <Skeleton height="1.25rem" width="3rem" />
+      </div>
+      <SkeletonText lines={3} style={{ marginTop: "0.75rem" }} />
+      <div className="candidate-ai-columns" style={{ marginTop: "1rem" }}>
+        <div>
+          <Skeleton height="1rem" width="40%" />
+          <Skeleton height="0.85rem" width="90%" style={{ marginTop: "0.7rem" }} />
+          <Skeleton height="0.85rem" width="80%" style={{ marginTop: "0.45rem" }} />
+          <Skeleton height="0.85rem" width="85%" style={{ marginTop: "0.45rem" }} />
+        </div>
+        <div>
+          <Skeleton height="1rem" width="45%" />
+          <Skeleton height="0.85rem" width="88%" style={{ marginTop: "0.7rem" }} />
+          <Skeleton height="0.85rem" width="75%" style={{ marginTop: "0.45rem" }} />
+          <Skeleton height="0.85rem" width="82%" style={{ marginTop: "0.45rem" }} />
+        </div>
+      </div>
+      <div className="candidate-ai-block" style={{ marginTop: "1rem" }}>
+        <Skeleton height="1rem" width="50%" />
+        <div className="job-details-skills" style={{ marginTop: "0.75rem" }}>
+          <Skeleton height="1.6rem" width="4.5rem" borderRadius="999px" />
+          <Skeleton height="1.6rem" width="5.5rem" borderRadius="999px" />
+          <Skeleton height="1.6rem" width="4rem" borderRadius="999px" />
+        </div>
+      </div>
+      <p className="candidate-ats-metric-hint" style={{ marginTop: "1rem" }}>
+        {hint}
+      </p>
+    </div>
+  );
+}
+
+function MetricCard({
+  label,
+  value,
+  loading = false,
+}: {
+  label: string;
+  value: string | null;
+  loading?: boolean;
+}) {
   return (
     <article className="candidate-ats-metric">
       <p className="candidate-ats-metric-label">{label}</p>
-      <p className="candidate-ats-metric-value candidate-ats-metric-value-sm">
-        {value}
-      </p>
+      {loading ? (
+        <Skeleton height="1.5rem" width="40%" style={{ marginTop: "0.35rem" }} />
+      ) : (
+        <p className="candidate-ats-metric-value candidate-ats-metric-value-sm">
+          {value}
+        </p>
+      )}
     </article>
   );
 }

@@ -25,6 +25,7 @@ import { MembersSettingsPage } from "./features/settings/pages/members-settings-
 import { NotificationSettingsPage } from "./features/settings/pages/notification-settings-page";
 import { ProfileSettingsPage } from "./features/settings/pages/profile-settings-page";
 import { SettingsLayoutPage } from "./features/settings/pages/settings-layout-page";
+import { AiCreditsSettingsPage } from "./features/credits/pages/ai-credits-settings-page";
 import { ApplyPage } from "./features/public-job/pages/apply-page";
 import { ApplySuccessPage } from "./features/public-job/pages/apply-success-page";
 import { PublicJobPage } from "./features/public-job/pages/public-job-page";
@@ -106,6 +107,14 @@ export function App() {
             element={
               <PermissionGate permission="members:view" fallback="redirect">
                 <MembersSettingsPage />
+              </PermissionGate>
+            }
+          />
+          <Route
+            path="ai-credits"
+            element={
+              <PermissionGate permission="credits:manage" fallback="redirect">
+                <AiCreditsSettingsPage />
               </PermissionGate>
             }
           />
