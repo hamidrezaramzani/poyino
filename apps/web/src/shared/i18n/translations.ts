@@ -781,6 +781,17 @@ export type Translation = {
       actions: {
         scheduleInterview: string;
         downloadResume: string;
+        moveStage: string;
+        reject: string;
+        hire: string;
+      };
+      dashboard: {
+        title: string;
+        experience: string;
+        matchedSkills: string;
+        interviewCount: string;
+        currentStage: string;
+        applicationStatus: string;
       };
       ai: {
         title: string;
@@ -791,11 +802,19 @@ export type Translation = {
         weaknesses: string;
         missingSkills: string;
         interviewQuestions: string;
+        recommendations: {
+          highlyRecommended: string;
+          recommended: string;
+          moderate: string;
+          notRecommended: string;
+          unavailable: string;
+        };
       };
       resume: {
         title: string;
         empty: string;
         download: string;
+        extractedText: string;
       };
       profile: {
         title: string;
@@ -808,6 +827,15 @@ export type Translation = {
         skills: string;
         links: string;
         appliedAt: string;
+      };
+      skillGroups: {
+        backend: string;
+        frontend: string;
+        database: string;
+        cloud: string;
+        devops: string;
+        languages: string;
+        other: string;
       };
       notes: {
         title: string;
@@ -846,6 +874,10 @@ export type Translation = {
           INTERVIEW_STARTED: string;
           INTERVIEW_NO_SHOW: string;
           INTERVIEW_PROCESS_UPDATED: string;
+          INTERVIEW_ACCEPTED: string;
+          INTERVIEW_RESCHEDULE_REQUESTED: string;
+          INTERVIEW_DECLINED: string;
+          INTERVIEW_RESCHEDULED: string;
         };
       };
       interviews: {
@@ -858,6 +890,14 @@ export type Translation = {
         cancelAction: string;
         completeAction: string;
         joinAction: string;
+        decision: string;
+        statusLabel: string;
+        notes: string;
+        candidateNotes: string;
+        response: string;
+        proposedTime: string;
+        summary: string;
+        questions: string;
       };
       errors: {
         unexpected: string;
@@ -873,7 +913,12 @@ export type Translation = {
         CUSTOM: string;
       };
       statuses: {
+        DRAFT: string;
         SCHEDULED: string;
+        WAITING_CANDIDATE_CONFIRMATION: string;
+        ACCEPTED: string;
+        RESCHEDULE_REQUESTED: string;
+        DECLINED: string;
         IN_PROGRESS: string;
         COMPLETED: string;
         CANCELLED: string;
@@ -1182,6 +1227,7 @@ export type Translation = {
       title: string;
       statusTitle: string;
       timelineTitle: string;
+      upcomingInterviewTitle: string;
       jobTitle: string;
       submittedTitle: string;
       lastUpdated: string;
@@ -1215,6 +1261,28 @@ export type Translation = {
         INTERVIEW_SCHEDULED: string;
         INTERVIEW_PASSED: string;
         FINAL: string;
+      };
+      interviewResponse: {
+        accept: string;
+        accepting: string;
+        requestReschedule: string;
+        decline: string;
+        messageLabel: string;
+        proposedTimeLabel: string;
+        proposedTime: string;
+        yourMessage: string;
+        reschedulePlaceholder: string;
+        declinePlaceholder: string;
+        submitReschedule: string;
+        submitDecline: string;
+        submitting: string;
+        cancel: string;
+        errors: {
+          inPast: string;
+          notRespondable: string;
+          rescheduleRequired: string;
+          unexpected: string;
+        };
       };
     };
   };
@@ -2162,6 +2230,17 @@ export const translations: Record<Locale, Translation> = {
         actions: {
           scheduleInterview: "زمان‌بندی مصاحبه",
           downloadResume: "دانلود رزومه",
+          moveStage: "تغییر مرحله",
+          reject: "رد کردن",
+          hire: "استخدام",
+        },
+        dashboard: {
+          title: "داشبورد متقاضی",
+          experience: "تجربه",
+          matchedSkills: "مهارت‌های منطبق",
+          interviewCount: "تعداد مصاحبه",
+          currentStage: "مرحله فعلی",
+          applicationStatus: "وضعیت درخواست",
         },
         ai: {
           title: "تحلیل هوش مصنوعی",
@@ -2172,11 +2251,19 @@ export const translations: Record<Locale, Translation> = {
           weaknesses: "نقاط قابل بهبود",
           missingSkills: "مهارت‌های مورد نیاز اما موجود نیست",
           interviewQuestions: "پیشنهاد سؤالات مصاحبه",
+          recommendations: {
+            highlyRecommended: "به‌شدت توصیه‌شده",
+            recommended: "توصیه‌شده",
+            moderate: "متوسط",
+            notRecommended: "توصیه نمی‌شود",
+            unavailable: "بدون امتیاز",
+          },
         },
         resume: {
           title: "رزومه",
           empty: "رزومه‌ای بارگذاری نشده است.",
           download: "دانلود رزومه",
+          extractedText: "متن استخراج‌شده رزومه",
         },
         profile: {
           title: "اطلاعات متقاضی",
@@ -2189,6 +2276,15 @@ export const translations: Record<Locale, Translation> = {
           skills: "مهارت‌ها",
           links: "لینک‌ها",
           appliedAt: "تاریخ درخواست",
+        },
+        skillGroups: {
+          backend: "بک‌اند",
+          frontend: "فرانت‌اند",
+          database: "دیتابیس",
+          cloud: "کلود",
+          devops: "دواپس",
+          languages: "زبان‌ها",
+          other: "سایر",
         },
         notes: {
           title: "یادداشت‌ها",
@@ -2227,6 +2323,10 @@ export const translations: Record<Locale, Translation> = {
             INTERVIEW_STARTED: "مصاحبه آغاز شد",
             INTERVIEW_NO_SHOW: "عدم حضور در مصاحبه",
             INTERVIEW_PROCESS_UPDATED: "فرآیند مصاحبه به‌روزرسانی شد",
+            INTERVIEW_ACCEPTED: "کاندیدا مصاحبه را پذیرفت",
+            INTERVIEW_RESCHEDULE_REQUESTED: "کاندیدا درخواست تغییر زمان داد",
+            INTERVIEW_DECLINED: "کاندیدا مصاحبه را رد کرد",
+            INTERVIEW_RESCHEDULED: "مصاحبه زمان‌بندی مجدد شد",
           },
         },
         interviews: {
@@ -2239,6 +2339,14 @@ export const translations: Record<Locale, Translation> = {
           cancelAction: "لغو",
           completeAction: "ثبت نتیجه",
           joinAction: "ورود به جلسه",
+          decision: "نتیجه",
+          statusLabel: "وضعیت مصاحبه",
+          notes: "یادداشت داخلی",
+          candidateNotes: "یادداشت برای کاندیدا",
+          response: "پاسخ کاندیدا",
+          proposedTime: "زمان پیشنهادی",
+          summary: "خلاصه",
+          questions: "سؤالات",
         },
         errors: {
           unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
@@ -2254,7 +2362,12 @@ export const translations: Record<Locale, Translation> = {
           CUSTOM: "سفارشی",
         },
         statuses: {
+          DRAFT: "پیش‌نویس",
           SCHEDULED: "زمان‌بندی شده",
+          WAITING_CANDIDATE_CONFIRMATION: "در انتظار تأیید کاندیدا",
+          ACCEPTED: "پذیرفته‌شده",
+          RESCHEDULE_REQUESTED: "درخواست تغییر زمان",
+          DECLINED: "رد شده",
           IN_PROGRESS: "در حال برگزاری",
           COMPLETED: "برگزار شده",
           CANCELLED: "لغو شده",
@@ -2507,7 +2620,7 @@ export const translations: Record<Locale, Translation> = {
         backToJob: "بازگشت به فرصت شغلی",
         uploadStep: "بارگذاری رزومه",
         reviewStep: "بررسی اطلاعات",
-        uploadHint: "فقط فایل PDF تا ۱۰ مگابایت",
+        uploadHint: "رزومه خود را بارگذاری کنید (PDF، DOCX، JPG یا PNG)",
         chooseFile: "انتخاب فایل",
         resumeSelected: "رزومه آماده بارگذاری است.",
         removeResume: "حذف فایل",
@@ -2535,11 +2648,11 @@ export const translations: Record<Locale, Translation> = {
         submitting: "در حال ارسال...",
         errors: {
           resumeRequired: "لطفاً رزومه خود را بارگذاری کنید.",
-          unsupportedFile: "فقط فایل‌های PDF پشتیبانی می‌شوند.",
+          unsupportedFile: "فقط فایل‌های PDF، DOCX، JPG و PNG پشتیبانی می‌شوند.",
           fileTooLarge: "حجم فایل از حد مجاز بیشتر است.",
           uploadFailed: "بارگذاری رزومه با خطا مواجه شد.",
           extractionFailed:
-            "خواندن رزومه ممکن نشد. لطفاً فایل PDF دیگری بارگذاری کنید.",
+            "خواندن رزومه ممکن نشد. لطفاً فایل دیگری بارگذاری کنید.",
           analysisFailed:
             "تحلیل رزومه ممکن نشد. لطفاً فرم را به صورت دستی تکمیل کنید.",
           fullNameRequired: "نام و نام خانوادگی الزامی است.",
@@ -2607,6 +2720,30 @@ export const translations: Record<Locale, Translation> = {
           INTERVIEW_SCHEDULED: "مصاحبه زمان‌بندی شده",
           INTERVIEW_PASSED: "مصاحبه انجام شده",
           FINAL: "تصمیم نهایی",
+        },
+        upcomingInterviewTitle: "مصاحبه پیش‌رو",
+        interviewResponse: {
+          accept: "پذیرش مصاحبه",
+          accepting: "در حال پذیرش...",
+          requestReschedule: "درخواست تغییر زمان",
+          decline: "رد مصاحبه",
+          messageLabel: "پیام (اختیاری)",
+          proposedTimeLabel: "زمان پیشنهادی (اختیاری)",
+          proposedTime: "زمان پیشنهادی",
+          yourMessage: "پیام شما",
+          reschedulePlaceholder:
+            "مثلاً در این زمان مصاحبه دیگری دارم. پنج‌شنبه صبح آزادم؟",
+          declinePlaceholder: "مثلاً پیشنهاد دیگری را پذیرفتم.",
+          submitReschedule: "ارسال درخواست",
+          submitDecline: "تأیید رد مصاحبه",
+          submitting: "در حال ارسال...",
+          cancel: "انصراف",
+          errors: {
+            inPast: "فقط مصاحبه‌های آینده قابل پاسخ هستند.",
+            notRespondable: "این مصاحبه دیگر قابل پاسخ نیست.",
+            rescheduleRequired: "پیام یا زمان پیشنهادی را وارد کنید.",
+            unexpected: "خطایی رخ داد. لطفاً دوباره تلاش کنید.",
+          },
         },
       },
     },
@@ -3552,6 +3689,17 @@ export const translations: Record<Locale, Translation> = {
         actions: {
           scheduleInterview: "Schedule interview",
           downloadResume: "Download resume",
+          moveStage: "Move stage",
+          reject: "Reject",
+          hire: "Hire",
+        },
+        dashboard: {
+          title: "Candidate dashboard",
+          experience: "Experience",
+          matchedSkills: "Matched skills",
+          interviewCount: "Interviews",
+          currentStage: "Current stage",
+          applicationStatus: "Application status",
         },
         ai: {
           title: "AI analysis",
@@ -3562,14 +3710,22 @@ export const translations: Record<Locale, Translation> = {
           weaknesses: "Areas for improvement",
           missingSkills: "Missing required skills",
           interviewQuestions: "Suggested interview questions",
+          recommendations: {
+            highlyRecommended: "Highly recommended",
+            recommended: "Recommended",
+            moderate: "Moderate fit",
+            notRecommended: "Not recommended",
+            unavailable: "No score yet",
+          },
         },
         resume: {
           title: "Resume",
           empty: "No resume has been uploaded.",
           download: "Download resume",
+          extractedText: "Extracted resume text",
         },
         profile: {
-          title: "Candidate information",
+          title: "Candidate overview",
           email: "Email",
           phone: "Phone number",
           currentPosition: "Current position",
@@ -3579,6 +3735,15 @@ export const translations: Record<Locale, Translation> = {
           skills: "Skills",
           links: "Links",
           appliedAt: "Applied date",
+        },
+        skillGroups: {
+          backend: "Backend",
+          frontend: "Frontend",
+          database: "Database",
+          cloud: "Cloud",
+          devops: "DevOps",
+          languages: "Languages",
+          other: "Other",
         },
         notes: {
           title: "Notes",
@@ -3617,6 +3782,10 @@ export const translations: Record<Locale, Translation> = {
             INTERVIEW_STARTED: "Interview started",
             INTERVIEW_NO_SHOW: "Interview no-show",
             INTERVIEW_PROCESS_UPDATED: "Interview process updated",
+            INTERVIEW_ACCEPTED: "Candidate accepted interview",
+            INTERVIEW_RESCHEDULE_REQUESTED: "Candidate requested reschedule",
+            INTERVIEW_DECLINED: "Candidate declined interview",
+            INTERVIEW_RESCHEDULED: "Interview rescheduled",
           },
         },
         interviews: {
@@ -3629,6 +3798,14 @@ export const translations: Record<Locale, Translation> = {
           cancelAction: "Cancel",
           completeAction: "Mark completed",
           joinAction: "Join meeting",
+          decision: "Decision",
+          statusLabel: "Interview status",
+          notes: "Internal notes",
+          candidateNotes: "Candidate notes",
+          response: "Candidate response",
+          proposedTime: "Proposed time",
+          summary: "Summary",
+          questions: "Questions",
         },
         errors: {
           unexpected: "Something went wrong. Please try again.",
@@ -3644,7 +3821,12 @@ export const translations: Record<Locale, Translation> = {
           CUSTOM: "Custom",
         },
         statuses: {
+          DRAFT: "Draft",
           SCHEDULED: "Scheduled",
+          WAITING_CANDIDATE_CONFIRMATION: "Waiting for confirmation",
+          ACCEPTED: "Accepted",
+          RESCHEDULE_REQUESTED: "Reschedule requested",
+          DECLINED: "Declined",
           IN_PROGRESS: "In progress",
           COMPLETED: "Completed",
           CANCELLED: "Cancelled",
@@ -3898,14 +4080,14 @@ export const translations: Record<Locale, Translation> = {
         backToJob: "Back to job",
         uploadStep: "Upload resume",
         reviewStep: "Review information",
-        uploadHint: "PDF only, up to 10 MB",
+        uploadHint: "Upload your resume (PDF, DOCX, JPG or PNG)",
         chooseFile: "Choose file",
         resumeSelected: "Resume ready to upload.",
         removeResume: "Remove file",
         uploading: "Uploading resume...",
         continue: "Continue",
         extractingTitle: "Reading your resume...",
-        extractingDescription: "Extracting text from your PDF.",
+        extractingDescription: "Extracting text from your resume.",
         analyzingTitle: "Analyzing your resume with AI...",
         analyzingDescription: "Filling the application form from your resume.",
         personalTitle: "Personal information",
@@ -3926,11 +4108,11 @@ export const translations: Record<Locale, Translation> = {
         submitting: "Submitting...",
         errors: {
           resumeRequired: "Please upload your resume.",
-          unsupportedFile: "Only PDF files are supported.",
+          unsupportedFile: "Only PDF, DOCX, JPG, and PNG files are supported.",
           fileTooLarge: "File size exceeds the maximum allowed limit.",
           uploadFailed: "Unable to upload your resume.",
           extractionFailed:
-            "Unable to read your resume. Please upload another PDF.",
+            "Unable to read your resume. Please upload another file.",
           analysisFailed:
             "Unable to analyze your resume. Please complete the application manually.",
           fullNameRequired: "Full name is required.",
@@ -3999,6 +4181,30 @@ export const translations: Record<Locale, Translation> = {
           INTERVIEW_SCHEDULED: "Interview scheduled",
           INTERVIEW_PASSED: "Interview completed",
           FINAL: "Final decision",
+        },
+        upcomingInterviewTitle: "Upcoming interview",
+        interviewResponse: {
+          accept: "Accept interview",
+          accepting: "Accepting...",
+          requestReschedule: "Request reschedule",
+          decline: "Decline interview",
+          messageLabel: "Message (optional)",
+          proposedTimeLabel: "Preferred date/time (optional)",
+          proposedTime: "Preferred time",
+          yourMessage: "Your message",
+          reschedulePlaceholder:
+            "I already have another interview at this time. Is Thursday morning available?",
+          declinePlaceholder: "I accepted another offer.",
+          submitReschedule: "Submit request",
+          submitDecline: "Confirm decline",
+          submitting: "Submitting...",
+          cancel: "Cancel",
+          errors: {
+            inPast: "Only future interviews can be accepted or declined.",
+            notRespondable: "This interview can no longer receive a response.",
+            rescheduleRequired: "Please provide a message or preferred time.",
+            unexpected: "Something went wrong. Please try again.",
+          },
         },
       },
     },

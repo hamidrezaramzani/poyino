@@ -4,13 +4,14 @@ import { TrackingNotificationsPanel } from "../../notifications/components/track
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { ApplicationStatusCard } from "../components/application-status-card";
 import { ApplicationTimeline } from "../components/application-timeline";
+import { TrackingInterviewCard } from "../components/tracking-interview-card";
 import { useTracking } from "../hooks/use-tracking";
 import { PublicJobLayout } from "../layouts/public-job-layout";
 
 export function TrackingPage() {
   const { token } = useParams<{ token: string }>();
   const { t } = useI18n();
-  const { status, tracking, retry } = useTracking(token);
+  const { status, tracking, retry, updateInterview } = useTracking(token);
 
   return (
     <PublicJobLayout>
@@ -70,42 +71,16 @@ export function TrackingPage() {
           />
 
           {tracking.interviews.length > 0 ? (
-            <Card title={t.candidates.details.interviews.title}>
+            <Card title={t.publicJob.tracking.upcomingInterviewTitle}>
               <div className="candidate-interviews-list">
                 {tracking.interviews.map((interview) => (
-                  <div key={interview.id} className="candidate-interview-card">
-                    <div className="candidate-interview-card-header">
-                      <div className="candidate-interview-card-title">
-                        <strong>{interview.name}</strong>
-                        <span>
-                          {t.candidates.interview.types[interview.type]}
-                        </span>
-                        <span>
-                          {t.candidates.interview.statuses[interview.status]}
-                        </span>
-                      </div>
-                    </div>
-                    {interview.location ? (
-                      <p className="candidate-interview-card-detail">
-                        {interview.location}
-                      </p>
-                    ) : null}
-                    {interview.meetingUrl ? (
-                      <a
-                        href={interview.meetingUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="candidates-name-link"
-                      >
-                        {t.candidates.details.interviews.joinAction}
-                      </a>
-                    ) : null}
-                    {interview.candidateNotes ? (
-                      <p className="candidate-interview-card-notes">
-                        {interview.candidateNotes}
-                      </p>
-                    ) : null}
-                  </div>
+                  <TrackingInterviewCard
+                    key={interview.id}
+                    token={token}
+                    interview={interview}
+                    timezone={tracking.timezone}
+                    onUpdated={updateInterview}
+                  />
                 ))}
               </div>
             </Card>

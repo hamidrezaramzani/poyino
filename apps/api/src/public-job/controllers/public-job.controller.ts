@@ -12,15 +12,22 @@ import {
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import {
+  AcceptInterviewSchema,
   AnalyzeResumeSchema,
+  DeclineInterviewSchema,
+  RequestInterviewRescheduleSchema,
   SubmitApplicationSchema,
   UploadResumeSchema,
+  type AcceptInterviewInput,
   type AnalyzeResumeInput,
+  type DeclineInterviewInput,
+  type RequestInterviewRescheduleInput,
   type SubmitApplicationInput,
   type UploadResumeInput,
 } from "@poyino/contracts";
 import type { Response } from "express";
 import { ZodValidationPipe } from "../../common/pipes/zod-validation.pipe";
+import { InterviewsService } from "../../interviews/services/interviews.service";
 import { PublicJobService } from "../services/public-job.service";
 
 @Controller("public")
@@ -28,6 +35,8 @@ export class PublicJobController {
   constructor(
     @Inject(PublicJobService)
     private readonly publicJobService: PublicJobService,
+    @Inject(InterviewsService)
+    private readonly interviewsService: InterviewsService,
   ) {}
 
   @Get("tracking/:token")
@@ -42,6 +51,53 @@ export class PublicJobController {
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   getTrackingNotifications(@Param("token") token: string) {
     return this.publicJobService.getTrackingNotifications(token);
+  }
+
+  @Post("tracking/:token/interviews/:interviewId/accept")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  acceptInterview(
+    @Param("token") token: string,
+    @Param("interviewId", ParseUUIDPipe) interviewId: string,
+    @Body(new ZodValidationPipe(AcceptInterviewSchema))
+    _body: AcceptInterviewInput,
+  ) {
+    return this.interviewsService.acceptInterviewByTrackingToken(
+      token,
+      interviewId,
+    );
+  }
+
+  @Post("tracking/:token/interviews/:interviewId/reschedule")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  requestReschedule(
+    @Param("token") token: string,
+    @Param("interviewId", ParseUUIDPipe) interviewId: string,
+    @Body(new ZodValidationPipe(RequestInterviewRescheduleSchema))
+    body: RequestInterviewRescheduleInput,
+  ) {
+    return this.interviewsService.requestRescheduleByTrackingToken(
+      token,
+      interviewId,
+      body,
+    );
+  }
+
+  @Post("tracking/:token/interviews/:interviewId/decline")
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  declineInterview(
+    @Param("token") token: string,
+    @Param("interviewId", ParseUUIDPipe) interviewId: string,
+    @Body(new ZodValidationPipe(DeclineInterviewSchema))
+    body: DeclineInterviewInput,
+  ) {
+    return this.interviewsService.declineInterviewByTrackingToken(
+      token,
+      interviewId,
+      body,
+    );
   }
 
   @Get(":orgSlug/logo")

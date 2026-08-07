@@ -20,6 +20,10 @@ export const ApplicationActivityTypeSchema = z.enum([
   "INTERVIEW_STARTED",
   "INTERVIEW_NO_SHOW",
   "INTERVIEW_PROCESS_UPDATED",
+  "INTERVIEW_ACCEPTED",
+  "INTERVIEW_RESCHEDULE_REQUESTED",
+  "INTERVIEW_DECLINED",
+  "INTERVIEW_RESCHEDULED",
 ]);
 
 export type ApplicationActivityType = z.infer<

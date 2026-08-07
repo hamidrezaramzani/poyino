@@ -53,7 +53,14 @@ export class AnalyticsService {
       this.prisma.interview.count({
         where: {
           organizationId,
-          status: "SCHEDULED",
+          status: {
+            in: [
+              "SCHEDULED",
+              "WAITING_CANDIDATE_CONFIRMATION",
+              "ACCEPTED",
+              "IN_PROGRESS",
+            ],
+          },
           ...(scope.departmentId
             ? { job: { departmentId: scope.departmentId } }
             : {}),

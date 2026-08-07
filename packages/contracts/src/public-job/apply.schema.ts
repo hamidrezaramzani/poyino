@@ -2,11 +2,22 @@ import { z } from "zod";
 
 export const MAX_RESUME_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+export const RESUME_MIME_TYPES = [
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png",
+] as const;
+
+export type ResumeMimeType = (typeof RESUME_MIME_TYPES)[number];
+
+export const ResumeMimeTypeSchema = z.enum(RESUME_MIME_TYPES, {
+  message: "FILE_INVALID_TYPE",
+});
+
 export const UploadResumeSchema = z.object({
   fileName: z.string().trim().min(1, "FILE_NAME_REQUIRED").max(255),
-  mimeType: z.enum(["application/pdf"], {
-    message: "FILE_INVALID_TYPE",
-  }),
+  mimeType: ResumeMimeTypeSchema,
   contentBase64: z.string().min(1, "FILE_REQUIRED"),
 });
 

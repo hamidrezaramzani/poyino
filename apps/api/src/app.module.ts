@@ -15,6 +15,7 @@ import { NotificationsModule } from "./notifications/notifications.module";
 import { OrganizationModule } from "./organization/organization.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { PublicJobModule } from "./public-job/public-job.module";
+import { ResumeTextExtractionModule } from "./resume-text-extraction";
 import { SettingsModule } from "./settings/settings.module";
 import { StorageModule } from "./storage/storage.module";
 
@@ -32,6 +33,7 @@ import { StorageModule } from "./storage/storage.module";
     ]),
     AiModule,
     StorageModule,
+    ResumeTextExtractionModule,
     PrismaModule,
     AuthenticationModule,
     NotificationsModule,

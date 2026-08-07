@@ -116,8 +116,8 @@ export const EVENT_CATALOG: Record<string, EventCatalogEntry> = {
       const name = str(m, "candidateName", "Candidate");
       const interview = str(m, "interviewName", "Interview");
       return locale === "fa"
-        ? `${interview} برای ${name} زمان‌بندی شد.`
-        : `${interview} was scheduled for ${name}.`;
+        ? `${interview} برای ${name} زمان‌بندی شد و در انتظار تأیید است.`
+        : `${interview} was scheduled for ${name} and is waiting for confirmation.`;
     },
     resolveActionUrl: interviewActionUrl,
   },
@@ -173,6 +173,64 @@ export const EVENT_CATALOG: Record<string, EventCatalogEntry> = {
       return locale === "fa"
         ? `یادداشت جدیدی برای مصاحبه ${name} ثبت شد.`
         : `A new note was added for ${name}'s interview.`;
+    },
+    resolveActionUrl: interviewActionUrl,
+  },
+  [NotificationEventName.INTERVIEW_RESCHEDULED]: {
+    category: "INTERVIEWS",
+    priority: "HIGH",
+    notifyCandidate: true,
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "مصاحبه زمان‌بندی مجدد شد" : "Interview rescheduled",
+    resolveDescription: (m, locale) => {
+      const interview = str(m, "interviewName", "Interview");
+      return locale === "fa"
+        ? `${interview} زمان‌بندی مجدد شد. لطفاً زمان جدید را تأیید کنید.`
+        : `${interview} was rescheduled. Please confirm the new time.`;
+    },
+    resolveActionUrl: interviewActionUrl,
+  },
+  [NotificationEventName.INTERVIEW_ACCEPTED_BY_CANDIDATE]: {
+    category: "INTERVIEWS",
+    priority: "HIGH",
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "کاندیدا مصاحبه را پذیرفت" : "Candidate accepted interview",
+    resolveDescription: (m, locale) => {
+      const name = str(m, "candidateName", "Candidate");
+      const interview = str(m, "interviewName", "Interview");
+      return locale === "fa"
+        ? `${name} مصاحبه ${interview} را پذیرفت.`
+        : `${name} accepted ${interview}.`;
+    },
+    resolveActionUrl: interviewActionUrl,
+  },
+  [NotificationEventName.INTERVIEW_RESCHEDULE_REQUESTED_BY_CANDIDATE]: {
+    category: "INTERVIEWS",
+    priority: "HIGH",
+    resolveTitle: (_m, locale) =>
+      locale === "fa"
+        ? "درخواست تغییر زمان مصاحبه"
+        : "Candidate requested reschedule",
+    resolveDescription: (m, locale) => {
+      const name = str(m, "candidateName", "Candidate");
+      const interview = str(m, "interviewName", "Interview");
+      return locale === "fa"
+        ? `${name} برای ${interview} درخواست تغییر زمان داد.`
+        : `${name} requested to reschedule ${interview}.`;
+    },
+    resolveActionUrl: interviewActionUrl,
+  },
+  [NotificationEventName.INTERVIEW_DECLINED_BY_CANDIDATE]: {
+    category: "INTERVIEWS",
+    priority: "HIGH",
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "کاندیدا مصاحبه را رد کرد" : "Candidate declined interview",
+    resolveDescription: (m, locale) => {
+      const name = str(m, "candidateName", "Candidate");
+      const interview = str(m, "interviewName", "Interview");
+      return locale === "fa"
+        ? `${name} مصاحبه ${interview} را رد کرد.`
+        : `${name} declined ${interview}.`;
     },
     resolveActionUrl: interviewActionUrl,
   },

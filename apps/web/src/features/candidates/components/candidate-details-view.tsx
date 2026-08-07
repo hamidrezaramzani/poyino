@@ -2,6 +2,7 @@ import type {
   CandidateNote,
   DashboardCandidateStatus,
   Interview,
+  JobMatchAnalysis,
 } from "@poyino/contracts";
 import {
   Avatar,
@@ -14,6 +15,7 @@ import {
   Skeleton,
   Textarea,
 } from "@poyino/ui";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { formatDate, formatDateTime } from "../../../shared/lib/format-date";
@@ -29,6 +31,85 @@ const STATUSES: DashboardCandidateStatus[] = [
   "INTERVIEW_PASSED",
   "REJECTED",
   "HIRED",
+];
+
+const SKILL_GROUP_RULES: Array<{ key: string; patterns: RegExp[] }> = [
+  {
+    key: "backend",
+    patterns: [
+      /node/i,
+      /python/i,
+      /java(?!script)/i,
+      /\bgo\b/i,
+      /golang/i,
+      /rust/i,
+      /\.net/i,
+      /dotnet/i,
+      /django/i,
+      /spring/i,
+      /rails/i,
+      /graphql/i,
+      /rest/i,
+      /express/i,
+      /nestjs/i,
+      /fastapi/i,
+    ],
+  },
+  {
+    key: "frontend",
+    patterns: [
+      /react/i,
+      /vue/i,
+      /angular/i,
+      /next\.?js/i,
+      /svelte/i,
+      /typescript/i,
+      /javascript/i,
+      /html/i,
+      /css/i,
+      /tailwind/i,
+    ],
+  },
+  {
+    key: "database",
+    patterns: [
+      /sql/i,
+      /postgres/i,
+      /mysql/i,
+      /mongo/i,
+      /redis/i,
+      /elasticsearch/i,
+      /prisma/i,
+    ],
+  },
+  {
+    key: "cloud",
+    patterns: [/aws/i, /gcp/i, /azure/i, /cloud/i, /s3/i, /lambda/i],
+  },
+  {
+    key: "devops",
+    patterns: [
+      /docker/i,
+      /kubernetes/i,
+      /k8s/i,
+      /ci\/?cd/i,
+      /terraform/i,
+      /jenkins/i,
+      /github actions/i,
+    ],
+  },
+  {
+    key: "languages",
+    patterns: [
+      /english/i,
+      /persian/i,
+      /farsi/i,
+      /german/i,
+      /french/i,
+      /spanish/i,
+      /arabic/i,
+    ],
+  },
 ];
 
 export function CandidateDetailsView() {
@@ -69,76 +150,266 @@ export function CandidateDetailsView() {
   }
 
   const { candidate, job, jobId } = details;
+  const match = candidate.jobMatchAnalysis;
+  const score = candidate.aiScore ?? match?.matchScore ?? null;
+  const recommendation = recommendationFromScore(score);
+  const interviewsChronological = [...candidate.interviews].sort(
+    (a, b) =>
+      new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
+  );
+  const activityChronological = [...candidate.timeline].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
+  const skillGroups = groupSkills(candidate.skills);
+  const missing = new Set(
+    (match?.missingSkills ?? []).map((item) => item.toLowerCase()),
+  );
+  const matchedSkillCount = candidate.skills.filter(
+    (skill) => !missing.has(skill.toLowerCase()),
+  ).length;
 
   return (
-    <div className="candidate-profile-layout">
-      <Card>
-        <div className="candidate-profile-header">
-          <div className="candidate-profile-identity">
-            <Avatar name={candidate.fullName} size={52} />
-            <div>
-              <h1>{candidate.fullName}</h1>
-              <p className="candidate-profile-meta">
-                {[candidate.email, candidate.phone].filter(Boolean).join(" · ")}
-              </p>
-              <p className="candidate-profile-meta">
+    <div className="candidate-profile-layout candidate-ats-layout">
+      {/* Section 1 — Sticky hero */}
+      <header className="candidate-ats-hero" aria-label={candidate.fullName}>
+        <div className="candidate-ats-hero-main">
+          <Avatar name={candidate.fullName} size={56} />
+          <div className="candidate-ats-hero-identity">
+            <h1>{candidate.fullName}</h1>
+            <div className="candidate-ats-hero-meta">
+              <Badge variant={statusBadgeVariant(candidate.status)}>
+                {t.dashboard.candidateStatus[candidate.status]}
+              </Badge>
+              {candidate.interviewProcessStatus ? (
+                <Badge variant="info">
+                  {
+                    t.candidates.interview.processStatuses[
+                      candidate.interviewProcessStatus
+                    ]
+                  }
+                </Badge>
+              ) : null}
+              <span>
                 <Link to={`/jobs/${jobId}`}>{job.title}</Link>
-                {" · "}
+              </span>
+              <span>
+                {t.candidates.details.profile.appliedAt}:{" "}
                 {formatDate(candidate.appliedAt, locale)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="candidate-ats-hero-actions" role="toolbar">
+          {canUpdateCandidate ? (
+            <Select
+              aria-label={t.candidates.details.actions.moveStage}
+              value={candidate.status}
+              disabled={details.statusUpdating}
+              onChange={(event) =>
+                void details.changeStatus(
+                  event.target.value as DashboardCandidateStatus,
+                )
+              }
+              options={STATUSES.map((value) => ({
+                value,
+                label: t.dashboard.candidateStatus[value],
+              }))}
+            />
+          ) : null}
+          {canScheduleInterview ? (
+            <Button type="button" onClick={details.openCreateInterview}>
+              {t.candidates.details.actions.scheduleInterview}
+            </Button>
+          ) : null}
+          {canUpdateCandidate && candidate.status !== "REJECTED" ? (
+            <Button
+              type="button"
+              variant="danger"
+              disabled={details.statusUpdating}
+              onClick={() => void details.changeStatus("REJECTED")}
+            >
+              {t.candidates.details.actions.reject}
+            </Button>
+          ) : null}
+          {canUpdateCandidate && candidate.status !== "HIRED" ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={details.statusUpdating}
+              onClick={() => void details.changeStatus("HIRED")}
+            >
+              {t.candidates.details.actions.hire}
+            </Button>
+          ) : null}
+          {candidate.resume ? (
+            <a
+              href={details.resumeDownloadUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="candidates-name-link"
+            >
+              {t.candidates.details.actions.downloadResume}
+            </a>
+          ) : null}
+          <Link
+            to={`/jobs/${jobId}/candidates/${details.candidateId}/interviews`}
+            className="candidates-name-link"
+          >
+            {t.candidates.details.interviews.manageButton}
+          </Link>
+        </div>
+      </header>
+
+      {/* Section 2 — Dashboard cards */}
+      <section aria-labelledby="candidate-dashboard-heading">
+        <h2 id="candidate-dashboard-heading" className="candidate-ats-sr-only">
+          {t.candidates.details.dashboard.title}
+        </h2>
+        <div className="candidate-ats-metrics">
+          <article className="candidate-ats-metric candidate-ats-metric-score">
+            <p className="candidate-ats-metric-label">
+              {t.candidates.details.ai.matchScore}
+            </p>
+            <p className="candidate-ats-metric-value">
+              {score == null ? t.candidates.details.emptyValue : `${score}%`}
+            </p>
+            <p className="candidate-ats-metric-hint">
+              {t.candidates.details.ai.recommendations[recommendation]}
+            </p>
+          </article>
+          <MetricCard
+            label={t.candidates.details.dashboard.experience}
+            value={
+              candidate.yearsExperience == null
+                ? t.candidates.details.emptyValue
+                : String(candidate.yearsExperience)
+            }
+          />
+          <MetricCard
+            label={t.candidates.details.dashboard.matchedSkills}
+            value={String(matchedSkillCount)}
+          />
+          <MetricCard
+            label={t.candidates.details.dashboard.interviewCount}
+            value={String(candidate.interviews.length)}
+          />
+          <MetricCard
+            label={t.candidates.details.dashboard.currentStage}
+            value={
+              candidate.interviewProcessStatus
+                ? t.candidates.interview.processStatuses[
+                    candidate.interviewProcessStatus
+                  ]
+                : t.dashboard.candidateStatus[candidate.status]
+            }
+          />
+          <MetricCard
+            label={t.candidates.details.dashboard.applicationStatus}
+            value={t.dashboard.candidateStatus[candidate.status]}
+          />
+        </div>
+      </section>
+
+      {/* Section 3 — AI Summary */}
+      <Card title={t.candidates.details.ai.title}>
+        {!match ? (
+          <EmptyState title={t.candidates.details.ai.empty} />
+        ) : (
+          <AiSummaryPanel
+            match={match}
+            recommendation={recommendation}
+            score={score}
+          />
+        )}
+      </Card>
+
+      {/* Section 4 — Overview */}
+      <Card title={t.candidates.details.profile.title}>
+        <div className="candidate-ats-overview">
+          <div className="candidate-ats-overview-identity">
+            <Avatar name={candidate.fullName} size={72} />
+            <div>
+              <strong>{candidate.fullName}</strong>
+              <p className="candidate-profile-meta">
+                {candidate.currentPosition ?? t.candidates.details.emptyValue}
               </p>
             </div>
           </div>
-          <div className="candidate-profile-actions">
-            {canUpdateCandidate ? (
-              <Select
-                value={candidate.status}
-                disabled={details.statusUpdating}
-                onChange={(event) =>
-                  void details.changeStatus(
-                    event.target.value as DashboardCandidateStatus,
-                  )
-                }
-                options={STATUSES.map((value) => ({
-                  value,
-                  label: t.dashboard.candidateStatus[value],
-                }))}
-              />
-            ) : (
-              <Badge>
-                {t.dashboard.candidateStatus[candidate.status]}
-              </Badge>
-            )}
-            {canScheduleInterview ? (
-              <Button type="button" onClick={details.openCreateInterview}>
-                {t.candidates.details.actions.scheduleInterview}
-              </Button>
-            ) : null}
-            <Link
-              to={`/jobs/${details.jobId}/candidates/${details.candidateId}/interviews`}
-              className="candidates-name-link"
-            >
-              {t.candidates.details.interviews.manageButton}
-            </Link>
-            {candidate.resume ? (
-              <a
-                href={details.resumeDownloadUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="candidates-name-link"
-              >
-                {t.candidates.details.actions.downloadResume}
-              </a>
-            ) : null}
+          <div className="candidate-ats-overview-grid">
+            <InfoRow
+              label={t.candidates.details.profile.email}
+              value={candidate.email}
+            />
+            <InfoRow
+              label={t.candidates.details.profile.phone}
+              value={candidate.phone}
+            />
+            <InfoRow
+              label={t.candidates.details.profile.yearsExperience}
+              value={
+                candidate.yearsExperience == null
+                  ? t.candidates.details.emptyValue
+                  : String(candidate.yearsExperience)
+              }
+            />
+            <InfoRow
+              label={t.candidates.details.profile.education}
+              value={candidate.education ?? t.candidates.details.emptyValue}
+            />
           </div>
+          {(candidate.linkedin || candidate.portfolio || candidate.website) ? (
+            <div className="candidate-profile-links-list">
+              {candidate.linkedin ? (
+                <a href={candidate.linkedin} target="_blank" rel="noreferrer">
+                  LinkedIn
+                </a>
+              ) : null}
+              {candidate.portfolio ? (
+                <a href={candidate.portfolio} target="_blank" rel="noreferrer">
+                  Portfolio
+                </a>
+              ) : null}
+              {candidate.website ? (
+                <a href={candidate.website} target="_blank" rel="noreferrer">
+                  Website
+                </a>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </Card>
 
-      <div className="candidate-profile-grid">
-        <Card title={t.candidates.details.resume.title}>
-          {!candidate.resume ? (
-            <EmptyState title={t.candidates.details.resume.empty} />
-          ) : (
-            <div className="candidate-resume">
+      {/* Section 5 — Skills */}
+      <Card title={t.candidates.details.profile.skills}>
+        {candidate.skills.length === 0 ? (
+          <EmptyState title={t.candidates.details.emptyValue} />
+        ) : (
+          <div className="candidate-ats-skill-groups">
+            {skillGroups.map((group) => (
+              <div key={group.key} className="candidate-ats-skill-group">
+                <h3>{t.candidates.details.skillGroups[group.key]}</h3>
+                <div className="job-details-skills">
+                  {group.skills.map((skill) => (
+                    <Badge key={skill} variant="info">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      {/* Section 6 — Resume */}
+      <Card title={t.candidates.details.resume.title}>
+        {!candidate.resume ? (
+          <EmptyState title={t.candidates.details.resume.empty} />
+        ) : (
+          <div className="candidate-resume">
+            <div className="candidate-ats-resume-toolbar">
               <a
                 href={details.resumeDownloadUrl}
                 target="_blank"
@@ -147,119 +418,34 @@ export function CandidateDetailsView() {
               >
                 {t.candidates.details.resume.download}
               </a>
-              <iframe
-                src={details.resumeDownloadUrl}
-                title={candidate.resume.fileName}
-                className="candidate-resume-frame"
-              />
             </div>
-          )}
-        </Card>
-
-        <Card title={t.candidates.details.profile.title}>
-          <InfoRow label={t.candidates.details.profile.email} value={candidate.email} />
-          <InfoRow label={t.candidates.details.profile.phone} value={candidate.phone} />
-          <InfoRow
-            label={t.candidates.details.profile.currentPosition}
-            value={candidate.currentPosition ?? t.candidates.details.emptyValue}
-          />
-          <InfoRow
-            label={t.candidates.details.profile.yearsExperience}
-            value={
-              candidate.yearsExperience === null
-                ? t.candidates.details.emptyValue
-                : String(candidate.yearsExperience)
-            }
-          />
-          <InfoRow
-            label={t.candidates.details.profile.education}
-            value={candidate.education ?? t.candidates.details.emptyValue}
-          />
-          {candidate.skills.length > 0 ? (
-            <div className="candidate-profile-skills">
-              <span>{t.candidates.details.profile.skills}</span>
-              <div className="job-details-skills">
-                {candidate.skills.map((skill) => (
-                  <Badge key={skill} variant="info">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          ) : null}
-          {candidate.experience ? (
-            <div className="candidate-profile-text-block">
-              <span>{t.candidates.details.profile.experience}</span>
-              <p>{candidate.experience}</p>
-            </div>
-          ) : null}
-          {(candidate.linkedin || candidate.portfolio || candidate.website) ? (
-            <div className="candidate-profile-links">
-              <span>{t.candidates.details.profile.links}</span>
-              <div className="candidate-profile-links-list">
-                {candidate.linkedin ? (
-                  <a href={candidate.linkedin} target="_blank" rel="noreferrer">
-                    LinkedIn
-                  </a>
-                ) : null}
-                {candidate.portfolio ? (
-                  <a href={candidate.portfolio} target="_blank" rel="noreferrer">
-                    Portfolio
-                  </a>
-                ) : null}
-                {candidate.website ? (
-                  <a href={candidate.website} target="_blank" rel="noreferrer">
-                    Website
-                  </a>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
-        </Card>
-      </div>
-
-      <Card title={t.candidates.details.interviews.title}>
-        {candidate.interviewProcessStatus ? (
-          <p className="candidate-interview-process-status">
-            {t.candidates.details.interviews.processStatus}:{" "}
-            <Badge variant="info">
-              {
-                t.candidates.interview.processStatuses[
-                  candidate.interviewProcessStatus
-                ]
-              }
-            </Badge>
-          </p>
-        ) : null}
-        {candidate.interviews.length === 0 ? (
-          <EmptyState title={t.candidates.details.interviews.empty} />
-        ) : (
-          <div className="candidate-interviews-list">
-            {candidate.interviews.map((interview) => (
-              <InterviewCard
-                key={interview.id}
-                interview={interview}
-                onEdit={
-                  canScheduleInterview
-                    ? () => details.openEditInterview(interview)
-                    : undefined
-                }
-                onCancel={
-                  canScheduleInterview
-                    ? () => details.requestCancelInterview(interview.id)
-                    : undefined
-                }
-                onComplete={
-                  canCompleteInterview
-                    ? () => details.requestCompleteInterview(interview.id)
-                    : undefined
-                }
-              />
-            ))}
+            <iframe
+              src={details.resumeDownloadUrl}
+              title={candidate.resume.fileName}
+              className="candidate-resume-frame"
+            />
           </div>
         )}
+        {(candidate.experience || candidate.education) ? (
+          <div className="candidate-ats-extracted">
+            <h3>{t.candidates.details.resume.extractedText}</h3>
+            {candidate.experience ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.profile.experience}</span>
+                <p>{candidate.experience}</p>
+              </div>
+            ) : null}
+            {candidate.education ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.profile.education}</span>
+                <p>{candidate.education}</p>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </Card>
 
+      {/* Section 7 — HR Notes */}
       <Card title={t.candidates.details.notes.title}>
         {canAddNotes ? (
           <>
@@ -305,12 +491,58 @@ export function CandidateDetailsView() {
         )}
       </Card>
 
+      {/* Section 8 — Interview Timeline */}
+      <Card title={t.candidates.details.interviews.title}>
+        {candidate.interviewProcessStatus ? (
+          <p className="candidate-interview-process-status">
+            {t.candidates.details.interviews.processStatus}:{" "}
+            <Badge variant="info">
+              {
+                t.candidates.interview.processStatuses[
+                  candidate.interviewProcessStatus
+                ]
+              }
+            </Badge>
+          </p>
+        ) : null}
+        {interviewsChronological.length === 0 ? (
+          <EmptyState title={t.candidates.details.interviews.empty} />
+        ) : (
+          <ol className="candidate-ats-interview-timeline">
+            {interviewsChronological.map((interview, index) => (
+              <li key={interview.id}>
+                <ExpandableInterviewCard
+                  interview={interview}
+                  isLast={index === interviewsChronological.length - 1}
+                  onEdit={
+                    canScheduleInterview
+                      ? () => details.openEditInterview(interview)
+                      : undefined
+                  }
+                  onCancel={
+                    canScheduleInterview
+                      ? () => details.requestCancelInterview(interview.id)
+                      : undefined
+                  }
+                  onComplete={
+                    canCompleteInterview
+                      ? () => details.requestCompleteInterview(interview.id)
+                      : undefined
+                  }
+                />
+              </li>
+            ))}
+          </ol>
+        )}
+      </Card>
+
+      {/* Section 9 — Activity Timeline */}
       <Card title={t.candidates.details.timeline.title}>
-        {candidate.timeline.length === 0 ? (
+        {activityChronological.length === 0 ? (
           <EmptyState title={t.candidates.details.timeline.empty} />
         ) : (
           <ol className="candidate-timeline">
-            {candidate.timeline.map((event) => (
+            {activityChronological.map((event) => (
               <li key={event.id} className="candidate-timeline-item">
                 <span className="candidate-timeline-marker" aria-hidden />
                 <div>
@@ -390,71 +622,256 @@ export function CandidateDetailsView() {
   );
 }
 
-function InterviewCard({
+function AiSummaryPanel({
+  match,
+  recommendation,
+  score,
+}: {
+  match: JobMatchAnalysis;
+  recommendation: RecommendationKey;
+  score: number | null;
+}) {
+  const { t } = useI18n();
+
+  return (
+    <div className="candidate-ai-summary">
+      <div className="candidate-ats-recommendation">
+        <Badge variant={recommendationBadgeVariant(recommendation)}>
+          {t.candidates.details.ai.recommendations[recommendation]}
+        </Badge>
+        {score != null ? (
+          <span className="candidate-ats-recommendation-score">
+            {score}%
+          </span>
+        ) : null}
+      </div>
+      {match.executiveSummary ? (
+        <p className="candidate-ai-summary-text">{match.executiveSummary}</p>
+      ) : null}
+      <div className="candidate-ai-columns">
+        <div>
+          <h4>{t.candidates.details.ai.strengths}</h4>
+          {match.strengths.length > 0 ? (
+            <ul>
+              {match.strengths.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="candidate-profile-meta">
+              {t.candidates.details.emptyValue}
+            </p>
+          )}
+        </div>
+        <div>
+          <h4>{t.candidates.details.ai.weaknesses}</h4>
+          {match.weaknesses.length > 0 ? (
+            <ul>
+              {match.weaknesses.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="candidate-profile-meta">
+              {t.candidates.details.emptyValue}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="candidate-ai-block">
+        <h4>{t.candidates.details.ai.missingSkills}</h4>
+        {match.missingSkills.length > 0 ? (
+          <div className="job-details-skills">
+            {match.missingSkills.map((skill) => (
+              <Badge key={skill} variant="warning">
+                {skill}
+              </Badge>
+            ))}
+          </div>
+        ) : (
+          <p className="candidate-profile-meta">
+            {t.candidates.details.emptyValue}
+          </p>
+        )}
+      </div>
+      {match.interviewQuestions.length > 0 ? (
+        <div className="candidate-ai-block">
+          <h4>{t.candidates.details.ai.interviewQuestions}</h4>
+          <ol>
+            {match.interviewQuestions.map((question) => (
+              <li key={question}>{question}</li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function MetricCard({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="candidate-ats-metric">
+      <p className="candidate-ats-metric-label">{label}</p>
+      <p className="candidate-ats-metric-value candidate-ats-metric-value-sm">
+        {value}
+      </p>
+    </article>
+  );
+}
+
+function ExpandableInterviewCard({
   interview,
+  isLast,
   onEdit,
   onCancel,
   onComplete,
 }: {
   interview: Interview;
+  isLast: boolean;
   onEdit?: () => void;
   onCancel?: () => void;
   onComplete?: () => void;
 }) {
   const { t, locale } = useI18n();
+  const [expanded, setExpanded] = useState(false);
   const editable =
-    interview.status === "SCHEDULED" || interview.status === "IN_PROGRESS";
+    interview.status === "DRAFT" ||
+    interview.status === "SCHEDULED" ||
+    interview.status === "WAITING_CANDIDATE_CONFIRMATION" ||
+    interview.status === "ACCEPTED" ||
+    interview.status === "RESCHEDULE_REQUESTED" ||
+    interview.status === "DECLINED" ||
+    interview.status === "IN_PROGRESS";
   const hasActions = Boolean(onEdit || onCancel || onComplete);
 
   return (
-    <div className="candidate-interview-card">
-      <div className="candidate-interview-card-header">
-        <div className="candidate-interview-card-title">
-          <strong>{interview.name}</strong>
-          <Badge variant="info">{t.candidates.interview.types[interview.type]}</Badge>
-          <Badge variant={interviewStatusVariant(interview.status)}>
-            {t.candidates.interview.statuses[interview.status]}
-          </Badge>
-        </div>
-        <span className="candidate-interview-card-date">
-          {formatDateTime(interview.scheduledAt, locale)}
-        </span>
+    <div className="candidate-ats-interview-step">
+      <div className="candidate-ats-interview-rail" aria-hidden>
+        <span className="candidate-ats-interview-dot" />
+        {!isLast ? <span className="candidate-ats-interview-line" /> : null}
       </div>
-      {interview.location ? (
-        <p className="candidate-interview-card-detail">{interview.location}</p>
-      ) : null}
-      {interview.meetingUrl ? (
-        <a
-          href={interview.meetingUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="candidates-name-link"
+      <div className="candidate-interview-card">
+        <button
+          type="button"
+          className="candidate-ats-interview-toggle"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
         >
-          {t.candidates.details.interviews.joinAction}
-        </a>
-      ) : null}
-      {interview.internalNotes ? (
-        <p className="candidate-interview-card-notes">{interview.internalNotes}</p>
-      ) : null}
-      {editable && hasActions ? (
-        <div className="dashboard-row-actions">
-          {onEdit ? (
-            <Button type="button" variant="secondary" onClick={onEdit}>
-              {t.candidates.details.interviews.editAction}
-            </Button>
-          ) : null}
-          {onComplete ? (
-            <Button type="button" variant="secondary" onClick={onComplete}>
-              {t.candidates.details.interviews.completeAction}
-            </Button>
-          ) : null}
-          {onCancel ? (
-            <Button type="button" variant="danger" onClick={onCancel}>
-              {t.candidates.details.interviews.cancelAction}
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+          <div className="candidate-interview-card-header">
+            <div className="candidate-interview-card-title">
+              <strong>{interview.name}</strong>
+              <Badge variant="info">
+                {t.candidates.interview.types[interview.type]}
+              </Badge>
+              <Badge variant={interviewStatusVariant(interview.status)}>
+                {t.candidates.interview.statuses[interview.status]}
+              </Badge>
+            </div>
+            <span className="candidate-interview-card-date">
+              {formatDateTime(interview.scheduledAt, locale)}
+            </span>
+          </div>
+        </button>
+
+        {expanded ? (
+          <div className="candidate-ats-interview-expanded">
+            {interview.result ? (
+              <InfoRow
+                label={t.candidates.details.interviews.decision}
+                value={t.candidates.interview.results[interview.result]}
+              />
+            ) : null}
+            <InfoRow
+              label={t.candidates.details.interviews.statusLabel}
+              value={t.candidates.interview.statuses[interview.status]}
+            />
+            {interview.location ? (
+              <p className="candidate-interview-card-detail">
+                {interview.location}
+              </p>
+            ) : null}
+            {interview.meetingUrl ? (
+              <a
+                href={interview.meetingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="candidates-name-link"
+              >
+                {t.candidates.details.interviews.joinAction}
+              </a>
+            ) : null}
+            {interview.internalNotes ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.interviews.notes}</span>
+                <p>{interview.internalNotes}</p>
+              </div>
+            ) : null}
+            {interview.candidateNotes ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.interviews.candidateNotes}</span>
+                <p>{interview.candidateNotes}</p>
+              </div>
+            ) : null}
+            {interview.responseMessage ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.interviews.response}</span>
+                <p>{interview.responseMessage}</p>
+              </div>
+            ) : null}
+            {interview.proposedScheduledAt ? (
+              <InfoRow
+                label={t.candidates.details.interviews.proposedTime}
+                value={formatDateTime(interview.proposedScheduledAt, locale)}
+              />
+            ) : null}
+            {interview.aiPreparation ? (
+              <div className="candidate-profile-text-block">
+                <span>{t.candidates.details.interviews.summary}</span>
+                <p>{interview.aiPreparation.executiveSummary}</p>
+              </div>
+            ) : null}
+            {interview.aiPreparation?.technicalQuestions?.length ||
+            interview.aiPreparation?.behavioralQuestions?.length ? (
+              <div className="candidate-ai-block">
+                <h4>{t.candidates.details.interviews.questions}</h4>
+                <ul>
+                  {[
+                    ...(interview.aiPreparation.technicalQuestions ?? []),
+                    ...(interview.aiPreparation.behavioralQuestions ?? []),
+                  ]
+                    .slice(0, 6)
+                    .map((question) => (
+                      <li key={question}>{question}</li>
+                    ))}
+                </ul>
+              </div>
+            ) : null}
+            {editable && hasActions ? (
+              <div className="dashboard-row-actions">
+                {onEdit ? (
+                  <Button type="button" variant="secondary" onClick={onEdit}>
+                    {t.candidates.details.interviews.editAction}
+                  </Button>
+                ) : null}
+                {onComplete ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={onComplete}
+                  >
+                    {t.candidates.details.interviews.completeAction}
+                  </Button>
+                ) : null}
+                {onCancel ? (
+                  <Button type="button" variant="danger" onClick={onCancel}>
+                    {t.candidates.details.interviews.cancelAction}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -520,10 +937,18 @@ function NoteItem({
             : ""}
         </span>
         <div className="dashboard-row-actions">
-          <button type="button" className="candidate-note-action" onClick={onStartEdit}>
+          <button
+            type="button"
+            className="candidate-note-action"
+            onClick={onStartEdit}
+          >
             {t.candidates.details.notes.edit}
           </button>
-          <button type="button" className="candidate-note-action" onClick={onDelete}>
+          <button
+            type="button"
+            className="candidate-note-action"
+            onClick={onDelete}
+          >
             {t.candidates.details.notes.delete}
           </button>
         </div>
@@ -543,33 +968,108 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
 function CandidateDetailsSkeleton() {
   return (
-    <div className="candidate-profile-layout">
+    <div className="candidate-profile-layout candidate-ats-layout">
       <Card>
-        <Skeleton height={32} width="40%" />
-        <Skeleton height={20} width="60%" style={{ marginTop: "0.75rem" }} />
+        <Skeleton height={56} width="50%" />
+        <Skeleton height={28} width="70%" style={{ marginTop: "0.85rem" }} />
       </Card>
-      <div className="candidate-profile-grid">
-        <Skeleton height={220} />
-        <Skeleton height={220} />
+      <div className="candidate-ats-metrics">
+        <Skeleton height={140} />
+        <Skeleton height={100} />
+        <Skeleton height={100} />
+        <Skeleton height={100} />
       </div>
-      <Skeleton height={180} />
+      <Skeleton height={220} />
       <Skeleton height={180} />
     </div>
   );
 }
 
+type RecommendationKey =
+  | "highlyRecommended"
+  | "recommended"
+  | "moderate"
+  | "notRecommended"
+  | "unavailable";
+
+type SkillGroupKey =
+  | "backend"
+  | "frontend"
+  | "database"
+  | "cloud"
+  | "devops"
+  | "languages"
+  | "other";
+
+function recommendationFromScore(score: number | null): RecommendationKey {
+  if (score == null) return "unavailable";
+  if (score >= 80) return "highlyRecommended";
+  if (score >= 60) return "recommended";
+  if (score >= 40) return "moderate";
+  return "notRecommended";
+}
+
+function recommendationBadgeVariant(
+  key: RecommendationKey,
+): "success" | "info" | "warning" | "danger" | "neutral" {
+  if (key === "highlyRecommended" || key === "recommended") return "success";
+  if (key === "moderate") return "warning";
+  if (key === "notRecommended") return "danger";
+  return "neutral";
+}
+
+function statusBadgeVariant(
+  status: DashboardCandidateStatus,
+): "success" | "info" | "warning" | "danger" | "neutral" {
+  if (status === "HIRED" || status === "INTERVIEW_PASSED") return "success";
+  if (status === "REJECTED") return "danger";
+  if (status === "INTERVIEW_SCHEDULED") return "warning";
+  if (status === "REVIEWING") return "info";
+  return "neutral";
+}
+
 function interviewStatusVariant(
   status: Interview["status"],
 ): "neutral" | "success" | "warning" | "danger" | "info" {
-  if (status === "COMPLETED") {
-    return "success";
-  }
-  if (status === "CANCELLED" || status === "NO_SHOW") {
+  if (status === "COMPLETED" || status === "ACCEPTED") return "success";
+  if (
+    status === "CANCELLED" ||
+    status === "NO_SHOW" ||
+    status === "DECLINED"
+  ) {
     return "danger";
   }
-  if (status === "IN_PROGRESS") {
+  if (
+    status === "IN_PROGRESS" ||
+    status === "RESCHEDULE_REQUESTED" ||
+    status === "WAITING_CANDIDATE_CONFIRMATION"
+  ) {
     return "warning";
   }
   return "info";
 }
 
+function groupSkills(skills: string[]) {
+  const buckets = new Map<SkillGroupKey, string[]>();
+  for (const skill of skills) {
+    const matched = SKILL_GROUP_RULES.find((rule) =>
+      rule.patterns.some((pattern) => pattern.test(skill)),
+    );
+    const key = (matched?.key ?? "other") as SkillGroupKey;
+    const list = buckets.get(key) ?? [];
+    list.push(skill);
+    buckets.set(key, list);
+  }
+  const order: SkillGroupKey[] = [
+    "backend",
+    "frontend",
+    "database",
+    "cloud",
+    "devops",
+    "languages",
+    "other",
+  ];
+  return order
+    .filter((key) => (buckets.get(key)?.length ?? 0) > 0)
+    .map((key) => ({ key, skills: buckets.get(key) ?? [] }));
+}

@@ -12,6 +12,7 @@ import {
   MAX_RESUME_UPLOAD_BYTES,
   NotificationEventName,
   PublicJobErrorCode,
+  RESUME_MIME_TYPES,
   TrackingErrorCode,
   type AnalyzeResumeInput,
   type AnalyzeResumeSoftFailure,
@@ -20,7 +21,6 @@ import {
   type SubmitApplicationInput,
   type UploadResumeInput,
 } from "@poyino/contracts";
-import { PDFParse } from "pdf-parse";
 import { AiService } from "../../ai/ai.service";
 import {
   EMAIL_SERVICE,
@@ -34,6 +34,13 @@ import { DomainEventPublisher } from "../../notifications/services/domain-event.
 import { NotificationsService } from "../../notifications/services/notifications.service";
 import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
+import {
+  ResumeTextExtractionException,
+  ResumeTextExtractionService,
+} from "../../resume-text-extraction";
+import {
+  mapPublicInterview,
+} from "../../interviews/services/interviews.service";
 import {
   StorageObjectNotFoundException,
   StorageService,
@@ -54,8 +61,6 @@ import {
   normalizeJobMatchAnalysis,
 } from "../ai/evaluate-job-match";
 
-const RESUME_MIME_TYPES = ["application/pdf"] as const;
-
 @Injectable()
 export class PublicJobService {
   private readonly logger = new Logger(PublicJobService.name);
@@ -65,6 +70,8 @@ export class PublicJobService {
     @Inject(AiService) private readonly aiService: AiService,
     @Inject(EMAIL_SERVICE) private readonly emailService: EmailService,
     @Inject(StorageService) private readonly storageService: StorageService,
+    @Inject(ResumeTextExtractionService)
+    private readonly resumeTextExtraction: ResumeTextExtractionService,
     @Inject(DomainEventPublisher)
     private readonly domainEvents: DomainEventPublisher,
     @Inject(RecipientResolverService)
@@ -160,12 +167,14 @@ export class PublicJobService {
   ) {
     const job = await this.requireAcceptingJob(orgSlug, jobId);
 
-    if (input.mimeType !== "application/pdf") {
+    if (
+      !(RESUME_MIME_TYPES as readonly string[]).includes(input.mimeType)
+    ) {
       throw new BadRequestException({
         success: false,
         error: {
           code: ApplyErrorCode.FILE_INVALID_TYPE,
-          message: "Only PDF files are supported.",
+          message: "Only PDF, DOCX, JPG, and PNG files are supported.",
         },
       });
     }
@@ -238,10 +247,11 @@ export class PublicJobService {
 
     let extractedText = "";
     try {
-      extractedText = await this.extractPdfText(file.id);
+      const extraction = await this.extractResumeTextFromStoredFile(file);
+      extractedText = extraction.text;
     } catch (error) {
       this.logger.warn(
-        `PDF extraction failed for file ${input.fileId}: ${String(error)}`,
+        `Resume extraction failed for file ${input.fileId}: ${String(error)}`,
       );
       return {
         success: true as const,
@@ -305,7 +315,9 @@ export class PublicJobService {
     if (!extractedText) {
       try {
         extractedText =
-          (await this.extractPdfText(resumeFile.id)).trim() || null;
+          (
+            await this.extractResumeTextFromStoredFile(resumeFile)
+          ).text.trim() || null;
       } catch {
         extractedText = null;
       }
@@ -668,6 +680,10 @@ export class PublicJobService {
             location: true,
             meetingUrl: true,
             candidateNotes: true,
+            candidateResponse: true,
+            respondedAt: true,
+            responseMessage: true,
+            proposedScheduledAt: true,
           },
         },
       },
@@ -705,16 +721,9 @@ export class PublicJobService {
           status: event.status,
           createdAt: event.createdAt.toISOString(),
         })),
-        interviews: application.interviews.map((interview) => ({
-          id: interview.id,
-          name: interview.name,
-          type: interview.type,
-          status: interview.status,
-          scheduledAt: interview.scheduledAt.toISOString(),
-          location: interview.location,
-          meetingUrl: interview.meetingUrl,
-          candidateNotes: interview.candidateNotes,
-        })),
+        interviews: application.interviews.map((interview) =>
+          mapPublicInterview(interview),
+        ),
       },
     };
   }
@@ -799,7 +808,9 @@ export class PublicJobService {
         fileId,
       );
 
-      if (file.mimeType !== "application/pdf") {
+      if (
+        !(RESUME_MIME_TYPES as readonly string[]).includes(file.mimeType)
+      ) {
         throw new BadRequestException({
           success: false,
           error: {
@@ -824,14 +835,26 @@ export class PublicJobService {
     }
   }
 
-  private async extractPdfText(fileId: string) {
-    const { content } = await this.storageService.download(fileId);
-    const parser = new PDFParse({ data: new Uint8Array(content) });
+  private async extractResumeTextFromStoredFile(file: {
+    id: string;
+    mimeType: string;
+    originalName: string;
+  }) {
+    const { content } = await this.storageService.download(file.id);
     try {
-      const result = await parser.getText();
-      return result.text ?? "";
-    } finally {
-      await parser.destroy().catch(() => undefined);
+      return await this.resumeTextExtraction.extractResumeText({
+        buffer: content,
+        mimeType: file.mimeType,
+        fileName: file.originalName,
+      });
+    } catch (error) {
+      if (error instanceof ResumeTextExtractionException) {
+        throw error;
+      }
+      throw new ResumeTextExtractionException(
+        "Unable to extract text from the uploaded resume.",
+        { cause: error },
+      );
     }
   }
 }

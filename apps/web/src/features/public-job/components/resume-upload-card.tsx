@@ -2,6 +2,10 @@ import { Alert, Button, ProgressBar } from "@poyino/ui";
 import type { ChangeEvent, DragEvent } from "react";
 import { useRef, useState } from "react";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
+import {
+  isSupportedResumeFile,
+  RESUME_FILE_ACCEPT,
+} from "../utils/resume-file";
 
 type ResumeUploadCardProps = {
   fileName: string | null;
@@ -33,7 +37,7 @@ export function ResumeUploadCard({
       return;
     }
 
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+    if (!isSupportedResumeFile(file)) {
       setLocalError(t.publicJob.apply.errors.unsupportedFile);
       return;
     }
@@ -83,7 +87,7 @@ export function ResumeUploadCard({
         <input
           ref={inputRef}
           type="file"
-          accept="application/pdf,.pdf"
+          accept={RESUME_FILE_ACCEPT}
           hidden
           disabled={disabled}
           onChange={onInputChange}

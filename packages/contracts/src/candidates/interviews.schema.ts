@@ -12,7 +12,12 @@ export const InterviewTypeSchema = z.enum([
 export type InterviewType = z.infer<typeof InterviewTypeSchema>;
 
 export const InterviewStatusSchema = z.enum([
+  "DRAFT",
   "SCHEDULED",
+  "WAITING_CANDIDATE_CONFIRMATION",
+  "ACCEPTED",
+  "RESCHEDULE_REQUESTED",
+  "DECLINED",
   "IN_PROGRESS",
   "COMPLETED",
   "CANCELLED",
@@ -20,6 +25,16 @@ export const InterviewStatusSchema = z.enum([
 ]);
 
 export type InterviewStatus = z.infer<typeof InterviewStatusSchema>;
+
+export const InterviewCandidateResponseSchema = z.enum([
+  "ACCEPTED",
+  "RESCHEDULE_REQUESTED",
+  "DECLINED",
+]);
+
+export type InterviewCandidateResponse = z.infer<
+  typeof InterviewCandidateResponseSchema
+>;
 
 export const InterviewProcessStatusSchema = z.enum([
   "WAITING",
@@ -112,6 +127,41 @@ export type InterviewHiringDecisionInput = z.infer<
   typeof InterviewHiringDecisionSchema
 >;
 
+export const AcceptInterviewSchema = z.object({}).default({});
+
+export type AcceptInterviewInput = z.infer<typeof AcceptInterviewSchema>;
+
+export const RequestInterviewRescheduleSchema = z
+  .object({
+    message: optionalTrimmed(2000, "MESSAGE_TOO_LONG"),
+    proposedScheduledAt: z
+      .string()
+      .datetime({ message: "PROPOSED_SCHEDULED_AT_INVALID" })
+      .optional()
+      .nullable(),
+  })
+  .superRefine((value, ctx) => {
+    const hasMessage = Boolean(value.message?.trim());
+    const hasProposed = Boolean(value.proposedScheduledAt);
+    if (!hasMessage && !hasProposed) {
+      ctx.addIssue({
+        code: "custom",
+        message: "RESCHEDULE_DETAILS_REQUIRED",
+        path: ["message"],
+      });
+    }
+  });
+
+export type RequestInterviewRescheduleInput = z.infer<
+  typeof RequestInterviewRescheduleSchema
+>;
+
+export const DeclineInterviewSchema = z.object({
+  message: optionalTrimmed(2000, "MESSAGE_TOO_LONG"),
+});
+
+export type DeclineInterviewInput = z.infer<typeof DeclineInterviewSchema>;
+
 export const EvaluationChecklistItemSchema = z.object({
   label: z.string(),
   explanation: z.string(),
@@ -166,6 +216,10 @@ export const InterviewSchema = z.object({
   meetingUrl: z.string().nullable(),
   internalNotes: z.string().nullable(),
   candidateNotes: z.string().nullable(),
+  candidateResponse: InterviewCandidateResponseSchema.nullable(),
+  respondedAt: z.string().datetime().nullable(),
+  responseMessage: z.string().nullable(),
+  proposedScheduledAt: z.string().datetime().nullable(),
   recruiterUserId: z.string().uuid().nullable(),
   recruiterEmail: z.string().nullable(),
   createdByUserId: z.string().uuid(),
@@ -298,6 +352,11 @@ export const PublicInterviewSchema = z.object({
   location: z.string().nullable(),
   meetingUrl: z.string().nullable(),
   candidateNotes: z.string().nullable(),
+  candidateResponse: InterviewCandidateResponseSchema.nullable(),
+  respondedAt: z.string().datetime().nullable(),
+  responseMessage: z.string().nullable(),
+  proposedScheduledAt: z.string().datetime().nullable(),
+  canRespond: z.boolean(),
 });
 
 export type PublicInterview = z.infer<typeof PublicInterviewSchema>;

@@ -339,6 +339,8 @@ function extensionFrom(originalName: string, mimeType: string): string {
   switch (mimeType) {
     case "application/pdf":
       return "pdf";
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return "docx";
     case "image/png":
       return "png";
     case "image/jpeg":

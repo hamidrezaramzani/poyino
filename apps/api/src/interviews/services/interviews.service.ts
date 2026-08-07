@@ -11,11 +11,14 @@ import {
   JobMatchAnalysisSchema,
   NotificationEventName,
   ResumeAnalysisSchema,
+  TrackingErrorCode,
   type CalendarInterviewsQuery,
   type CompleteInterviewInput,
   type CreateInterviewInput,
+  type DeclineInterviewInput,
   type InterviewAiRequest,
   type InterviewHiringDecisionInput,
+  type RequestInterviewRescheduleInput,
   type UpdateInterviewInput,
   type UpdateInterviewStatusInput,
   isOrgWideRole,
@@ -23,11 +26,14 @@ import {
 } from "@poyino/contracts";
 import type {
   Interview,
+  InterviewCandidateResponse,
   InterviewProcessStatus,
   InterviewResult,
   InterviewStatus,
+  InterviewStatusActor,
   Prisma,
 } from "@prisma/client";
+import { createHash } from "node:crypto";
 import { AiException } from "../../ai/exceptions/ai.exceptions";
 import { AiService } from "../../ai/ai.service";
 import {
@@ -54,7 +60,29 @@ import { DomainEventPublisher } from "../../notifications/services/domain-event.
 import { RecipientResolverService } from "../../notifications/services/recipient-resolver.service";
 import { PrismaService } from "../../prisma/prisma.service";
 
-const EDITABLE_STATUSES: InterviewStatus[] = ["SCHEDULED", "IN_PROGRESS"];
+const EDITABLE_STATUSES: InterviewStatus[] = [
+  "DRAFT",
+  "SCHEDULED",
+  "WAITING_CANDIDATE_CONFIRMATION",
+  "ACCEPTED",
+  "RESCHEDULE_REQUESTED",
+  "DECLINED",
+  "IN_PROGRESS",
+];
+
+const RESPONDABLE_STATUSES: InterviewStatus[] = [
+  "SCHEDULED",
+  "WAITING_CANDIDATE_CONFIRMATION",
+];
+
+const ACTIVE_CONFLICT_STATUSES: InterviewStatus[] = [
+  "SCHEDULED",
+  "WAITING_CANDIDATE_CONFIRMATION",
+  "ACCEPTED",
+  "RESCHEDULE_REQUESTED",
+  "IN_PROGRESS",
+];
+
 const DEFAULT_DURATION_MS = 60 * 60 * 1000;
 
 type InterviewWithRecruiter = Interview & {
@@ -122,7 +150,7 @@ export class InterviewsService {
           name: input.name,
           scheduledAt,
           type: input.type,
-          status: "SCHEDULED",
+          status: "WAITING_CANDIDATE_CONFIRMATION",
           location: input.location,
           meetingUrl: input.meetingUrl,
           internalNotes: input.internalNotes,
@@ -131,6 +159,14 @@ export class InterviewsService {
           createdByUserId: user.id,
         },
         include: { recruiterUser: { select: { id: true, email: true } } },
+      });
+
+      await recordInterviewStatusEvent(tx, {
+        interviewId: created.id,
+        fromStatus: null,
+        toStatus: "WAITING_CANDIDATE_CONFIRMATION",
+        actorType: "RECRUITER",
+        actorUserId: user.id,
       });
 
       if (process.status === "WAITING") {
@@ -231,6 +267,20 @@ export class InterviewsService {
       interview.id,
     );
 
+    const timeChanged =
+      scheduledAt.getTime() !== interview.scheduledAt.getTime();
+    const shouldRequestConfirmation =
+      timeChanged ||
+      interview.status === "RESCHEDULE_REQUESTED" ||
+      interview.status === "DECLINED" ||
+      interview.status === "DRAFT" ||
+      interview.status === "SCHEDULED";
+    const nextStatus: InterviewStatus = shouldRequestConfirmation
+      ? "WAITING_CANDIDATE_CONFIRMATION"
+      : interview.status;
+    const wasReschedule =
+      interview.status === "RESCHEDULE_REQUESTED" || timeChanged;
+
     const updated = await this.prisma.$transaction(async (tx) => {
       const result = await tx.interview.update({
         where: { id: interview.id },
@@ -243,16 +293,37 @@ export class InterviewsService {
           internalNotes: input.internalNotes,
           candidateNotes: input.candidateNotes,
           recruiterUserId: input.recruiterUserId ?? null,
+          status: nextStatus,
+          ...(shouldRequestConfirmation
+            ? {
+                candidateResponse: null,
+                respondedAt: null,
+                responseMessage: null,
+                proposedScheduledAt: null,
+              }
+            : {}),
         },
         include: { recruiterUser: { select: { id: true, email: true } } },
       });
+
+      if (nextStatus !== interview.status) {
+        await recordInterviewStatusEvent(tx, {
+          interviewId: interview.id,
+          fromStatus: interview.status,
+          toStatus: nextStatus,
+          actorType: "RECRUITER",
+          actorUserId: user.id,
+        });
+      }
 
       await tx.applicationActivityEvent.create({
         data: {
           applicationId: application.id,
           organizationId,
-          type: "INTERVIEW_UPDATED",
-          description: `Interview updated: ${input.name}`,
+          type: wasReschedule ? "INTERVIEW_RESCHEDULED" : "INTERVIEW_UPDATED",
+          description: wasReschedule
+            ? `Interview rescheduled: ${input.name}`
+            : `Interview updated: ${input.name}`,
           actorUserId: user.id,
           metadata: { interviewId: interview.id },
         },
@@ -271,7 +342,10 @@ export class InterviewsService {
         ...(updated.recruiterUserId ? [updated.recruiterUserId] : []),
       ]),
     ];
-    this.domainEvents.publishNamed(NotificationEventName.INTERVIEW_UPDATED, {
+    const eventName = wasReschedule
+      ? NotificationEventName.INTERVIEW_RESCHEDULED
+      : NotificationEventName.INTERVIEW_UPDATED;
+    this.domainEvents.publishNamed(eventName, {
       organizationId,
       triggeredBy: user.id,
       resourceType: "interview",
@@ -317,6 +391,14 @@ export class InterviewsService {
         where: { id: interview.id },
         data: { status: "CANCELLED" },
         include: { recruiterUser: { select: { id: true, email: true } } },
+      });
+
+      await recordInterviewStatusEvent(tx, {
+        interviewId: interview.id,
+        fromStatus: interview.status,
+        toStatus: "CANCELLED",
+        actorType: "RECRUITER",
+        actorUserId: user.id,
       });
 
       await tx.applicationActivityEvent.create({
@@ -392,6 +474,15 @@ export class InterviewsService {
           candidateNotes: input.candidateNotes ?? interview.candidateNotes,
         },
         include: { recruiterUser: { select: { id: true, email: true } } },
+      });
+
+      await recordInterviewStatusEvent(tx, {
+        interviewId: interview.id,
+        fromStatus: interview.status,
+        toStatus: "COMPLETED",
+        actorType: "RECRUITER",
+        actorUserId: user.id,
+        metadata: { result },
       });
 
       await tx.applicationActivityEvent.create({
@@ -487,6 +578,16 @@ export class InterviewsService {
         include: { recruiterUser: { select: { id: true, email: true } } },
       });
 
+      if (input.status !== interview.status) {
+        await recordInterviewStatusEvent(tx, {
+          interviewId: interview.id,
+          fromStatus: interview.status,
+          toStatus: input.status,
+          actorType: "RECRUITER",
+          actorUserId: user.id,
+        });
+      }
+
       const activity = activityForStatus(input.status);
       await tx.applicationActivityEvent.create({
         data: {
@@ -520,6 +621,212 @@ export class InterviewsService {
     });
 
     return { success: true as const, interview: mapInterview(updated) };
+  }
+
+  async acceptInterviewByTrackingToken(token: string, interviewId: string) {
+    return this.respondByTrackingToken(token, interviewId, {
+      response: "ACCEPTED",
+      status: "ACCEPTED",
+      activityType: "INTERVIEW_ACCEPTED",
+      activityDescription: (name) => `Candidate accepted interview: ${name}`,
+      notificationEvent: NotificationEventName.INTERVIEW_ACCEPTED_BY_CANDIDATE,
+    });
+  }
+
+  async requestRescheduleByTrackingToken(
+    token: string,
+    interviewId: string,
+    input: RequestInterviewRescheduleInput,
+  ) {
+    const proposedScheduledAt = input.proposedScheduledAt
+      ? parseFutureDate(input.proposedScheduledAt)
+      : null;
+
+    return this.respondByTrackingToken(token, interviewId, {
+      response: "RESCHEDULE_REQUESTED",
+      status: "RESCHEDULE_REQUESTED",
+      message: input.message ?? null,
+      proposedScheduledAt,
+      activityType: "INTERVIEW_RESCHEDULE_REQUESTED",
+      activityDescription: (name) =>
+        `Candidate requested reschedule: ${name}`,
+      notificationEvent:
+        NotificationEventName.INTERVIEW_RESCHEDULE_REQUESTED_BY_CANDIDATE,
+    });
+  }
+
+  async declineInterviewByTrackingToken(
+    token: string,
+    interviewId: string,
+    input: DeclineInterviewInput,
+  ) {
+    return this.respondByTrackingToken(token, interviewId, {
+      response: "DECLINED",
+      status: "DECLINED",
+      message: input.message ?? null,
+      activityType: "INTERVIEW_DECLINED",
+      activityDescription: (name) => `Candidate declined interview: ${name}`,
+      notificationEvent: NotificationEventName.INTERVIEW_DECLINED_BY_CANDIDATE,
+    });
+  }
+
+  private async respondByTrackingToken(
+    token: string,
+    interviewId: string,
+    options: {
+      response: InterviewCandidateResponse;
+      status: InterviewStatus;
+      message?: string | null;
+      proposedScheduledAt?: Date | null;
+      activityType:
+        | "INTERVIEW_ACCEPTED"
+        | "INTERVIEW_RESCHEDULE_REQUESTED"
+        | "INTERVIEW_DECLINED";
+      activityDescription: (name: string) => string;
+      notificationEvent:
+        | typeof NotificationEventName.INTERVIEW_ACCEPTED_BY_CANDIDATE
+        | typeof NotificationEventName.INTERVIEW_RESCHEDULE_REQUESTED_BY_CANDIDATE
+        | typeof NotificationEventName.INTERVIEW_DECLINED_BY_CANDIDATE;
+    },
+  ) {
+    const trackingTokenHash = hashTrackingToken(token);
+    const application = await this.prisma.application.findFirst({
+      where: { trackingTokenHash },
+      select: {
+        id: true,
+        organizationId: true,
+        jobId: true,
+        candidateId: true,
+        candidate: { select: { fullName: true } },
+        job: { select: { title: true, departmentId: true } },
+      },
+    });
+
+    if (!application) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: TrackingErrorCode.TRACKING_NOT_FOUND,
+          message: "Tracking link not found.",
+        },
+      });
+    }
+
+    const interview = await this.prisma.interview.findFirst({
+      where: { id: interviewId, applicationId: application.id },
+    });
+
+    if (!interview) {
+      throw new NotFoundException({
+        success: false,
+        error: {
+          code: TrackingErrorCode.INTERVIEW_NOT_FOUND,
+          message: "Interview not found.",
+        },
+      });
+    }
+
+    if (!RESPONDABLE_STATUSES.includes(interview.status)) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: TrackingErrorCode.INTERVIEW_NOT_RESPONDABLE,
+          message: "This interview cannot receive a response.",
+        },
+      });
+    }
+
+    if (interview.scheduledAt.getTime() <= Date.now()) {
+      throw new BadRequestException({
+        success: false,
+        error: {
+          code: TrackingErrorCode.INTERVIEW_IN_PAST,
+          message: "Only future interviews can be accepted or declined.",
+        },
+      });
+    }
+
+    const respondedAt = new Date();
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const stage = await tx.interview.update({
+        where: { id: interview.id },
+        data: {
+          status: options.status,
+          candidateResponse: options.response,
+          respondedAt,
+          responseMessage: options.message ?? null,
+          proposedScheduledAt: options.proposedScheduledAt ?? null,
+        },
+        include: { recruiterUser: { select: { id: true, email: true } } },
+      });
+
+      await recordInterviewStatusEvent(tx, {
+        interviewId: interview.id,
+        fromStatus: interview.status,
+        toStatus: options.status,
+        actorType: "CANDIDATE",
+        message: options.message ?? null,
+        metadata: {
+          proposedScheduledAt: options.proposedScheduledAt?.toISOString() ?? null,
+        },
+      });
+
+      await tx.applicationActivityEvent.create({
+        data: {
+          applicationId: application.id,
+          organizationId: application.organizationId,
+          type: options.activityType,
+          description: options.activityDescription(interview.name),
+          actorUserId: null,
+          metadata: {
+            interviewId: interview.id,
+            response: options.response,
+            message: options.message ?? null,
+            proposedScheduledAt:
+              options.proposedScheduledAt?.toISOString() ?? null,
+          },
+        },
+      });
+
+      return stage;
+    });
+
+    const recruiters = await this.recipients.resolveRecruiters(
+      application.organizationId,
+      { departmentId: application.job.departmentId },
+    );
+    const targetUserIds = [
+      ...new Set([
+        ...recruiters,
+        ...(updated.recruiterUserId ? [updated.recruiterUserId] : []),
+        updated.createdByUserId,
+      ]),
+    ];
+
+    this.domainEvents.publishNamed(options.notificationEvent, {
+      organizationId: application.organizationId,
+      triggeredBy: null,
+      resourceType: "interview",
+      resourceId: updated.id,
+      targetUserIds,
+      applicationId: application.id,
+      includeCandidate: false,
+      metadata: {
+        interviewName: updated.name,
+        candidateName: application.candidate.fullName,
+        jobId: application.jobId,
+        candidateId: application.candidateId,
+        jobTitle: application.job.title,
+        message: options.message ?? null,
+        proposedScheduledAt:
+          options.proposedScheduledAt?.toISOString() ?? null,
+      },
+    });
+
+    return {
+      success: true as const,
+      interview: mapPublicInterview(updated),
+    };
   }
 
   async hiringDecision(
@@ -1242,7 +1549,7 @@ export class InterviewsService {
       where: {
         organizationId,
         recruiterUserId,
-        status: { in: ["SCHEDULED", "IN_PROGRESS"] },
+        status: { in: ACTIVE_CONFLICT_STATUSES },
         scheduledAt: { gte: windowStart, lte: windowEnd },
         ...(excludeId ? { id: { not: excludeId } } : {}),
       },
@@ -1270,6 +1577,10 @@ export function mapInterview(interview: InterviewWithRecruiter) {
     meetingUrl: interview.meetingUrl,
     internalNotes: interview.internalNotes,
     candidateNotes: interview.candidateNotes,
+    candidateResponse: interview.candidateResponse ?? null,
+    respondedAt: interview.respondedAt?.toISOString() ?? null,
+    responseMessage: interview.responseMessage ?? null,
+    proposedScheduledAt: interview.proposedScheduledAt?.toISOString() ?? null,
     recruiterUserId: interview.recruiterUserId,
     recruiterEmail: interview.recruiterUser?.email ?? null,
     createdByUserId: interview.createdByUserId,
@@ -1281,6 +1592,47 @@ export function mapInterview(interview: InterviewWithRecruiter) {
       ? interview.aiGeneratedAt.toISOString()
       : null,
   };
+}
+
+export function mapPublicInterview(interview: {
+  id: string;
+  name: string;
+  type: Interview["type"];
+  status: InterviewStatus;
+  scheduledAt: Date;
+  location: string | null;
+  meetingUrl: string | null;
+  candidateNotes: string | null;
+  candidateResponse: InterviewCandidateResponse | null;
+  respondedAt: Date | null;
+  responseMessage: string | null;
+  proposedScheduledAt: Date | null;
+}) {
+  return {
+    id: interview.id,
+    name: interview.name,
+    type: interview.type,
+    status: interview.status,
+    scheduledAt: interview.scheduledAt.toISOString(),
+    location: interview.location,
+    meetingUrl: interview.meetingUrl,
+    candidateNotes: interview.candidateNotes,
+    candidateResponse: interview.candidateResponse,
+    respondedAt: interview.respondedAt?.toISOString() ?? null,
+    responseMessage: interview.responseMessage,
+    proposedScheduledAt: interview.proposedScheduledAt?.toISOString() ?? null,
+    canRespond: canCandidateRespond(interview),
+  };
+}
+
+export function canCandidateRespond(interview: {
+  status: InterviewStatus;
+  scheduledAt: Date;
+}) {
+  return (
+    RESPONDABLE_STATUSES.includes(interview.status) &&
+    interview.scheduledAt.getTime() > Date.now()
+  );
 }
 
 function mapInterviewSummary(value: unknown) {
@@ -1354,8 +1706,7 @@ function detectConflicts(
   const ids = new Set<string>();
   const active = rows.filter(
     (row) =>
-      row.recruiterUserId &&
-      (row.status === "SCHEDULED" || row.status === "IN_PROGRESS"),
+      row.recruiterUserId && ACTIVE_CONFLICT_STATUSES.includes(row.status),
   );
 
   for (let i = 0; i < active.length; i += 1) {
@@ -1374,4 +1725,33 @@ function detectConflicts(
   }
 
   return ids;
+}
+
+async function recordInterviewStatusEvent(
+  tx: Prisma.TransactionClient,
+  input: {
+    interviewId: string;
+    fromStatus: InterviewStatus | null;
+    toStatus: InterviewStatus;
+    actorType: InterviewStatusActor;
+    actorUserId?: string | null;
+    message?: string | null;
+    metadata?: Prisma.InputJsonValue;
+  },
+) {
+  await tx.interviewStatusEvent.create({
+    data: {
+      interviewId: input.interviewId,
+      fromStatus: input.fromStatus,
+      toStatus: input.toStatus,
+      actorType: input.actorType,
+      actorUserId: input.actorUserId ?? null,
+      message: input.message ?? null,
+      metadata: input.metadata,
+    },
+  });
+}
+
+function hashTrackingToken(token: string) {
+  return createHash("sha256").update(token).digest("hex");
 }

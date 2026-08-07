@@ -1,4 +1,4 @@
-import type { TrackingInfo } from "@poyino/contracts";
+import type { TrackingInfo, PublicInterview } from "@poyino/contracts";
 import { useCallback, useEffect, useState } from "react";
 import { ApiRequestError } from "../../../shared/api/api-client";
 import { getTracking } from "../services/public-job.service";
@@ -35,5 +35,17 @@ export function useTracking(token: string | undefined) {
     void load();
   }, [load]);
 
-  return { status, tracking, retry: load };
+  const updateInterview = useCallback((interview: PublicInterview) => {
+    setTracking((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        interviews: current.interviews.map((item) =>
+          item.id === interview.id ? interview : item,
+        ),
+      };
+    });
+  }, []);
+
+  return { status, tracking, retry: load, updateInterview };
 }

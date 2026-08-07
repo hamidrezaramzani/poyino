@@ -22,9 +22,21 @@ import { useInterviewProcess } from "../hooks/use-interview-process";
 
 
 function statusVariant(status: Interview["status"]) {
-  if (status === "COMPLETED") return "success" as const;
-  if (status === "CANCELLED" || status === "NO_SHOW") return "danger" as const;
-  if (status === "IN_PROGRESS") return "warning" as const;
+  if (status === "COMPLETED" || status === "ACCEPTED") return "success" as const;
+  if (
+    status === "CANCELLED" ||
+    status === "NO_SHOW" ||
+    status === "DECLINED"
+  ) {
+    return "danger" as const;
+  }
+  if (
+    status === "IN_PROGRESS" ||
+    status === "RESCHEDULE_REQUESTED" ||
+    status === "WAITING_CANDIDATE_CONFIRMATION"
+  ) {
+    return "warning" as const;
+  }
   return "info" as const;
 }
 
@@ -408,7 +420,13 @@ function StageCard({
 }) {
   const { t } = useI18n();
   const editable =
-    interview.status === "SCHEDULED" || interview.status === "IN_PROGRESS";
+    interview.status === "DRAFT" ||
+    interview.status === "SCHEDULED" ||
+    interview.status === "WAITING_CANDIDATE_CONFIRMATION" ||
+    interview.status === "ACCEPTED" ||
+    interview.status === "RESCHEDULE_REQUESTED" ||
+    interview.status === "DECLINED" ||
+    interview.status === "IN_PROGRESS";
 
   return (
     <div className="candidate-interview-card">
@@ -447,6 +465,16 @@ function StageCard({
       {interview.internalNotes ? (
         <p className="candidate-interview-card-notes">
           {interview.internalNotes}
+        </p>
+      ) : null}
+      {interview.responseMessage ? (
+        <p className="candidate-interview-card-notes">
+          {interview.responseMessage}
+        </p>
+      ) : null}
+      {interview.proposedScheduledAt ? (
+        <p className="candidate-interview-card-detail">
+          {formatDateTime(interview.proposedScheduledAt, locale)}
         </p>
       ) : null}
       {interview.candidateNotes ? (

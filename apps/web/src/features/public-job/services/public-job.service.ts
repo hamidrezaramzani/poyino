@@ -78,6 +78,47 @@ export function getTracking(token: string) {
   );
 }
 
+export function acceptInterview(token: string, interviewId: string) {
+  return apiRequest<{ success: true; interview: import("@poyino/contracts").PublicInterview }>(
+    `/public/tracking/${encodeURIComponent(token)}/interviews/${interviewId}/accept`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+}
+
+export function requestInterviewReschedule(
+  token: string,
+  interviewId: string,
+  input: {
+    message?: string | null;
+    proposedScheduledAt?: string | null;
+  },
+) {
+  return apiRequest<{ success: true; interview: import("@poyino/contracts").PublicInterview }>(
+    `/public/tracking/${encodeURIComponent(token)}/interviews/${interviewId}/reschedule`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function declineInterview(
+  token: string,
+  interviewId: string,
+  input: { message?: string | null },
+) {
+  return apiRequest<{ success: true; interview: import("@poyino/contracts").PublicInterview }>(
+    `/public/tracking/${encodeURIComponent(token)}/interviews/${interviewId}/decline`,
+    {
+      method: "POST",
+      body: JSON.stringify(input),
+    },
+  );
+}
+
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

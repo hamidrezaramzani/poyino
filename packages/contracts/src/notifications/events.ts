@@ -16,6 +16,11 @@ export const NotificationEventName = {
   INTERVIEW_CANCELLED: "interview.cancelled",
   INTERVIEW_COMPLETED: "interview.completed",
   INTERVIEW_NOTE_ADDED: "interview.note_added",
+  INTERVIEW_RESCHEDULED: "interview.rescheduled",
+  INTERVIEW_ACCEPTED_BY_CANDIDATE: "interview.accepted_by_candidate",
+  INTERVIEW_RESCHEDULE_REQUESTED_BY_CANDIDATE:
+    "interview.reschedule_requested_by_candidate",
+  INTERVIEW_DECLINED_BY_CANDIDATE: "interview.declined_by_candidate",
   DEPARTMENT_CREATED: "department.created",
   MEMBER_ROLE_CHANGED: "member.role_changed",
   MEMBER_DEPARTMENT_CHANGED: "member.department_changed",

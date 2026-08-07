@@ -60,11 +60,28 @@ enum InterviewType {
 }
 
 enum InterviewStatus {
+  DRAFT
   SCHEDULED
+  WAITING_CANDIDATE_CONFIRMATION
+  ACCEPTED
+  RESCHEDULE_REQUESTED
+  DECLINED
   IN_PROGRESS
   COMPLETED
   CANCELLED
   NO_SHOW
+}
+
+enum InterviewCandidateResponse {
+  ACCEPTED
+  RESCHEDULE_REQUESTED
+  DECLINED
+}
+
+enum InterviewStatusActor {
+  RECRUITER
+  CANDIDATE
+  SYSTEM
 }
 
 enum InterviewProcessStatus {
@@ -96,6 +113,10 @@ enum ApplicationActivityType {
   INTERVIEW_STARTED
   INTERVIEW_NO_SHOW
   INTERVIEW_PROCESS_UPDATED
+  INTERVIEW_ACCEPTED
+  INTERVIEW_RESCHEDULE_REQUESTED
+  INTERVIEW_DECLINED
+  INTERVIEW_RESCHEDULED
 }
 
 enum NotificationCategory {
@@ -595,12 +616,16 @@ model Interview {
   name             String           @db.VarChar(120)
   scheduledAt      DateTime         @map("scheduled_at")
   type             InterviewType
-  status           InterviewStatus  @default(SCHEDULED)
+  status           InterviewStatus  @default(WAITING_CANDIDATE_CONFIRMATION)
   result           InterviewResult?
   location         String?          @db.VarChar(255)
   meetingUrl       String?          @map("meeting_url") @db.VarChar(500)
   internalNotes    String?          @map("internal_notes") @db.VarChar(5000)
   candidateNotes   String?          @map("candidate_notes") @db.VarChar(5000)
+  candidateResponse InterviewCandidateResponse? @map("candidate_response")
+  respondedAt      DateTime?        @map("responded_at")
+  responseMessage  String?          @map("response_message") @db.VarChar(2000)
+  proposedScheduledAt DateTime?     @map("proposed_scheduled_at")
   aiPreparation    Json?            @map("ai_preparation")
   aiPrompt         String?          @map("ai_prompt") @db.VarChar(2000)
   aiGeneratedAt    DateTime?        @map("ai_generated_at")
@@ -608,6 +633,7 @@ model Interview {
   recruiterUser    User?            @relation("InterviewRecruiter", fields: [recruiterUserId], references: [id], onDelete: SetNull)
   createdByUserId  String           @map("created_by_user_id") @db.Uuid
   createdByUser    User             @relation("InterviewCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  statusEvents     InterviewStatusEvent[]
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
 
@@ -617,5 +643,22 @@ model Interview {
   @@index([jobId])
   @@index([candidateId])
   @@index([recruiterUserId, scheduledAt])
+  @@index([status])
   @@map("interviews")
+}
+
+model InterviewStatusEvent {
+  id           String               @id @default(uuid()) @db.Uuid
+  interviewId  String               @map("interview_id") @db.Uuid
+  interview    Interview            @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  fromStatus   InterviewStatus?     @map("from_status")
+  toStatus     InterviewStatus      @map("to_status")
+  actorType    InterviewStatusActor @map("actor_type")
+  actorUserId  String?              @map("actor_user_id") @db.Uuid
+  message      String?              @db.VarChar(2000)
+  metadata     Json?
+  createdAt    DateTime             @default(now()) @map("created_at")
+
+  @@index([interviewId, createdAt])
+  @@map("interview_status_events")
 }

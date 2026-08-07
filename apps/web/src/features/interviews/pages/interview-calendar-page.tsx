@@ -341,7 +341,12 @@ export function InterviewCalendarPage() {
               },
               ...(
                 [
+                  "DRAFT",
                   "SCHEDULED",
+                  "WAITING_CANDIDATE_CONFIRMATION",
+                  "ACCEPTED",
+                  "RESCHEDULE_REQUESTED",
+                  "DECLINED",
                   "IN_PROGRESS",
                   "COMPLETED",
                   "CANCELLED",
@@ -538,7 +543,12 @@ export function InterviewCalendarPage() {
                 }
                 options={(
                   [
+                    "DRAFT",
                     "SCHEDULED",
+                    "WAITING_CANDIDATE_CONFIRMATION",
+                    "ACCEPTED",
+                    "RESCHEDULE_REQUESTED",
+                    "DECLINED",
                     "IN_PROGRESS",
                     "COMPLETED",
                     "CANCELLED",

@@ -14,6 +14,7 @@ import {
   submitApplication,
   uploadResume,
 } from "../services/public-job.service";
+import { resolveResumeMimeType } from "../utils/resume-file";
 
 export type ApplySuccessState = {
   trackingToken: string;
@@ -131,12 +132,18 @@ export function useApplyFlow(orgSlug: string | undefined, jobId: string | undefi
     setUploadProgress(8);
 
     try {
+      const mimeType = resolveResumeMimeType(selectedFile);
+      if (!mimeType) {
+        setUploadError(t.publicJob.apply.errors.unsupportedFile);
+        return;
+      }
+
       const contentBase64 = await fileToBase64(selectedFile);
       setUploadProgress(35);
 
       const uploaded = await uploadResume(orgSlug, jobId, {
         fileName: selectedFile.name,
-        mimeType: "application/pdf",
+        mimeType,
         contentBase64,
       });
       setFileId(uploaded.fileId);
