@@ -30,8 +30,14 @@ import { ApplyPage } from "./features/public-job/pages/apply-page";
 import { ApplySuccessPage } from "./features/public-job/pages/apply-success-page";
 import { PublicJobPage } from "./features/public-job/pages/public-job-page";
 import { TrackingPage } from "./features/public-job/pages/tracking-page";
+import { AdminSupportInboxPage } from "./features/support/pages/admin-support-inbox-page";
+import { AdminSupportTicketDetailsPage } from "./features/support/pages/admin-support-ticket-details-page";
+import { CreateSupportTicketPage } from "./features/support/pages/create-support-ticket-page";
+import { SupportInboxPage } from "./features/support/pages/support-inbox-page";
+import { SupportTicketDetailsPage } from "./features/support/pages/support-ticket-details-page";
 import { HomePage } from "./pages/home-page";
 import { PermissionGate } from "./shared/permissions/permission-gate";
+import { PlatformAdminGate } from "./shared/permissions/platform-admin-gate";
 import { ProtectedRoute } from "./shared/session/protected-route";
 
 function AuthenticatedShell() {
@@ -51,6 +57,46 @@ export function App() {
       <Route element={<AuthenticatedShell />}>
         <Route path="/dashboard" element={<DashboardOverviewPage />} />
         <Route path="/dashboard/notifications" element={<NotificationsPage />} />
+        <Route
+          path="/dashboard/support"
+          element={
+            <PermissionGate permission="support:view" fallback="redirect">
+              <SupportInboxPage />
+            </PermissionGate>
+          }
+        />
+        <Route
+          path="/dashboard/support/new"
+          element={
+            <PermissionGate permission="support:create" fallback="redirect">
+              <CreateSupportTicketPage />
+            </PermissionGate>
+          }
+        />
+        <Route
+          path="/dashboard/support/:ticketId"
+          element={
+            <PermissionGate permission="support:view" fallback="redirect">
+              <SupportTicketDetailsPage />
+            </PermissionGate>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <PlatformAdminGate fallback="redirect">
+              <AdminSupportInboxPage />
+            </PlatformAdminGate>
+          }
+        />
+        <Route
+          path="/admin/support/:ticketId"
+          element={
+            <PlatformAdminGate fallback="redirect">
+              <AdminSupportTicketDetailsPage />
+            </PlatformAdminGate>
+          }
+        />
         <Route path="/jobs" element={<JobListPage />} />
         <Route
           path="/jobs/create"

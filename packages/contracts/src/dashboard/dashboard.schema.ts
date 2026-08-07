@@ -62,10 +62,31 @@ export const DashboardAiCreditsSchema = z.object({
 
 export type DashboardAiCredits = z.infer<typeof DashboardAiCreditsSchema>;
 
+export const DashboardSupportStatsSchema = z.object({
+  openTickets: z.number().int().nonnegative(),
+  resolvedTickets: z.number().int().nonnegative(),
+  latestReplyAt: z.string().datetime().nullable(),
+});
+
+export type DashboardSupportStats = z.infer<typeof DashboardSupportStatsSchema>;
+
+export const DashboardPlatformSupportStatsSchema = z.object({
+  openTickets: z.number().int().nonnegative(),
+  waitingForReply: z.number().int().nonnegative(),
+  resolvedToday: z.number().int().nonnegative(),
+  averageResponseTimeMinutes: z.number().nonnegative().nullable(),
+});
+
+export type DashboardPlatformSupportStats = z.infer<
+  typeof DashboardPlatformSupportStatsSchema
+>;
+
 export const DashboardSuccessSchema = z.object({
   success: z.literal(true),
   statistics: DashboardStatisticsSchema,
   aiCredits: DashboardAiCreditsSchema,
+  support: DashboardSupportStatsSchema.optional(),
+  platformSupport: DashboardPlatformSupportStatsSchema.optional(),
   recentJobs: z.array(DashboardRecentJobSchema).max(10),
   recentCandidates: z.array(DashboardRecentCandidateSchema).max(10),
 });

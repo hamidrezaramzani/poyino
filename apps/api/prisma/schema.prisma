@@ -165,6 +165,50 @@ enum AiCreditTransactionType {
   EXPIRATION
 }
 
+enum PlatformRole {
+  NONE
+  PLATFORM_ADMIN
+}
+
+enum SupportTicketCategory {
+  GENERAL
+  BUG_REPORT
+  FEATURE_REQUEST
+  BILLING
+  AI
+  OTHER
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SupportTicketStatus {
+  OPEN
+  WAITING_FOR_ADMIN
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportMessageAuthorType {
+  CUSTOMER
+  PLATFORM_ADMIN
+  SYSTEM
+}
+
+enum SupportAuditAction {
+  TICKET_CREATED
+  TICKET_REPLIED
+  STATUS_CHANGED
+  RESOLVED
+  CLOSED
+  REOPENED
+  ASSIGNED
+}
+
 model Organization {
   id                      String      @id @default(uuid()) @db.Uuid
   name                    String      @db.VarChar(80)
@@ -209,6 +253,7 @@ model Organization {
   notificationDeliveries  NotificationDelivery[]
   aiCredits               OrganizationAiCredits?
   aiCreditTransactions    AiCreditTransaction[]
+  supportTickets          SupportTicket[]
 
   @@unique([email])
   @@map("organizations")
@@ -253,6 +298,7 @@ model StoredFile {
   logoFor          Organization[] @relation("OrganizationLogo")
   darkLogoFor      Organization[] @relation("OrganizationDarkLogo")
   resumeApplications Application[] @relation("ApplicationResume")
+  supportAttachments SupportAttachment[]
 
   @@index([organizationId])
   @@index([objectKey])
@@ -264,6 +310,7 @@ model User {
   email              String                   @unique @db.VarChar(255)
   passwordHash       String                   @map("password_hash")
   role               UserRole                 @default(OWNER)
+  platformRole       PlatformRole             @default(NONE) @map("platform_role")
   status             UserStatus               @default(ACTIVE)
   isEmailVerified    Boolean                  @default(false) @map("is_email_verified")
   lastLoginAt        DateTime?                @map("last_login_at")
@@ -285,8 +332,13 @@ model User {
   notificationPreferences NotificationPreference[]
   notificationDeliveries  NotificationDelivery[]
   aiCreditTransactions    AiCreditTransaction[]
+  supportTicketsCreated   SupportTicket[]          @relation("SupportTicketCreatedBy")
+  supportTicketsAssigned  SupportTicket[]          @relation("SupportTicketAssignedTo")
+  supportMessages         SupportMessage[]
+  supportAuditEvents      SupportAuditEvent[]
 
   @@index([organizationId, departmentId])
+  @@index([platformRole])
   @@map("users")
 }
 
@@ -722,4 +774,86 @@ model AiCreditTransaction {
   @@index([organizationId, feature, type])
   @@index([userId])
   @@map("ai_credit_transactions")
+}
+
+model SupportTicket {
+  id               String                 @id @default(uuid()) @db.Uuid
+  organizationId   String                 @map("organization_id") @db.Uuid
+  organization     Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdByUserId  String                 @map("created_by_user_id") @db.Uuid
+  createdByUser    User                   @relation("SupportTicketCreatedBy", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  assignedToUserId String?                @map("assigned_to_user_id") @db.Uuid
+  assignedToUser   User?                  @relation("SupportTicketAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  subject          String                 @db.VarChar(200)
+  category         SupportTicketCategory
+  priority         SupportTicketPriority  @default(MEDIUM)
+  status           SupportTicketStatus    @default(OPEN)
+  firstResponseAt  DateTime?              @map("first_response_at")
+  resolvedAt       DateTime?              @map("resolved_at")
+  closedAt         DateTime?              @map("closed_at")
+  lastMessageAt    DateTime               @default(now()) @map("last_message_at")
+  createdAt        DateTime               @default(now()) @map("created_at")
+  updatedAt        DateTime               @updatedAt @map("updated_at")
+  messages         SupportMessage[]
+  attachments      SupportAttachment[]
+  auditEvents      SupportAuditEvent[]
+
+  @@index([organizationId, createdAt])
+  @@index([organizationId, status])
+  @@index([status, priority, createdAt])
+  @@index([assignedToUserId])
+  @@index([lastMessageAt])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id          String                   @id @default(uuid()) @db.Uuid
+  ticketId    String                   @map("ticket_id") @db.Uuid
+  ticket      SupportTicket            @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorUserId String?                 @map("author_user_id") @db.Uuid
+  authorUser  User?                    @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+  authorType  SupportMessageAuthorType @map("author_type")
+  content     String                   @db.Text
+  /// Reserved for future internal admin-only notes.
+  isInternal  Boolean                  @default(false) @map("is_internal")
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  attachments SupportAttachment[]
+
+  @@index([ticketId, createdAt])
+  @@index([authorUserId])
+  @@map("support_messages")
+}
+
+model SupportAttachment {
+  id             String         @id @default(uuid()) @db.Uuid
+  ticketId       String         @map("ticket_id") @db.Uuid
+  ticket         SupportTicket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  messageId      String?        @map("message_id") @db.Uuid
+  message        SupportMessage? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileId         String         @map("file_id") @db.Uuid
+  file           StoredFile     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  organizationId String         @map("organization_id") @db.Uuid
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  @@index([ticketId])
+  @@index([messageId])
+  @@index([fileId])
+  @@map("support_attachments")
+}
+
+model SupportAuditEvent {
+  id          String             @id @default(uuid()) @db.Uuid
+  ticketId    String             @map("ticket_id") @db.Uuid
+  ticket      SupportTicket      @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  actorUserId String?            @map("actor_user_id") @db.Uuid
+  actorUser   User?              @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  action      SupportAuditAction
+  fromStatus  SupportTicketStatus? @map("from_status")
+  toStatus    SupportTicketStatus? @map("to_status")
+  metadata    Json?
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  @@index([ticketId, createdAt])
+  @@index([actorUserId])
+  @@map("support_audit_events")
 }

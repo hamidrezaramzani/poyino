@@ -30,6 +30,8 @@ export const NotificationEventName = {
   AI_INTERVIEW_QUESTIONS_GENERATED: "ai.interview_questions_generated",
   AI_INTERVIEW_SUMMARY_GENERATED: "ai.interview_summary_generated",
   BILLING_AI_CREDIT_LOW: "billing.ai_credit_low",
+  SUPPORT_TICKET_CREATED: "support.ticket_created",
+  SUPPORT_TICKET_ADMIN_REPLIED: "support.ticket_admin_replied",
   SYSTEM_MAINTENANCE: "system.maintenance",
   SYSTEM_SECURITY_ALERT: "system.security_alert",
 } as const;

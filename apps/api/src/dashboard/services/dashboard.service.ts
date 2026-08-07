@@ -1,5 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { AI_CREDITS_LOW_THRESHOLD } from "@poyino/contracts";
+import {
+  AI_CREDITS_LOW_THRESHOLD,
+  isPlatformAdmin,
+  type PlatformRole,
+} from "@poyino/contracts";
 import { departmentScopeFilter } from "../../authentication/lib/department-scope";
 import type { AuthenticatedUser } from "../../authentication/types/authenticated-user";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -30,6 +34,9 @@ export class DashboardService {
       recentJobs,
       recentApplications,
       aiCreditsRow,
+      supportOpen,
+      supportResolved,
+      latestSupportReply,
     ] = await Promise.all([
       this.prisma.job.count({
         where: { organizationId, ...jobScope },
@@ -84,9 +91,34 @@ export class DashboardService {
         where: { organizationId },
         select: { balance: true },
       }),
+      this.prisma.supportTicket.count({
+        where: {
+          organizationId,
+          status: {
+            in: ["OPEN", "WAITING_FOR_ADMIN", "WAITING_FOR_CUSTOMER"],
+          },
+        },
+      }),
+      this.prisma.supportTicket.count({
+        where: {
+          organizationId,
+          status: { in: ["RESOLVED", "CLOSED"] },
+        },
+      }),
+      this.prisma.supportMessage.findFirst({
+        where: {
+          authorType: "PLATFORM_ADMIN",
+          ticket: { organizationId },
+        },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      }),
     ]);
 
     const remaining = aiCreditsRow?.balance ?? 0;
+    const platformSupport = isPlatformAdmin(user.platformRole as PlatformRole)
+      ? await this.getPlatformSupportStats()
+      : undefined;
 
     return {
       success: true as const,
@@ -101,6 +133,12 @@ export class DashboardService {
         low: remaining > 0 && remaining <= AI_CREDITS_LOW_THRESHOLD,
         lowThreshold: AI_CREDITS_LOW_THRESHOLD,
       },
+      support: {
+        openTickets: supportOpen,
+        resolvedTickets: supportResolved,
+        latestReplyAt: latestSupportReply?.createdAt.toISOString() ?? null,
+      },
+      ...(platformSupport ? { platformSupport } : {}),
       recentJobs: recentJobs.map((job) => ({
         id: job.id,
         title: job.title,
@@ -117,6 +155,60 @@ export class DashboardService {
         status: application.status,
         submittedAt: application.appliedAt.toISOString(),
       })),
+    };
+  }
+
+  private async getPlatformSupportStats() {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const [openTickets, waitingForReply, resolvedToday, responseSamples] =
+      await Promise.all([
+        this.prisma.supportTicket.count({
+          where: {
+            status: {
+              in: ["OPEN", "WAITING_FOR_ADMIN", "WAITING_FOR_CUSTOMER"],
+            },
+          },
+        }),
+        this.prisma.supportTicket.count({
+          where: { status: "WAITING_FOR_ADMIN" },
+        }),
+        this.prisma.supportTicket.count({
+          where: {
+            status: "RESOLVED",
+            resolvedAt: { gte: startOfDay },
+          },
+        }),
+        this.prisma.supportTicket.findMany({
+          where: { firstResponseAt: { not: null } },
+          select: { createdAt: true, firstResponseAt: true },
+          take: 500,
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+
+    let averageResponseTimeMinutes: number | null = null;
+    if (responseSamples.length > 0) {
+      const totalMs = responseSamples.reduce((sum, ticket) => {
+        if (!ticket.firstResponseAt) {
+          return sum;
+        }
+        return (
+          sum +
+          (ticket.firstResponseAt.getTime() - ticket.createdAt.getTime())
+        );
+      }, 0);
+      averageResponseTimeMinutes = Math.round(
+        totalMs / responseSamples.length / 60_000,
+      );
+    }
+
+    return {
+      openTickets,
+      waitingForReply,
+      resolvedToday,
+      averageResponseTimeMinutes,
     };
   }
 }

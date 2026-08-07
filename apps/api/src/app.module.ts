@@ -19,6 +19,7 @@ import { PublicJobModule } from "./public-job/public-job.module";
 import { ResumeTextExtractionModule } from "./resume-text-extraction";
 import { SettingsModule } from "./settings/settings.module";
 import { StorageModule } from "./storage/storage.module";
+import { SupportModule } from "./support/support.module";
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { StorageModule } from "./storage/storage.module";
     AuthenticationModule,
     NotificationsModule,
     CreditsModule,
+    SupportModule,
     DashboardModule,
     JobsModule,
     CandidatesModule,

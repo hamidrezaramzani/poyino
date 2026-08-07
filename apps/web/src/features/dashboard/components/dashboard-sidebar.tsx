@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useOrganizationBranding } from "../../../shared/branding/organization-branding-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useCan } from "../../../shared/permissions/can";
+import { useIsPlatformAdmin } from "../../../shared/permissions/use-platform-admin";
 import { useSession } from "../../../shared/session/session-provider";
 import { logoutUser } from "../services/auth-session.service";
 import {
@@ -11,6 +12,7 @@ import {
   ChevronDownIcon,
   FileSpreadsheetIcon,
   LayoutDashboardIcon,
+  LifeBuoyIcon,
   ListIcon,
   PanelLeftIcon,
   PlusIcon,
@@ -36,6 +38,8 @@ export function DashboardSidebar({
   const canCreateJob = useCan("jobs:create");
   const canViewReports = useCan("reports:view");
   const canViewSettings = useCan("organization:view");
+  const canViewSupport = useCan("support:view");
+  const isPlatformAdmin = useIsPlatformAdmin();
   const location = useLocation();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(readCollapsedPreference);
@@ -224,6 +228,24 @@ export function DashboardSidebar({
                 collapsed={collapsed}
                 onNavigate={onMobileClose}
               />
+              {canViewSupport ? (
+                <SidebarLink
+                  to="/dashboard/support"
+                  label={t.dashboard.nav.support}
+                  icon={<LifeBuoyIcon size={18} />}
+                  collapsed={collapsed}
+                  onNavigate={onMobileClose}
+                />
+              ) : null}
+              {isPlatformAdmin ? (
+                <SidebarLink
+                  to="/admin/support"
+                  label={t.dashboard.nav.supportTickets}
+                  icon={<LifeBuoyIcon size={18} />}
+                  collapsed={collapsed}
+                  onNavigate={onMobileClose}
+                />
+              ) : null}
               {canViewReports ? (
                 <SidebarLink
                   to="/reports"

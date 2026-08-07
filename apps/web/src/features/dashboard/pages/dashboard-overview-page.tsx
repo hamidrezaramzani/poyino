@@ -3,6 +3,7 @@ import { DashboardErrorState } from "../components/dashboard-error-state";
 import { RecentCandidatesTable } from "../components/recent-candidates-table";
 import { RecentJobsTable } from "../components/recent-jobs-table";
 import { StatisticsSection } from "../components/statistics-section";
+import { SupportStatsSection } from "../components/support-stats-section";
 import { useDashboardOverview } from "../hooks/use-dashboard-overview";
 
 export function DashboardOverviewPage() {
@@ -17,6 +18,11 @@ export function DashboardOverviewPage() {
     <div className="dashboard-overview">
       <StatisticsSection
         statistics={data?.statistics ?? null}
+        loading={loading}
+      />
+      <SupportStatsSection
+        support={data?.support}
+        platformSupport={data?.platformSupport}
         loading={loading}
       />
       <AiCreditsSection

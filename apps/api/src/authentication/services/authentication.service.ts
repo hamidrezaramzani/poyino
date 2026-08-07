@@ -293,6 +293,7 @@ export class AuthenticationService {
       id: session.user.id,
       email: session.user.email,
       role: session.user.role,
+      platformRole: session.user.platformRole,
       departmentId: session.user.departmentId,
       organizationId: session.user.organizationId,
       organizationName: session.user.organization.name,
@@ -312,6 +313,7 @@ export class AuthenticationService {
         id: user.id,
         email: user.email,
         role: user.role,
+        platformRole: user.platformRole,
         departmentId: user.departmentId,
         organization: {
           id: user.organizationId,

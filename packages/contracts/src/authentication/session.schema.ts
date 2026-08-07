@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { OrganizationRoleSchema } from "../organization/permissions";
+import { PlatformRoleSchema } from "../support/support.schema";
 
 export const SessionUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   role: OrganizationRoleSchema,
+  platformRole: PlatformRoleSchema.default("NONE"),
   departmentId: z.string().uuid(),
   organization: z.object({
     id: z.string().uuid(),

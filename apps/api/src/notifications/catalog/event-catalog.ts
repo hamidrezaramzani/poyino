@@ -408,6 +408,41 @@ export const EVENT_CATALOG: Record<string, EventCatalogEntry> = {
     },
     resolveActionUrl: () => "/settings/ai-credits",
   },
+  [NotificationEventName.SUPPORT_TICKET_CREATED]: {
+    category: "SYSTEM",
+    priority: "HIGH",
+    mandatory: true,
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "تیکت پشتیبانی جدید" : "New support ticket",
+    resolveDescription: (m, locale) => {
+      const subject = str(m, "subject", "ticket");
+      const org = str(m, "organizationName", "Organization");
+      return locale === "fa"
+        ? `${org}: ${subject}`
+        : `${org}: ${subject}`;
+    },
+    resolveActionUrl: (m) => {
+      const ticketId = str(m, "ticketId");
+      return ticketId ? `/admin/support/${ticketId}` : "/admin/support";
+    },
+  },
+  [NotificationEventName.SUPPORT_TICKET_ADMIN_REPLIED]: {
+    category: "SYSTEM",
+    priority: "HIGH",
+    mandatory: true,
+    resolveTitle: (_m, locale) =>
+      locale === "fa" ? "پاسخ پشتیبانی" : "Support reply",
+    resolveDescription: (m, locale) => {
+      const subject = str(m, "subject", "ticket");
+      return locale === "fa"
+        ? `پشتیبانی به تیکت «${subject}» پاسخ داد.`
+        : `Support replied to “${subject}”.`;
+    },
+    resolveActionUrl: (m) => {
+      const ticketId = str(m, "ticketId");
+      return ticketId ? `/dashboard/support/${ticketId}` : "/dashboard/support";
+    },
+  },
   [NotificationEventName.SYSTEM_SECURITY_ALERT]: {
     category: "SYSTEM",
     priority: "CRITICAL",

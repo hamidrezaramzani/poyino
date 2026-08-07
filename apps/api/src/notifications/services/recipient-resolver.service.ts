@@ -65,6 +65,20 @@ export class RecipientResolverService {
     });
   }
 
+  async resolvePlatformAdmins(options?: { excludeUserId?: string | null }) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        platformRole: "PLATFORM_ADMIN",
+        status: "ACTIVE",
+        ...(options?.excludeUserId
+          ? { id: { not: options.excludeUserId } }
+          : {}),
+      },
+      select: { id: true },
+    });
+    return users.map((user) => user.id);
+  }
+
   async resolveOrganizationMembers(
     organizationId: string,
     options?: { excludeUserId?: string | null },

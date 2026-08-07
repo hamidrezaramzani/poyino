@@ -149,6 +149,8 @@ export type Translation = {
       jobList: string;
       candidates: string;
       interviews: string;
+      support: string;
+      supportTickets: string;
       reports: string;
       settings: string;
     };
@@ -274,6 +276,81 @@ export type Translation = {
       INTERVIEW_SUMMARY: string;
     };
     types: Record<string, string>;
+  };
+  support: {
+    title: string;
+    description: string;
+    createTicket: string;
+    createTitle: string;
+    createDescription: string;
+    createFailed: string;
+    creating: string;
+    submitTicket: string;
+    backToInbox: string;
+    backToAdmin: string;
+    searchPlaceholder: string;
+    allStatuses: string;
+    allPriorities: string;
+    allCategories: string;
+    emptyTitle: string;
+    emptyDescription: string;
+    loadFailed: string;
+    loadFailedDescription: string;
+    retry: string;
+    replyPlaceholder: string;
+    adminReplyPlaceholder: string;
+    sendReply: string;
+    sending: string;
+    replyFailed: string;
+    repliesDisabled: string;
+    closeTicket: string;
+    reopenTicket: string;
+    resolveTicket: string;
+    assignToMe: string;
+    adminAuthor: string;
+    customerAuthor: string;
+    adminTitle: string;
+    adminDescription: string;
+    adminEmptyTitle: string;
+    adminEmptyDescription: string;
+    orgWidgetTitle: string;
+    platformWidgetTitle: string;
+    viewTickets: string;
+    fields: {
+      subject: string;
+      category: string;
+      priority: string;
+      message: string;
+    };
+    categories: {
+      GENERAL: string;
+      BUG_REPORT: string;
+      FEATURE_REQUEST: string;
+      BILLING: string;
+      AI: string;
+      OTHER: string;
+    };
+    priorities: {
+      LOW: string;
+      MEDIUM: string;
+      HIGH: string;
+    };
+    statuses: {
+      OPEN: string;
+      WAITING_FOR_ADMIN: string;
+      WAITING_FOR_CUSTOMER: string;
+      RESOLVED: string;
+      CLOSED: string;
+    };
+    stats: {
+      openTickets: string;
+      resolvedTickets: string;
+      latestReply: string;
+      waitingForReply: string;
+      resolvedToday: string;
+      avgResponse: string;
+      minutes: string;
+    };
   };
   notifications: {
     bellLabel: string;
@@ -1527,6 +1604,8 @@ export const translations: Record<Locale, Translation> = {
         jobList: "فهرست فرصت‌ها",
         candidates: "متقاضیان",
         interviews: "مصاحبه‌ها",
+        support: "پشتیبانی",
+        supportTickets: "تیکت‌های پشتیبانی",
         reports: "تحلیل‌ها",
         settings: "تنظیمات",
       },
@@ -1661,6 +1740,81 @@ export const translations: Record<Locale, Translation> = {
         BONUS: "پاداش",
         PURCHASE: "خرید",
         EXPIRATION: "انقضا",
+      },
+    },
+    support: {
+      title: "پشتیبانی",
+      description: "تیکت‌های پشتیبانی سازمان خود را مدیریت کنید.",
+      createTicket: "تیکت جدید",
+      createTitle: "ایجاد تیکت پشتیبانی",
+      createDescription: "موضوع را بنویسید تا تیم پلتفرم به شما کمک کند.",
+      createFailed: "ایجاد تیکت ناموفق بود.",
+      creating: "در حال ایجاد...",
+      submitTicket: "ارسال تیکت",
+      backToInbox: "بازگشت به صندوق",
+      backToAdmin: "بازگشت به تیکت‌ها",
+      searchPlaceholder: "جستجوی موضوع یا ایمیل...",
+      allStatuses: "همه وضعیت‌ها",
+      allPriorities: "همه اولویت‌ها",
+      allCategories: "همه دسته‌ها",
+      emptyTitle: "هنوز تیکتی ثبت نشده است",
+      emptyDescription: "برای ارتباط با پشتیبانی پلتفرم یک تیکت ایجاد کنید.",
+      loadFailed: "بارگذاری تیکت‌ها ناموفق بود.",
+      loadFailedDescription: "لطفاً دوباره تلاش کنید.",
+      retry: "تلاش مجدد",
+      replyPlaceholder: "پاسخ خود را بنویسید...",
+      adminReplyPlaceholder: "پاسخ پشتیبانی را بنویسید...",
+      sendReply: "ارسال پاسخ",
+      sending: "در حال ارسال...",
+      replyFailed: "ارسال پاسخ ناموفق بود.",
+      repliesDisabled: "این تیکت بسته شده و امکان پاسخ ندارد.",
+      closeTicket: "بستن تیکت",
+      reopenTicket: "بازگشایی تیکت",
+      resolveTicket: "حل‌شده",
+      assignToMe: "اختصاص به من",
+      adminAuthor: "پشتیبانی پلتفرم",
+      customerAuthor: "سازمان",
+      adminTitle: "تیکت‌های پشتیبانی",
+      adminDescription: "مدیریت همه تیکت‌های پشتیبانی سازمان‌ها.",
+      adminEmptyTitle: "تیکتی یافت نشد",
+      adminEmptyDescription: "با فیلترهای فعلی نتیجه‌ای وجود ندارد.",
+      orgWidgetTitle: "پشتیبانی",
+      platformWidgetTitle: "پشتیبانی پلتفرم",
+      viewTickets: "مشاهده تیکت‌ها",
+      fields: {
+        subject: "موضوع",
+        category: "دسته",
+        priority: "اولویت",
+        message: "پیام",
+      },
+      categories: {
+        GENERAL: "عمومی",
+        BUG_REPORT: "گزارش باگ",
+        FEATURE_REQUEST: "درخواست قابلیت",
+        BILLING: "صورتحساب",
+        AI: "هوش مصنوعی",
+        OTHER: "سایر",
+      },
+      priorities: {
+        LOW: "کم",
+        MEDIUM: "متوسط",
+        HIGH: "بالا",
+      },
+      statuses: {
+        OPEN: "باز",
+        WAITING_FOR_ADMIN: "در انتظار پشتیبانی",
+        WAITING_FOR_CUSTOMER: "در انتظار سازمان",
+        RESOLVED: "حل‌شده",
+        CLOSED: "بسته‌شده",
+      },
+      stats: {
+        openTickets: "تیکت‌های باز",
+        resolvedTickets: "تیکت‌های حل‌شده",
+        latestReply: "آخرین پاسخ",
+        waitingForReply: "در انتظار پاسخ",
+        resolvedToday: "حل‌شده امروز",
+        avgResponse: "میانگین زمان پاسخ",
+        minutes: "دقیقه",
       },
     },
     notifications: {
@@ -3048,6 +3202,8 @@ export const translations: Record<Locale, Translation> = {
         jobList: "Job list",
         candidates: "Candidates",
         interviews: "Interviews",
+        support: "Support",
+        supportTickets: "Support Tickets",
         reports: "Analytics",
         settings: "Settings",
       },
@@ -3181,6 +3337,81 @@ export const translations: Record<Locale, Translation> = {
         BONUS: "Bonus",
         PURCHASE: "Purchase",
         EXPIRATION: "Expiration",
+      },
+    },
+    support: {
+      title: "Support",
+      description: "Create and manage support tickets for your organization.",
+      createTicket: "New ticket",
+      createTitle: "Create support ticket",
+      createDescription: "Tell us what you need help with.",
+      createFailed: "Failed to create ticket.",
+      creating: "Creating...",
+      submitTicket: "Submit ticket",
+      backToInbox: "Back to inbox",
+      backToAdmin: "Back to tickets",
+      searchPlaceholder: "Search subject or email...",
+      allStatuses: "All statuses",
+      allPriorities: "All priorities",
+      allCategories: "All categories",
+      emptyTitle: "No tickets yet",
+      emptyDescription: "Create a ticket to reach platform support.",
+      loadFailed: "Failed to load tickets.",
+      loadFailedDescription: "Please try again.",
+      retry: "Retry",
+      replyPlaceholder: "Write your reply...",
+      adminReplyPlaceholder: "Write a support reply...",
+      sendReply: "Send reply",
+      sending: "Sending...",
+      replyFailed: "Failed to send reply.",
+      repliesDisabled: "This ticket is closed and cannot accept replies.",
+      closeTicket: "Close ticket",
+      reopenTicket: "Reopen ticket",
+      resolveTicket: "Resolve",
+      assignToMe: "Assign to me",
+      adminAuthor: "Platform support",
+      customerAuthor: "Organization",
+      adminTitle: "Support Tickets",
+      adminDescription: "Manage support tickets across all organizations.",
+      adminEmptyTitle: "No tickets found",
+      adminEmptyDescription: "No tickets match the current filters.",
+      orgWidgetTitle: "Support",
+      platformWidgetTitle: "Platform support",
+      viewTickets: "View tickets",
+      fields: {
+        subject: "Subject",
+        category: "Category",
+        priority: "Priority",
+        message: "Message",
+      },
+      categories: {
+        GENERAL: "General",
+        BUG_REPORT: "Bug report",
+        FEATURE_REQUEST: "Feature request",
+        BILLING: "Billing",
+        AI: "AI",
+        OTHER: "Other",
+      },
+      priorities: {
+        LOW: "Low",
+        MEDIUM: "Medium",
+        HIGH: "High",
+      },
+      statuses: {
+        OPEN: "Open",
+        WAITING_FOR_ADMIN: "Waiting for admin",
+        WAITING_FOR_CUSTOMER: "Waiting for customer",
+        RESOLVED: "Resolved",
+        CLOSED: "Closed",
+      },
+      stats: {
+        openTickets: "Open tickets",
+        resolvedTickets: "Resolved tickets",
+        latestReply: "Latest reply",
+        waitingForReply: "Waiting for reply",
+        resolvedToday: "Resolved today",
+        avgResponse: "Avg. response time",
+        minutes: "min",
       },
     },
     notifications: {
