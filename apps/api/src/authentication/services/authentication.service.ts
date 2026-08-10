@@ -40,6 +40,7 @@ import {
   RESET_PASSWORD_LOCK_MS,
   SESSION_EXPIRATION_MS,
 } from "../authentication.constants";
+import { loadAppConfig } from "../../app/config/app-stage.config";
 
 const EMAIL_TOKEN_EXPIRATION_MS = 15 * 60 * 1000;
 const BCRYPT_ROUNDS = 12;
@@ -79,6 +80,7 @@ export class AuthenticationService {
   async register(input: RegisterInput) {
     const organizationName = formatWorkspaceName(input.organizationName);
     const email = input.email.trim().toLowerCase();
+    const { emailVerificationEnabled } = loadAppConfig();
 
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -89,9 +91,13 @@ export class AuthenticationService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
-    const rawToken = randomBytes(32).toString("hex");
-    const tokenHash = hashToken(rawToken);
-    const expiresAt = new Date(Date.now() + EMAIL_TOKEN_EXPIRATION_MS);
+    const rawToken = emailVerificationEnabled
+      ? randomBytes(32).toString("hex")
+      : null;
+    const tokenHash = rawToken ? hashToken(rawToken) : null;
+    const expiresAt = emailVerificationEnabled
+      ? new Date(Date.now() + EMAIL_TOKEN_EXPIRATION_MS)
+      : null;
 
     let result: {
       organization: { name: string };
@@ -130,7 +136,8 @@ export class AuthenticationService {
             passwordHash,
             role: "OWNER",
             status: "ACTIVE",
-            isEmailVerified: false,
+            // Beta / no-mailer mode: accounts are usable immediately.
+            isEmailVerified: !emailVerificationEnabled,
             organizationId: organization.id,
             departmentId: department.id,
           },
@@ -160,13 +167,15 @@ export class AuthenticationService {
           },
         });
 
-        await tx.emailVerificationToken.create({
-          data: {
-            userId: user.id,
-            tokenHash,
-            expiresAt,
-          },
-        });
+        if (emailVerificationEnabled && tokenHash && expiresAt) {
+          await tx.emailVerificationToken.create({
+            data: {
+              userId: user.id,
+              tokenHash,
+              expiresAt,
+            },
+          });
+        }
 
         return { organization, user };
       });
@@ -180,14 +189,20 @@ export class AuthenticationService {
       throw error;
     }
 
-    const webAppUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
-    const verificationUrl = `${webAppUrl}/auth/verify-email?token=${rawToken}`;
+    if (emailVerificationEnabled && rawToken) {
+      const webAppUrl = process.env.WEB_APP_URL ?? "http://localhost:5173";
+      const verificationUrl = `${webAppUrl}/auth/verify-email?token=${rawToken}`;
 
-    await this.emailService.sendVerificationEmail({
-      to: result.user.email,
-      organizationName: result.organization.name,
-      verificationUrl,
-    });
+      await this.emailService.sendVerificationEmail({
+        to: result.user.email,
+        organizationName: result.organization.name,
+        verificationUrl,
+      });
+    } else {
+      this.logger.log(
+        `Registration completed without email verification email=${result.user.email}`,
+      );
+    }
 
     return { success: true as const };
   }
@@ -222,7 +237,8 @@ export class AuthenticationService {
       throw invalidCredentialsException();
     }
 
-    if (!user.isEmailVerified) {
+    const { emailVerificationEnabled } = loadAppConfig();
+    if (emailVerificationEnabled && !user.isEmailVerified) {
       this.logger.warn(
         `Login blocked for unverified email=${email} ip=${context.ip}`,
       );
@@ -336,6 +352,8 @@ export class AuthenticationService {
     input: ForgotPasswordInput,
     context: ForgotPasswordContext,
   ) {
+    this.assertPasswordResetEnabled();
+
     const email = input.email.trim().toLowerCase();
     const attemptKey = `${context.ip}:${email}`;
 
@@ -408,6 +426,7 @@ export class AuthenticationService {
   }
 
   async validateResetToken(token: string) {
+    this.assertPasswordResetEnabled();
     await this.resolveResetToken(token);
     return { success: true as const };
   }
@@ -416,6 +435,8 @@ export class AuthenticationService {
     input: ResetPasswordInput,
     context: ResetPasswordContext,
   ) {
+    this.assertPasswordResetEnabled();
+
     const attemptKey = context.ip;
 
     this.assertNotRateLimited(
@@ -457,6 +478,12 @@ export class AuthenticationService {
     );
 
     return { success: true as const };
+  }
+
+  private assertPasswordResetEnabled() {
+    if (!loadAppConfig().passwordResetEnabled) {
+      throw passwordResetDisabledException();
+    }
   }
 
   private async resolveResetToken(rawToken: string) {
@@ -609,6 +636,17 @@ function tooManyLoginRequestsException() {
     },
     HttpStatus.TOO_MANY_REQUESTS,
   );
+}
+
+function passwordResetDisabledException() {
+  return new ForbiddenException({
+    success: false,
+    error: {
+      code: ForgotPasswordErrorCode.FEATURE_DISABLED,
+      message:
+        "بازیابی رمز عبور در نسخه بتا موقتاً در دسترس نیست. لطفاً رمز عبور خود را به خاطر بسپارید.",
+    },
+  });
 }
 
 function tooManyForgotPasswordRequestsException() {

@@ -13,12 +13,16 @@ type AppConfigContextValue = {
   config: AppConfig | null;
   status: "loading" | "ready";
   isBeta: boolean;
+  emailVerificationEnabled: boolean;
+  passwordResetEnabled: boolean;
 };
 
 const AppConfigContext = createContext<AppConfigContextValue>({
   config: null,
   status: "loading",
   isBeta: false,
+  emailVerificationEnabled: true,
+  passwordResetEnabled: true,
 });
 
 export function AppConfigProvider({ children }: PropsWithChildren) {
@@ -43,6 +47,8 @@ export function AppConfigProvider({ children }: PropsWithChildren) {
         config,
         status,
         isBeta: isBetaStage(config?.stage),
+        emailVerificationEnabled: config?.emailVerificationEnabled ?? true,
+        passwordResetEnabled: config?.passwordResetEnabled ?? true,
       }}
     >
       {children}

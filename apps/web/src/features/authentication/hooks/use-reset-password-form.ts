@@ -153,7 +153,9 @@ export function useResetPasswordForm() {
       });
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        if (error.code === ResetPasswordErrorCode.INVALID_TOKEN) {
+        if (error.code === ResetPasswordErrorCode.FEATURE_DISABLED) {
+          push(t.resetPassword.betaUnavailableBody, "error");
+        } else if (error.code === ResetPasswordErrorCode.INVALID_TOKEN) {
           setTokenStatus("invalid");
         } else if (error.code === ResetPasswordErrorCode.EXPIRED_TOKEN) {
           setTokenStatus("expired");

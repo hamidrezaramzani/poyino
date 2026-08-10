@@ -26,6 +26,7 @@ export const ForgotPasswordErrorCode = {
   TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS",
   VALIDATION_ERROR: "VALIDATION_ERROR",
   UNEXPECTED_ERROR: "UNEXPECTED_ERROR",
+  FEATURE_DISABLED: "FEATURE_DISABLED",
 } as const;
 
 export type ForgotPasswordErrorCode =

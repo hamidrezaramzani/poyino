@@ -15,4 +15,7 @@ export const appStageDefaults = {
   stage: "beta" as const,
   betaNoticeVersion: "1",
   productVersion: "0.1.0-beta",
+  /** Defaults follow stage: off in beta, on in production. */
+  emailVerificationEnabled: false,
+  passwordResetEnabled: false,
 } as const;

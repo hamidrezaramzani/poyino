@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { LoginErrorCode, LoginSchema, type LoginInput } from "@poyino/contracts";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAppConfig } from "../../../shared/config/app-config-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useToast } from "../../../shared/hooks/use-toast";
 import { useSession } from "../../../shared/session/session-provider";
@@ -21,6 +22,7 @@ export function useLoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useI18n();
+  const { emailVerificationEnabled } = useAppConfig();
   const { refresh } = useSession();
   const { push } = useToast();
   const [values, setValues] = useState<LoginInput>(emptyValues);
@@ -42,7 +44,12 @@ export function useLoginForm() {
 
   useEffect(() => {
     if (registrationSuccess) {
-      push(t.register.successToast, "success");
+      push(
+        emailVerificationEnabled
+          ? t.register.successToast
+          : t.register.successToastImmediate,
+        "success",
+      );
       navigate(location.pathname, { replace: true, state: null });
       return;
     }
@@ -58,6 +65,7 @@ export function useLoginForm() {
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [
+    emailVerificationEnabled,
     forgotPasswordSuccess,
     location.pathname,
     navigate,
@@ -66,6 +74,7 @@ export function useLoginForm() {
     resetPasswordSuccess,
     t.forgotPassword.successToast,
     t.register.successToast,
+    t.register.successToastImmediate,
     t.resetPassword.successToast,
   ]);
 

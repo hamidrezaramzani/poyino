@@ -8,11 +8,14 @@ function fallbackConfig(): AppConfig {
   ).toLowerCase();
   const stage: AppStage =
     stageCandidate === "production" ? "production" : "beta";
+  const stageDefaultEnabled = stage === "production";
 
   return {
     stage,
     betaNoticeVersion: appStageDefaults.betaNoticeVersion,
     productVersion: appStageDefaults.productVersion,
+    emailVerificationEnabled: stageDefaultEnabled,
+    passwordResetEnabled: stageDefaultEnabled,
   };
 }
 

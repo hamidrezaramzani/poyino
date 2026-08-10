@@ -100,7 +100,9 @@ export function useForgotPasswordForm() {
       });
     } catch (error) {
       if (error instanceof ApiRequestError) {
-        if (error.code === ForgotPasswordErrorCode.TOO_MANY_REQUESTS) {
+        if (error.code === ForgotPasswordErrorCode.FEATURE_DISABLED) {
+          push(t.forgotPassword.betaUnavailableBody, "error");
+        } else if (error.code === ForgotPasswordErrorCode.TOO_MANY_REQUESTS) {
           push(t.forgotPassword.errors.tooManyRequests, "error");
         } else if (error.details) {
           const nextErrors: FieldErrors = {};

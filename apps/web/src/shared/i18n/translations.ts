@@ -60,6 +60,7 @@ export type Translation = {
     haveAccount: string;
     loginLink: string;
     successToast: string;
+    successToastImmediate: string;
     errors: {
       organizationNameRequired: string;
       organizationNameTooShort: string;
@@ -74,6 +75,7 @@ export type Translation = {
   login: {
     title: string;
     description: string;
+    descriptionWithoutVerification: string;
     emailLabel: string;
     emailPlaceholder: string;
     passwordLabel: string;
@@ -102,6 +104,9 @@ export type Translation = {
     submitting: string;
     loginLink: string;
     successToast: string;
+    betaUnavailableTitle: string;
+    betaUnavailableBody: string;
+    betaUnavailableHint: string;
     errors: {
       emailInvalid: string;
       tooManyRequests: string;
@@ -121,6 +126,9 @@ export type Translation = {
     loginLink: string;
     forgotPasswordLink: string;
     successToast: string;
+    betaUnavailableTitle: string;
+    betaUnavailableBody: string;
+    betaUnavailableHint: string;
     errors: {
       missingToken: string;
       invalidToken: string;
@@ -366,6 +374,7 @@ export type Translation = {
     dashboardTitle: string;
     dashboardBody: string;
     footer: string;
+    emailFeatureUnavailableEyebrow: string;
   };
   feedback: {
     title: string;
@@ -1363,6 +1372,8 @@ export type Translation = {
     tokenReceived: string;
     missingToken: string;
     loginLink: string;
+    betaUnavailableTitle: string;
+    betaUnavailableBody: string;
   };
   publicJob: {
     applyNow: string;
@@ -1612,6 +1623,8 @@ export const translations: Record<Locale, Translation> = {
       haveAccount: "قبلاً ثبت نام کرده اید؟",
       loginLink: "ورود",
       successToast: "ثبت نام با موفقیت انجام شد. لطفاً ایمیل خود را تأیید کنید.",
+      successToastImmediate:
+        "ثبت نام با موفقیت انجام شد. اکنون می‌توانید وارد شوید.",
       errors: {
         organizationNameRequired: "نام سازمان الزامی است.",
         organizationNameTooShort: "نام سازمان باید حداقل ۳ کاراکتر باشد.",
@@ -1626,6 +1639,8 @@ export const translations: Record<Locale, Translation> = {
     login: {
       title: "ورود",
       description: "پس از تأیید ایمیل می توانید وارد حساب خود شوید.",
+      descriptionWithoutVerification:
+        "با پست الکترونیکی و رمز عبور خود وارد شوید.",
       emailLabel: "پست الکترونیکی",
       emailPlaceholder: "example@company.com",
       passwordLabel: "رمز عبور",
@@ -1657,6 +1672,11 @@ export const translations: Record<Locale, Translation> = {
       loginLink: "بازگشت به ورود",
       successToast:
         "در صورت وجود حساب کاربری، لینک بازیابی رمز عبور برای شما ارسال شد.",
+      betaUnavailableTitle: "بازیابی رمز عبور در بتا غیرفعال است",
+      betaUnavailableBody:
+        "بازیابی رمز عبور در نسخه بتا موقتاً در دسترس نیست؛ چون سرویس ایمیل هنوز فعال نشده است.",
+      betaUnavailableHint:
+        "لطفاً هنگام آزمایش برنامه، رمز عبور خود را به خاطر بسپارید.",
       errors: {
         emailInvalid: "پست الکترونیکی معتبر نیست.",
         tooManyRequests:
@@ -1677,6 +1697,11 @@ export const translations: Record<Locale, Translation> = {
       loginLink: "بازگشت به ورود",
       forgotPasswordLink: "درخواست لینک جدید",
       successToast: "رمز عبور با موفقیت تغییر کرد. اکنون می توانید وارد شوید.",
+      betaUnavailableTitle: "بازنشانی رمز عبور در بتا غیرفعال است",
+      betaUnavailableBody:
+        "بازنشانی رمز عبور در نسخه بتا موقتاً در دسترس نیست؛ چون سرویس ایمیل هنوز فعال نشده است.",
+      betaUnavailableHint:
+        "لطفاً هنگام آزمایش برنامه، رمز عبور خود را به خاطر بسپارید.",
       errors: {
         missingToken: "لینک بازیابی معتبر نیست.",
         invalidToken: "لینک بازیابی معتبر نیست.",
@@ -1938,6 +1963,8 @@ export const translations: Record<Locale, Translation> = {
       dashboardBody:
         "برخی قابلیت‌ها ممکن است در طول توسعه تغییر کنند و ناپایداری گاه‌به‌گاه انتظار می‌رود.",
       footer: "این پلتفرم استخدام هم‌اکنون در نسخه بتا اجرا می‌شود.",
+      emailFeatureUnavailableEyebrow:
+        "🚧 این قابلیت در نسخه بتا موقتاً در دسترس نیست؛ چون سرویس ایمیل هنوز فعال نشده است.",
     },
     feedback: {
       title: "بازخورد بتا",
@@ -3065,6 +3092,9 @@ export const translations: Record<Locale, Translation> = {
         "توکن تأیید شناسایی شد. تکمیل تأیید ایمیل به زودی فعال می شود.",
       missingToken: "لینک تأیید نامعتبر است یا توکن ندارد.",
       loginLink: "بازگشت به ورود",
+      betaUnavailableTitle: "تأیید ایمیل در بتا لازم نیست",
+      betaUnavailableBody:
+        "در نسخه بتا تأیید ایمیل غیرفعال است و حساب‌های جدید بلافاصله قابل استفاده هستند. می‌توانید وارد شوید.",
     },
     publicJob: {
       applyNow: "ارسال درخواست",
@@ -3322,6 +3352,8 @@ export const translations: Record<Locale, Translation> = {
       haveAccount: "Already have an account?",
       loginLink: "Log in",
       successToast: "Registration successful. Please verify your email.",
+      successToastImmediate:
+        "Registration successful. You can sign in now.",
       errors: {
         organizationNameRequired: "Organization name is required.",
         organizationNameTooShort: "Organization name must be at least 3 characters.",
@@ -3336,6 +3368,7 @@ export const translations: Record<Locale, Translation> = {
     login: {
       title: "Log in",
       description: "You can sign in after verifying your email.",
+      descriptionWithoutVerification: "Sign in with your email and password.",
       emailLabel: "Email",
       emailPlaceholder: "example@company.com",
       passwordLabel: "Password",
@@ -3367,6 +3400,11 @@ export const translations: Record<Locale, Translation> = {
       loginLink: "Back to login",
       successToast:
         "If an account exists, a password reset link has been sent to you.",
+      betaUnavailableTitle: "Password recovery unavailable in Beta",
+      betaUnavailableBody:
+        "Password recovery is temporarily unavailable during the Beta because email services are not enabled yet.",
+      betaUnavailableHint:
+        "Please make sure you remember your password while testing the application.",
       errors: {
         emailInvalid: "Please enter a valid email address.",
         tooManyRequests:
@@ -3387,6 +3425,11 @@ export const translations: Record<Locale, Translation> = {
       loginLink: "Back to login",
       forgotPasswordLink: "Request a new link",
       successToast: "Your password was updated. You can sign in now.",
+      betaUnavailableTitle: "Password reset unavailable in Beta",
+      betaUnavailableBody:
+        "Password recovery is temporarily unavailable during the Beta because email services are not enabled yet.",
+      betaUnavailableHint:
+        "Please make sure you remember your password while testing the application.",
       errors: {
         missingToken: "This reset link is invalid.",
         invalidToken: "This reset link is invalid.",
@@ -3647,6 +3690,8 @@ export const translations: Record<Locale, Translation> = {
       dashboardBody:
         "Some features may change during development and occasional instability is expected.",
       footer: "This recruitment platform is currently running in Beta.",
+      emailFeatureUnavailableEyebrow:
+        "🚧 This feature is temporarily unavailable during the Beta because email services are not enabled yet.",
     },
     feedback: {
       title: "Beta feedback",
@@ -4776,6 +4821,9 @@ export const translations: Record<Locale, Translation> = {
         "A verification token was detected. Full verification will be enabled soon.",
       missingToken: "This verification link is missing a token.",
       loginLink: "Back to login",
+      betaUnavailableTitle: "Email verification not required in Beta",
+      betaUnavailableBody:
+        "Email verification is disabled during the Beta. New accounts are ready to use immediately — you can sign in now.",
     },
     publicJob: {
       applyNow: "Apply Now",

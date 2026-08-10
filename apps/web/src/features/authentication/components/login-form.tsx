@@ -7,11 +7,13 @@ import {
   PasswordInput,
 } from "@poyino/ui";
 import { Link } from "react-router-dom";
+import { useAppConfig } from "../../../shared/config/app-config-provider";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useLoginForm } from "../hooks/use-login-form";
 
 export function LoginForm() {
   const { t } = useI18n();
+  const { emailVerificationEnabled } = useAppConfig();
   const {
     values,
     errors,
@@ -22,7 +24,14 @@ export function LoginForm() {
   } = useLoginForm();
 
   return (
-    <Card title={t.login.title} description={t.login.description}>
+    <Card
+      title={t.login.title}
+      description={
+        emailVerificationEnabled
+          ? t.login.description
+          : t.login.descriptionWithoutVerification
+      }
+    >
       <Form
         onSubmit={(event) => {
           event.preventDefault();
