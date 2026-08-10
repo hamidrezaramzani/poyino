@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SparklesIcon } from "../../dashboard/components/dashboard-icons";
 import { useI18n } from "../../../shared/i18n/i18n-provider";
 import { useCan } from "../../../shared/permissions/can";
 import { useAiCredits } from "../hooks/use-ai-credits";
@@ -28,6 +29,7 @@ export function AiCreditsBadge({
           .join(" ")}
         aria-busy="true"
       >
+        <SparklesIcon size={14} />
         {t.credits.loading}
       </span>
     );
@@ -47,6 +49,7 @@ export function AiCreditsBadge({
         .join(" ")}
       title={label}
     >
+      <SparklesIcon size={14} />
       {compact ? (
         <span className="ai-credits-badge-value">{remaining}</span>
       ) : (

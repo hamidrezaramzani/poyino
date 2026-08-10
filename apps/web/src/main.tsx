@@ -6,6 +6,7 @@ import { App } from "./app";
 import { OrganizationBrandingProvider } from "./shared/branding/organization-branding-provider";
 import { AppConfigProvider } from "./shared/config/app-config-provider";
 import { I18nProvider } from "./shared/i18n/i18n-provider";
+import { PwaPrompts, registerPwa } from "./shared/pwa";
 import { SessionProvider } from "./shared/session/session-provider";
 import "./styles/fonts.css";
 import "./styles.css";
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <SessionProvider>
           <OrganizationBrandingProvider>
             <RouterProvider router={router} />
+            <PwaPrompts />
             <Toaster
               theme="dark"
               position="bottom-right"
@@ -41,3 +43,6 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     </I18nProvider>
   </React.StrictMode>,
 );
+
+// Register the service worker after the initial UI mounts.
+registerPwa();
