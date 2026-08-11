@@ -3,6 +3,8 @@ export type Locale = "fa" | "en";
 export type Translation = {
   languageLabel: string;
   switchLanguageLabel: string;
+  switchThemeToLight: string;
+  switchThemeToDark: string;
   heroBadge: string;
   heroTitle: string;
   heroDescription: string;
@@ -1530,6 +1532,8 @@ export const translations: Record<Locale, Translation> = {
   fa: {
     languageLabel: "فارسی",
     switchLanguageLabel: "English",
+    switchThemeToLight: "حالت روشن",
+    switchThemeToDark: "حالت تاریک",
     heroBadge: "استخدام هوشمند برای تیم های در حال رشد",
     heroTitle: "پوینو به شما کمک می کند استعداد مناسب را سریع تر و با اطمینان بیشتر پیدا کنید.",
     heroDescription:
@@ -3259,6 +3263,8 @@ export const translations: Record<Locale, Translation> = {
   en: {
     languageLabel: "English",
     switchLanguageLabel: "فارسی",
+    switchThemeToLight: "Light mode",
+    switchThemeToDark: "Dark mode",
     heroBadge: "Intelligent hiring for growing teams",
     heroTitle: "Poyino helps you discover the right talent faster and with more confidence.",
     heroDescription:

@@ -21,7 +21,7 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-function isTheme(value: string | null): value is Theme {
+function isTheme(value: string | null | undefined): value is Theme {
   return value === "light" || value === "dark";
 }
 
