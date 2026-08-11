@@ -503,22 +503,45 @@ a {
   }
 
   .landing-topbar {
-    flex-direction: column;
-    align-items: stretch;
+    gap: 0.65rem;
+    padding-block: 0.9rem;
+  }
+
+  .landing-brand {
+    gap: 0.55rem;
+    min-width: 0;
+  }
+
+  .landing-brand-mark {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .landing-brand-name {
+    font-size: 1rem;
   }
 
   .landing-topbar-actions {
-    justify-content: stretch;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+    min-width: 0;
   }
 
-  .landing-topbar-actions > * {
-    flex: 1;
+  .landing-topbar-actions .landing-locale,
+  .landing-topbar-actions .landing-nav-link {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
-  .landing-topbar-actions a,
-  .landing-topbar-actions button {
-    width: 100%;
-    justify-content: center;
+  .landing-topbar-actions .poyino-button {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 0.55rem !important;
+    white-space: nowrap;
   }
 
   .landing-hero {
@@ -1313,7 +1336,8 @@ a {
     transform: translateX(105%);
   }
 
-  .dashboard-sidebar.is-open {
+  .dashboard-sidebar.is-open,
+  html[dir="rtl"] .dashboard-sidebar.is-open {
     transform: translateX(0);
   }
 
