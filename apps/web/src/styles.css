@@ -4068,8 +4068,86 @@ a {
 }
 
 .beta-notice--landing {
-  margin: 0.75rem 1rem 0;
-  border-radius: 1rem;
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 3rem), 72rem);
+  margin: 1rem auto 0;
+  padding: 1.15rem 1.35rem;
+  border: 1px solid var(--ui-border, #2a3441);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--ui-surface, #121820) 92%, #000);
+  color: var(--ui-text, #e8eef4);
+  box-shadow: none;
+}
+
+.beta-notice--landing .beta-notice-body {
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.beta-notice--landing .beta-notice-eyebrow {
+  display: inline-flex;
+  width: fit-content;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ui-muted, #93a0b0);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.beta-notice--landing .beta-notice-title {
+  margin: 0;
+  color: var(--ui-text, #e8eef4);
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.45;
+}
+
+.beta-notice--landing .beta-notice-copy-stack {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.beta-notice--landing .beta-notice-copy {
+  color: var(--ui-muted, #93a0b0);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.beta-notice--landing .beta-notice-data-note {
+  margin-top: 0.15rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid color-mix(in srgb, var(--ui-border, #2a3441) 85%, transparent);
+  color: color-mix(in srgb, var(--ui-text, #e8eef4) 78%, var(--ui-muted, #93a0b0));
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.beta-notice--landing .beta-notice-dismiss {
+  align-self: flex-start;
+  margin-inline-start: 0.25rem;
+  color: var(--ui-muted, #93a0b0);
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.beta-notice--landing .beta-notice-dismiss:hover,
+.beta-notice--landing .beta-notice-dismiss:focus-visible {
+  color: var(--ui-text, #e8eef4);
+  border-color: var(--ui-border, #2a3441);
+  background: color-mix(in srgb, var(--ui-surface-muted, #171e27) 80%, transparent);
 }
 
 .beta-notice--auth,
@@ -4365,6 +4443,16 @@ a {
   .feedback-response-list li,
   .beta-notice {
     flex-direction: column;
+  }
+
+  .beta-notice--landing {
+    width: min(calc(100% - 2rem), 72rem);
+    padding: 1rem 1.1rem;
+  }
+
+  .beta-notice--landing .beta-notice-dismiss {
+    align-self: stretch;
+    justify-content: center;
   }
 }
 

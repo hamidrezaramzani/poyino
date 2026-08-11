@@ -69,9 +69,13 @@ export function BetaNotice({ variant }: BetaNoticeProps) {
       <div className="beta-notice-body">
         <p className="beta-notice-eyebrow">{t.beta.landingEyebrow}</p>
         <p className="beta-notice-title">{t.beta.landingTitle}</p>
-        <p className="beta-notice-copy">{t.beta.landingBody}</p>
-        <p className="beta-notice-copy">{t.beta.landingDetail}</p>
-        <p className="beta-notice-copy">{t.beta.landingDataNote}</p>
+        <div className="beta-notice-copy-stack">
+          <p className="beta-notice-copy">{t.beta.landingBody}</p>
+          <p className="beta-notice-copy">{t.beta.landingDetail}</p>
+        </div>
+        <p className="beta-notice-copy beta-notice-data-note">
+          {t.beta.landingDataNote}
+        </p>
       </div>
       <Button
         type="button"
