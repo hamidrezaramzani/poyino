@@ -62,6 +62,8 @@ function faviconAssetsPlugin(): Plugin {
   };
 }
 
+const allowedHosts = ["poyino.ir", "www.poyino.ir"];
+
 export default defineConfig({
   plugins: [
     react(),
@@ -143,9 +145,14 @@ export default defineConfig({
     }),
   ],
   server: {
+    allowedHosts,
     fs: {
       allow: ["../.."],
     },
+  },
+  // Production on the VPS uses `vite preview` behind Nginx (Host: poyino.ir).
+  preview: {
+    allowedHosts,
   },
   build: {
     // Vite already minifies JS/CSS; keep CSS code-split for faster loads.
